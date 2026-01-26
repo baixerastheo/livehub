@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -11,4 +5,122 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Utilisateur {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  motDePasse      String
+  nomUtilisateur  String         @unique
+  statut          StatutUtilisateur @default(EN_LIGNE)
+  creeLe          DateTime        @default(now())
+  modifieLe       DateTime        @updatedAt
+  serveurs        MembreServeur[]
+  messages        Message[]
+  invitations     Invitation[]
+  messagesEnvoyes MessagePrive[] @relation("MessagesEnvoyes")
+  messagesRecus   MessagePrive[] @relation("MessagesRecus")
+
+  @@index([email])
+  @@index([nomUtilisateur])
+}
+
+enum StatutUtilisateur {
+  EN_LIGNE
+  ABSENT
+  INVISIBLE
+  HORS_LIGNE
+}
+
+model Serveur {
+  id          String        @id @default(uuid())
+  nom         String
+  membres     MembreServeur[]
+  canaux      Canal[]
+  invitations Invitation[]
+  creeLe      DateTime      @default(now())
+  modifieLe   DateTime      @updatedAt
+
+  @@index([nom])
+}
+
+model MembreServeur {
+  id          String   @id @default(uuid())
+  serveurId   String
+  serveur     Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  utilisateurId String
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  role        Role     @default(MEMBRE)
+  rejointLe   DateTime @default(now())
+
+  @@unique([utilisateurId, serveurId])
+  @@index([serveurId])
+  @@index([utilisateurId])
+  @@index([serveurId, role])
+}
+
+enum Role {
+  PROPRIETAIRE
+  ADMINISTRATEUR
+  MEMBRE
+}
+
+model Canal {
+  id        String    @id @default(uuid())
+  serveurId String
+  serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  nom       String
+  messages  Message[]
+  creeLe    DateTime  @default(now())
+  modifieLe DateTime  @updatedAt
+
+  @@index([serveurId])
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  canalId    String
+  canal      Canal    @relation(fields: [canalId], references: [id], onDelete: Cascade)
+  auteurId   String
+  auteur     Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  contenu    String
+  creeLe     DateTime @default(now())
+  modifieLe  DateTime @updatedAt
+  editeLe    DateTime?
+
+  @@index([canalId])
+  @@index([canalId, creeLe])
+  @@index([auteurId])
+}
+
+model Invitation {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  serveurId       String
+  serveur         Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  creeParId       String
+  creePar         Utilisateur @relation(fields: [creeParId], references: [id], onDelete: Cascade)
+  expireLe        DateTime?
+  creeLe          DateTime  @default(now())
+
+  @@index([code])
+  @@index([serveurId])
+  @@index([creeParId])
+}
+
+model MessagePrive {
+  id            String    @id @default(uuid())
+  expediteurId  String
+  expediteur    Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
+  destinataireId String
+  destinataire  Utilisateur @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
+  contenu       String
+  lu            Boolean   @default(false)
+  creeLe        DateTime  @default(now())
+  modifieLe     DateTime  @updatedAt
+  editeLe       DateTime?
+
+  @@index([expediteurId, destinataireId])
+  @@index([destinataireId])
+  @@index([expediteurId])
 }
