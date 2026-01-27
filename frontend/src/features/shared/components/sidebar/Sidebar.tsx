@@ -1,27 +1,24 @@
 import styles from "../../styles/sidebar/Sidebar.module.css";
+import { useAppStore } from "@/src/core/store/appStore";
 
-type SidebarProps = {
-  isOpen?: boolean;
-  onClose?: () => void;
-  onStartConversation?: () => void;
-};
+export function Sidebar() {
+  const isOpen = useAppStore((state) => state.isSidebarOpen);
+  const closeSidebar = useAppStore((state) => state.closeSidebar);
+  const openLoginModal = useAppStore((state) => state.openLoginModal);
 
-export function Sidebar({ isOpen, onClose, onStartConversation }: SidebarProps) {
   return (
     <>
       <aside
         className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}
       >
-        {onClose && (
-          <button
-            type="button"
-            className={styles.closeButton}
-            aria-label="Fermer la liste des conversations"
-            onClick={onClose}
-          >
-            ×
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.closeButton}
+          aria-label="Fermer la liste des conversations"
+          onClick={closeSidebar}
+        >
+          ×
+        </button>
         <div className={styles.header}>Conversations</div>
         <div className={styles.emptyState}>
           <p className={styles.emptyTitle}>No conversation</p>
@@ -32,7 +29,7 @@ export function Sidebar({ isOpen, onClose, onStartConversation }: SidebarProps) 
         <button
           type="button"
           className={styles.startButton}
-          onClick={onStartConversation}
+          onClick={openLoginModal}
         >
           Start conversation
         </button>
@@ -42,7 +39,7 @@ export function Sidebar({ isOpen, onClose, onStartConversation }: SidebarProps) 
           type="button"
           className={styles.sidebarBackdrop}
           aria-label="Fermer la liste des conversations"
-          onClick={onClose}
+          onClick={closeSidebar}
         />
       )}
     </>

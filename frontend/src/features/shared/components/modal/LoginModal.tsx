@@ -1,14 +1,14 @@
-import React from "react";
+"use client";
+
 import { ExampleForm } from "@/components/ExampleForm";
+import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../../styles/modal/LoginModal.module.css";
 
-type LoginModalProps = {
-  open: boolean;
-  onClose: () => void;
-};
+export function LoginModal() {
+  const isLoginModalOpen = useAppStore((state) => state.isLoginModalOpen);
+  const closeLoginModal = useAppStore((state) => state.closeLoginModal);
 
-export function LoginModal({ open, onClose }: LoginModalProps) {
-  if (!open) return null;
+  if (!isLoginModalOpen) return null;
 
   return (
     <div className={styles.backdrop} aria-modal="true" role="dialog">
@@ -17,7 +17,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
           <h2 className={styles.title}>Sign in to get started</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeLoginModal}
             aria-label="Close sign-in modal"
             className={styles.closeButton}
           >

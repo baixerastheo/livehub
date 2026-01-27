@@ -2,12 +2,11 @@ import styles from "../../styles/navbar/Navbar.module.css";
 import { NavbarLogo } from "@/src/features/shared/components/navbar/NavbarLogo";
 import { NavbarSearch } from "@/src/features/shared/components/navbar/NavbarSearch";
 import { BiArrowFromLeft } from "react-icons/bi";
+import { useAppStore } from "@/src/core/store/appStore";
 
-type NavbarProps = {
-  onToggleSidebar?: () => void;
-};
+export function Navbar() {
+  const toggleSidebar = useAppStore((state) => state.toggleSidebar);
 
-export function Navbar({ onToggleSidebar }: NavbarProps) {
   return (
     <header className={styles.navbar}>
       <div className={styles.left}>
@@ -15,7 +14,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           type="button"
           className={styles.menuButton}
           aria-label="Afficher/masquer la liste des conversations"
-          onClick={onToggleSidebar}
+          onClick={toggleSidebar}
         >
           <span aria-hidden="true">
             <BiArrowFromLeft size={22} />

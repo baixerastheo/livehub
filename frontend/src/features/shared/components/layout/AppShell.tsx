@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Navbar } from "@/src/features/shared/components/navbar/Navbar";
 import { Sidebar } from "@/src/features/shared/components/sidebar/Sidebar";
 import { LoginModal } from "@/src/features/shared/components/modal/LoginModal";
@@ -10,28 +10,9 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen((prev: boolean) => !prev);
-  };
-
-  const handleCloseSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleStartConversation = () => {
-    setIsLoginModalOpen(true);
-  };
-
-  const handleCloseLoginModal = () => {
-    setIsLoginModalOpen(false);
-  };
-
   return (
     <>
-      <Navbar onToggleSidebar={handleToggleSidebar} />
+      <Navbar />
       <div
         style={{
           display: "flex",
@@ -39,11 +20,7 @@ export function AppShell({ children }: AppShellProps) {
           overflow: "hidden",
         }}
       >
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={handleCloseSidebar}
-          onStartConversation={handleStartConversation}
-        />
+        <Sidebar />
         <div
           style={{
             flex: 1,
@@ -53,7 +30,7 @@ export function AppShell({ children }: AppShellProps) {
           {children}
         </div>
       </div>
-      <LoginModal open={isLoginModalOpen} onClose={handleCloseLoginModal} />
+      <LoginModal />
     </>
   );
 }
