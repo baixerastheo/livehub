@@ -1,2 +1,3 @@
 # Livehub
-Test Jira rule
+
+Master = branch production
