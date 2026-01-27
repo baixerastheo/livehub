@@ -12,7 +12,7 @@
 .left {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.25rem;
 }
 
 .right {
@@ -24,4 +24,43 @@
   width: 100%;
   justify-content: flex-end;
 }
+
+.menuButton {
+  display: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.menuIcon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.menuBar {
+  width: 18px;
+  height: 2px;
+  background-color: #000000;
+  border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+  .menuButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .right {
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 
