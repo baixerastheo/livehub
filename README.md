@@ -1,3 +1,2 @@
 # Livehub
-
 Test Jira rule

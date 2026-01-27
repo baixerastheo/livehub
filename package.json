@@ -10,7 +10,13 @@
     "build:frontend": "pnpm --filter frontend build",
     "build:backend": "pnpm --filter backend build",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "supabase db reset",
+    "db:push": "pnpm --filter backend exec prisma db push",
+    "db:generate": "pnpm --filter backend exec prisma generate"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
