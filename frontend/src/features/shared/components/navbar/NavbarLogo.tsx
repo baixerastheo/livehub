@@ -1,7 +1,7 @@
 import Image from "next/image";
 import styles from "../../styles/navbar/NavbarLogo.module.css";
 
-type NavbarLogoProps = {};
+type NavbarLogoProps = Record<string, never>;
 
 export function NavbarLogo({}: NavbarLogoProps) {
   return (
