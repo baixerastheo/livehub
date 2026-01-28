@@ -13,7 +13,7 @@ export class UserController {
     @ApiOkResponse({ 
         description: "All users retrieved successfully"
     })
-    async getAllUsers() {
+    async getAllUsers(): Promise<unknown[]> {
         return await this.userService.getAllUsers();
     }
 
@@ -70,7 +70,7 @@ export class UserController {
     @ApiNotFoundResponse({ 
         description: "User with this ID does not exist"
     })
-    async deleteUser(@Param('id', ParseIntPipe) id: number) {
+    async deleteUser(@Param('id', ParseIntPipe) id: number){
         const result = await this.userService.deleteUser(id);
         if (result.isErr()) {
             throw new NotFoundException(result.unwrapErr());
@@ -89,7 +89,7 @@ export class UserController {
     @ApiBadRequestResponse({
         description: "Invalid user data"
     })
-    async createUser(@Body() data: CreateUser) {
+    async createUser(@Body() data: CreateUser){
         const result = await this.userService.createUser(data);
         if (result.isErr()) {
             const error = result.unwrapErr();
@@ -118,7 +118,7 @@ export class UserController {
     @ApiBadRequestResponse({
         description: "Invalid user data"
     })
-    async updateUser(@Body() data: UpdateUser, @Param('id', ParseIntPipe) id: number) {
+    async updateUser(@Body() data: UpdateUser, @Param('id', ParseIntPipe) id: number){
         const result = await this.userService.updateUser(id, data);
         if (result.isErr()) {
             const error = result.unwrapErr();

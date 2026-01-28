@@ -4,6 +4,7 @@ import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { Result, Ok, Err } from '../result.js';
+import { isPrismaError } from '../prisma-error.js';
 
 @Injectable()
 export class ServerService {
@@ -14,17 +15,13 @@ export class ServerService {
     }
 
     async getServerById(id: number): Promise<Result<any, string>> {
-        try {
-            const server = await this.prisma.serveur.findUnique({
-                where: { id }
-            });
-            if (!server) {
-                return Err('Server with ID' + id + 'not found');
-            }
-            return Ok(server);
-        } catch (error) {
-            throw error; 
+        const server = await this.prisma.serveur.findUnique({
+            where: { id }
+        });
+        if (!server) {
+            return Err('Server with ID' + id + 'not found');
         }
+        return Ok(server);
     }
 
     async createServer(data: CreateServer, creatorId: number): Promise<Result<any, string>> {
@@ -49,8 +46,8 @@ export class ServerService {
             
             const result = await this.getServerById(server.id);
             return result;
-        } catch (error: any) {
-            if (error.code === 'P2002') {
+        } catch (error: unknown) {
+            if (isPrismaError(error) && error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error;
@@ -76,8 +73,8 @@ export class ServerService {
                 }
             });
             return Ok(updatedServer);
-        } catch (error: any) {
-            if (error.code === 'P2002') {
+        } catch (error: unknown) {
+            if (isPrismaError(error) && error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error; 
@@ -85,20 +82,16 @@ export class ServerService {
     }
 
     async deleteServer(id: number): Promise<Result<any, string>> {
-        try {
-            const server = await this.prisma.serveur.findUnique({
-                where: { id }
-            });
-            if (!server) {
-                return Err(`Server with ID ${id} not found`);
-            }
-            const deletedServer = await this.prisma.serveur.delete({
-                where: { id }
-            });
-            return Ok(deletedServer);
-        } catch (error) {
-            throw error;
+        const server = await this.prisma.serveur.findUnique({
+            where: { id }
+        });
+        if (!server) {
+            return Err(`Server with ID ${id} not found`);
         }
+        const deletedServer = await this.prisma.serveur.delete({
+            where: { id }
+        });
+        return Ok(deletedServer);
     }
 
     async getUserServers(userId: number) {
@@ -153,8 +146,8 @@ export class ServerService {
                 }
             });
             return Ok(newMember);
-        } catch (error: any) {
-            if (error.code === 'P2002') {
+        } catch (error: unknown) {
+            if (isPrismaError(error) && error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error; 
@@ -162,51 +155,43 @@ export class ServerService {
     }
 
     async leaveServer(serverId: number, userId: number): Promise<Result<any, string>> {
-        try {
-            const member = await this.prisma.membreServeur.findUnique({
-                where: {
-                    utilisateurId_serveurId: {
-                        utilisateurId: userId,
-                        serveurId: serverId
-                    }
+        const member = await this.prisma.membreServeur.findUnique({
+            where: {
+                utilisateurId_serveurId: {
+                    utilisateurId: userId,
+                    serveurId: serverId
                 }
-            });
-            if (!member) {
-                return Err('You are not a member of this server');
             }
-
-            // a faire : gerer le cas ou le proprio part
-
-            const deletedMember = await this.prisma.membreServeur.delete({
-                where: {
-                    id: member.id
-                }
-            });
-            return Ok(deletedMember);
-        } catch (error) {
-            throw error; 
+        });
+        if (!member) {
+            return Err('You are not a member of this server');
         }
+
+        // a faire : gerer le cas ou le proprio part
+
+        const deletedMember = await this.prisma.membreServeur.delete({
+            where: {
+                id: member.id
+            }
+        });
+        return Ok(deletedMember);
     }
 
     async getServerMembers(serverId: number): Promise<Result<any[], string>> {
-        try {
-            const server = await this.prisma.serveur.findUnique({
-                where: { id: serverId }
-            });
-            if (!server) {
-                return Err(`Server with ID ${serverId} not found`);
-            }
-
-            const members = await this.prisma.membreServeur.findMany({
-                where: { serveurId: serverId },
-                include: {
-                    utilisateur: true
-                }
-            });
-            return Ok(members);
-        } catch (error) {
-            throw error;
+        const server = await this.prisma.serveur.findUnique({
+            where: { id: serverId }
+        });
+        if (!server) {
+            return Err(`Server with ID ${serverId} not found`);
         }
+
+        const members = await this.prisma.membreServeur.findMany({
+            where: { serveurId: serverId },
+            include: {
+                utilisateur: true
+            }
+        });
+        return Ok(members);
     }
 
     async updateMemberRole(serverId: number, userId: number, newRole: Role): Promise<Result<any, string>> {
@@ -236,7 +221,7 @@ export class ServerService {
                 }
             });
             return Ok(updatedMember);
-        } catch (error) {
+        } catch (error: unknown) {
             throw error; 
         }
     }

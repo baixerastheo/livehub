@@ -4,6 +4,7 @@ import { CreateUser } from './dto/create-user.dto.js';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { Result, Ok, Err } from '../result.js';
 
+
 @Injectable()
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
@@ -13,47 +14,34 @@ export class UserService {
     }
 
     async getUserById(id: number): Promise<Result<any, string>> {
-        try {
-            const user = await this.prisma.utilisateur.findUnique({
-                where: {id}
-            });
-            if (!user){
-                return Err("User with ID " + id + " not found");
-            }
-            return Ok(user);
-        } catch (error) {
-            throw error; 
+        const user = await this.prisma.utilisateur.findUnique({
+            where: {id}
+        });
+        if (!user){
+            return Err("User with ID " + id + " not found");
         }
+        return Ok(user);
     }
 
     async GetUserByEmail(email: string): Promise<Result<any, string>> {
-        try {
-            const user = await this.prisma.utilisateur.findUnique({
-                where:{email}
-            })
-            if (!user){
-                return Err("User with Email " + email + " not found");
-            }
-            return Ok(user);
-        } catch(error){
-            throw error;
+        const user = await this.prisma.utilisateur.findUnique({
+            where:{email}
+        })
+        if (!user){
+            return Err("User with Email " + email + " not found");
         }
-
+        return Ok(user);
     }
 
     async GetUserByUsername(username: string): Promise<Result<any, string>>{
-        try {
-            const user = await this.prisma.utilisateur.findUnique({
-                where:{nomUtilisateur: username}
-            })
-        
-            if (!user){
-                return Err("User with username " + username + " not found");
-            }
-            return Ok(user);
-        } catch(error){
-            throw error;
+        const user = await this.prisma.utilisateur.findUnique({
+            where:{nomUtilisateur: username}
+        })
+    
+        if (!user){
+            return Err("User with username " + username + " not found");
         }
+        return Ok(user);
     }
 
     async createUser(data: CreateUser): Promise<Result<any, string>> {
@@ -86,7 +74,7 @@ export class UserService {
                  
             });
             return Ok(user);
-        } catch (error: any) {
+        } catch (error) {
             if (error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
@@ -95,20 +83,16 @@ export class UserService {
     }
 
     async deleteUser(id: number): Promise<Result<any, string>> {
-        try {
-            const user = await this.prisma.utilisateur.findUnique({
-                where: {id}
-            });
-            if (!user){
-                return Err("User with ID " + id + " not found");
-            }
-            const deletedUser = await this.prisma.utilisateur.delete({
-                where: {id}
-            });
-            return Ok(deletedUser);
-        } catch (error) {
-            throw error;
+        const user = await this.prisma.utilisateur.findUnique({
+            where: {id}
+        });
+        if (!user){
+            return Err("User with ID " + id + " not found");
         }
+        const deletedUser = await this.prisma.utilisateur.delete({
+            where: {id}
+        });
+        return Ok(deletedUser);
     }
 
     async updateUser(id: number, data: UpdateUser): Promise<Result<any, string>> {
@@ -142,7 +126,7 @@ export class UserService {
                 }
             });
             return Ok(updatedUser);
-        } catch (error: any) {
+        } catch (error) {
             if (error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
