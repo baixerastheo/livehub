@@ -4,6 +4,7 @@ import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { Result, ok, err } from '../result.js';
+import type { Serveur, MembreServeur, Utilisateur } from '../../generated/prisma/client.js';
 
 
 @Injectable()
@@ -14,7 +15,7 @@ export class ServerService {
         return await this.prisma.serveur.findMany()
     }
 
-    async getServerById(id: number): Promise<Result<any, string>> {
+    async getServerById(id: number) {
         const server = await this.prisma.serveur.findUnique({
             where: { id }
         });
@@ -24,7 +25,7 @@ export class ServerService {
         return ok(server);
     }
 
-    async createServer(data: CreateServer, creatorId: number): Promise<Result<any, string>> {
+    async createServer(data: CreateServer, creatorId: number) {
         try {
 
             const server = await this.prisma.serveur.create({
@@ -50,7 +51,7 @@ export class ServerService {
         }
     }
 
-    async updateServer(id: number, data: UpdateServer): Promise<Result<any, string>> {
+    async updateServer(id: number, data: UpdateServer) {
         try {
             const server = await this.prisma.serveur.findUnique({
                 where: { id }
@@ -73,7 +74,7 @@ export class ServerService {
         }
     }
 
-    async deleteServer(id: number): Promise<Result<any, string>> {
+    async deleteServer(id: number) {
         const server = await this.prisma.serveur.findUnique({
             where: { id }
         });
@@ -105,7 +106,7 @@ export class ServerService {
         return members.map(m => m.serveur);
     }
 
-    async joinServer(serverId: number, userId: number): Promise<Result<any, string>> {
+    async joinServer(serverId: number, userId: number) {
         try {
             const server = await this.prisma.serveur.findUnique({
                 where: { id: serverId }
@@ -138,15 +139,15 @@ export class ServerService {
                 }
             });
             return ok(newMember);
-        } catch (error) {
-            if (error.code === 'P2002') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
                 return err('Unique constraint violation');
             }
             throw error; 
         }
     }
 
-    async leaveServer(serverId: number, userId: number): Promise<Result<any, string>> {
+    async leaveServer(serverId: number, userId: number) {
         const member = await this.prisma.membreServeur.findUnique({
             where: {
                 utilisateurId_serveurId: {
@@ -169,7 +170,7 @@ export class ServerService {
         return ok(deletedMember);
     }
 
-    async getServerMembers(serverId: number): Promise<Result<any[], string>> {
+    async getServerMembers(serverId: number) {
         const server = await this.prisma.serveur.findUnique({
             where: { id: serverId }
         });
@@ -186,7 +187,7 @@ export class ServerService {
         return ok(members);
     }
 
-    async updateMemberRole(serverId: number, userId: number, newRole: Role): Promise<Result<any, string>> {
+    async updateMemberRole(serverId: number, userId: number, newRole: Role) {
         const member = await this.prisma.membreServeur.findUnique({
             where: {
                 utilisateurId_serveurId: {

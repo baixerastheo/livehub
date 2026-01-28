@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma.service.js';
 import { CreateUser } from './dto/create-user.dto.js';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { Result, ok, err } from '../result.js';
+import type { Utilisateur } from '../../generated/prisma/client.js';
 
 
 @Injectable()
@@ -13,7 +14,7 @@ export class UserService {
         return this.prisma.utilisateur.findMany()
     }
 
-    async getUserById(id: number): Promise<Result<any, string>> {
+    async getUserById(id: number) {
         const user = await this.prisma.utilisateur.findUnique({
             where: {id}
         });
@@ -23,7 +24,7 @@ export class UserService {
         return ok(user);
     }
 
-    async GetUserByEmail(email: string): Promise<Result<any, string>> {
+    async GetUserByEmail(email: string) {
         const user = await this.prisma.utilisateur.findUnique({
             where:{email}
         })
@@ -33,7 +34,7 @@ export class UserService {
         return ok(user);
     }
 
-    async GetUserByUsername(username: string): Promise<Result<any, string>>{
+    async GetUserByUsername(username: string) {
         const user = await this.prisma.utilisateur.findUnique({
             where:{nomUtilisateur: username}
         })
@@ -44,7 +45,7 @@ export class UserService {
         return ok(user);
     }
 
-    async createUser(data: CreateUser): Promise<Result<any, string>> {
+    async createUser(data: CreateUser) {
         try {
             const emailExist = await this.prisma.utilisateur.findUnique({
                 where: { email: data.email }
@@ -69,15 +70,15 @@ export class UserService {
                 }
             });
             return ok(user);
-        } catch (error) {
-            if (error.code === 'P2002') {
+        } catch (error: any) {
+            if (error?.code === 'P2002') {
                 return err('Unique constraint violation');
             }
             throw error;
         }
     }
 
-    async deleteUser(id: number): Promise<Result<any, string>> {
+    async deleteUser(id: number) {
         const user = await this.prisma.utilisateur.findUnique({
             where: {id}
         });
@@ -90,7 +91,7 @@ export class UserService {
         return ok(deletedUser);
     }
 
-    async updateUser(id: number, data: UpdateUser): Promise<Result<any, string>> {
+    async updateUser(id: number, data: UpdateUser) {
         try {
             const user = await this.prisma.utilisateur.findUnique({
                 where: {id}
@@ -117,8 +118,8 @@ export class UserService {
                 }
             });
             return ok(updatedUser);
-        } catch (error) {
-            if (error.code === 'P2002') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
                 return err('Unique constraint violation');
             }
             throw error; 
