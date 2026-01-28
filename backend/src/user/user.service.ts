@@ -2,16 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { CreateUser } from './dto/create-user.dto.js';
 import { UpdateUser } from './dto/update-user.dto.js';
-import { Result, ok, err } from '../result.js';
-import type { Utilisateur } from '../../generated/prisma/client.js';
-
+import { ok, err } from '../result.js';
 
 @Injectable()
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
     async getAllUsers(){
-        return this.prisma.utilisateur.findMany()
+        return this.prisma.utilisateur.findMany();
     }
 
     async getUserById(id: number) {
@@ -27,7 +25,7 @@ export class UserService {
     async GetUserByEmail(email: string) {
         const user = await this.prisma.utilisateur.findUnique({
             where:{email}
-        })
+        });
         if (!user){
             return err("User with Email " + email + " not found");
         }
@@ -37,7 +35,7 @@ export class UserService {
     async GetUserByUsername(username: string) {
         const user = await this.prisma.utilisateur.findUnique({
             where:{nomUtilisateur: username}
-        })
+        });
     
         if (!user){
             return err("User with username " + username + " not found");
@@ -70,13 +68,13 @@ export class UserService {
                 }
             });
             return ok(user);
-        } catch (error: any) {
-            if (error?.code === 'P2002') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
                 return err('Unique constraint violation');
             }
             throw error;
-        }
     }
+}
 
     async deleteUser(id: number) {
         const user = await this.prisma.utilisateur.findUnique({

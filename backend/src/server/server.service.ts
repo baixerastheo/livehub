@@ -5,14 +5,12 @@ import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { ok, err } from '../result.js';
 
-
-
 @Injectable()
 export class ServerService {
     constructor(private readonly prisma: PrismaService) {}
 
     async getAllServers() {
-        return await this.prisma.serveur.findMany()
+        return await this.prisma.serveur.findMany();
     }
 
     async getServerById(id: number) {
@@ -20,14 +18,13 @@ export class ServerService {
             where: { id }
         });
         if (!server) {
-            return err(`Server with ID ${id} not found`);
+            return err('Server with ID '+ id +' not found');
         }
         return ok(server);
     }
 
     async createServer(data: CreateServer, creatorId: number) {
         try {
-
             const server = await this.prisma.serveur.create({
                 data: {
                     nom: data.name
@@ -43,8 +40,8 @@ export class ServerService {
             });
             
             return ok(server);
-        } catch (error: any) {
-            if (error?.code === 'P2002') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
                 return err('Unique constraint violation');
             }
             throw error;
@@ -66,20 +63,20 @@ export class ServerService {
                 }
             });
             return ok(updatedServer);
-        } catch (error: any) {
-            if (error?.code === 'P2002') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
                 return err('Unique constraint violation');
             }
-            throw error; 
-        }
+            throw error;
     }
+}
 
     async deleteServer(id: number) {
         const server = await this.prisma.serveur.findUnique({
             where: { id }
         });
         if (!server) {
-            return err(`Server with ID ${id} not found`);
+            return err('Server with ID '+ id +'not found');
         }
         const deletedServer = await this.prisma.serveur.delete({
             where: { id }
@@ -175,7 +172,7 @@ export class ServerService {
             where: { id: serverId }
         });
         if (!server) {
-            return err(`Server with ID ${serverId} not found`);
+            return err('Server with ID' + serverId + 'not found');
         }
 
         const members = await this.prisma.membreServeur.findMany({
