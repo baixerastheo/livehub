@@ -8,8 +8,8 @@ import { ok, err } from '../result.js';
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
-    getAllUsers(){
-        return this.prisma.utilisateur.findMany();
+    async getAllUsers(){
+        return await this.prisma.utilisateur.findMany();
     }
 
     async getUserById(id: number) {
