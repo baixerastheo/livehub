@@ -22,19 +22,19 @@ export function ExampleForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={styles.field}>
-        <label htmlFor="email" className={styles.label}>
-          Email
+        <label htmlFor="login" className={styles.label}>
+          Email or username
         </label>
         <input
-          id="email"
-          type="email"
-          {...register("email")}
-          aria-invalid={errors.email ? "true" : "false"}
+          id="login"
+          type="text"
+          {...register("login")}
+          aria-invalid={errors.login ? "true" : "false"}
           className={styles.input}
         />
-        {errors.email && (
+        {errors.login && (
           <span role="alert" className={styles.error}>
-            {errors.email.message}
+            {errors.login.message}
           </span>
         )}
       </div>
