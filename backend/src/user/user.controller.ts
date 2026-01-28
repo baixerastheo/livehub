@@ -13,7 +13,7 @@ export class UserController {
     @ApiOkResponse({ 
         description: "All users retrieved successfully"
     })
-    async getAllUsers(): Promise<unknown[]> {
+    async getAllUsers(){
         return await this.userService.getAllUsers();
     }
 

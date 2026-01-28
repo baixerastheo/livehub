@@ -4,7 +4,7 @@ import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { Result, Ok, Err } from '../result.js';
-import { isPrismaError } from '../prisma-error.js';
+
 
 @Injectable()
 export class ServerService {
@@ -46,8 +46,8 @@ export class ServerService {
             
             const result = await this.getServerById(server.id);
             return result;
-        } catch (error: unknown) {
-            if (isPrismaError(error) && error.code === 'P2002') {
+        } catch (error: any) {
+            if (error?.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error;
@@ -73,8 +73,8 @@ export class ServerService {
                 }
             });
             return Ok(updatedServer);
-        } catch (error: unknown) {
-            if (isPrismaError(error) && error.code === 'P2002') {
+        } catch (error: any) {
+            if (error?.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error; 
@@ -146,8 +146,8 @@ export class ServerService {
                 }
             });
             return Ok(newMember);
-        } catch (error: unknown) {
-            if (isPrismaError(error) && error.code === 'P2002') {
+        } catch (error) {
+            if (error.code === 'P2002') {
                 return Err('Unique constraint violation');
             }
             throw error; 
@@ -221,7 +221,7 @@ export class ServerService {
                 }
             });
             return Ok(updatedMember);
-        } catch (error: unknown) {
+        } catch (error) {
             throw error; 
         }
     }
