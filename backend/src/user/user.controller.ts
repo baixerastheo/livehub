@@ -4,7 +4,6 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFound
 import { UpdateUser } from './dto/update-user.dto.js';
 import { CreateUser } from './dto/create-user.dto.js';
 
-
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
@@ -33,7 +32,7 @@ export class UserController {
     }
 
 
-    @Get('/username:username')
+    @Get('/username/:username')
     @ApiOkResponse({ 
         description: "User retrieved successfully"
     })

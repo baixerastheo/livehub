@@ -3,8 +3,8 @@ import { PrismaService } from '../prisma.service.js';
 import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
-import { Result, ok, err } from '../result.js';
-import type { Serveur, MembreServeur, Utilisateur } from '../../generated/prisma/client.js';
+import { ok, err } from '../result.js';
+
 
 
 @Injectable()
