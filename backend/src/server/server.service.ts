@@ -16,18 +16,10 @@ export class ServerService {
     async getServerById(id: number): Promise<Result<any, string>> {
         try {
             const server = await this.prisma.serveur.findUnique({
-                where: { id },
-                include: {
-                    membres: {
-                        include: {
-                            utilisateur: true
-                        }
-                    },
-                    canaux: true
-                }
+                where: { id }
             });
             if (!server) {
-                return Err(`Server with ID ${id} not found`);
+                return Err('Server with ID' + id + 'not found');
             }
             return Ok(server);
         } catch (error) {
@@ -75,15 +67,13 @@ export class ServerService {
                 where: { id }
             });
             if (!server) {
-                return Err(`Server with ID ${id} not found`);
+                return Err('Server with ID '+ id +' not found');
             }
-
-            const updateData: any = {};
-            if (data.name !== undefined) updateData.nom = data.name;
-
             const updatedServer = await this.prisma.serveur.update({
                 where: { id },
-                data: updateData
+                data:{
+                    nom: data.name
+                }
             });
             return Ok(updatedServer);
         } catch (error: any) {
