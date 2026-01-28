@@ -73,19 +73,10 @@ export class ServerService {
         const members = await this.prisma.membreServeur.findMany({
             where: { utilisateurId: userId },
             include: {
-                serveur: {
-                    include: {
-                        membres: {
-                            include: {
-                                utilisateur: true
-                            }
-                        },
-                        canaux: true
-                    }
-                }
+                serveur: true
             }
         });
-        return members.map(m => m.serveur);
+        return members
     }
 
     async joinServer(serverId: number, userId: number) {
