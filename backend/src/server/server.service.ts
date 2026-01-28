@@ -9,8 +9,8 @@ import { ok, err } from '../result.js';
 export class ServerService {
     constructor(private readonly prisma: PrismaService) {}
 
-    getAllServers() {
-        return this.prisma.serveur.findMany();
+    async getAllServers() {
+        return await this.prisma.serveur.findMany();
     }
 
     async getServerById(id: number) {
@@ -73,19 +73,10 @@ export class ServerService {
         const members = await this.prisma.membreServeur.findMany({
             where: { utilisateurId: userId },
             include: {
-                serveur: {
-                    include: {
-                        membres: {
-                            include: {
-                                utilisateur: true
-                            }
-                        },
-                        canaux: true
-                    }
-                }
+                serveur: true
             }
         });
-        return members.map(m => m.serveur);
+        return members
     }
 
     async joinServer(serverId: number, userId: number) {
@@ -93,7 +84,7 @@ export class ServerService {
             where: { id: serverId }
         });
         if (!server) {
-            return err(`Server with ID ${serverId} not found`);
+            return err('Server with ID' + serverId +'not found');
         }
 
         const member = await this.prisma.membreServeur.findUnique({

@@ -16,7 +16,7 @@ export class ServerController {
     })
     async createServer(@Body() data: CreateServer) {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
-        const userId = 1;
+        const userId = 3;
         const result = await this.serverService.createServer(data, userId);
         if (result.isErr()) {
             throw new NotFoundException(result.error);
@@ -28,10 +28,10 @@ export class ServerController {
     @ApiOkResponse({ 
         description: "User's servers retrieved successfully"
     })
-    getUserServers() {
+    async getUserServers() {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
-        const userId = 1;
-        return this.serverService.getUserServers(userId);
+        const userId = 4;
+        return await this.serverService.getUserServers(userId);
     }
 
     @Get('/:id')
@@ -92,7 +92,7 @@ export class ServerController {
     })
     async joinServer(@Param('id', ParseIntPipe) serverId: number) {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
-        const userId = 1;
+        const userId = 3;
         const result = await this.serverService.joinServer(serverId, userId);
         if (result.isErr()) {
             throw new NotFoundException(result.error);
