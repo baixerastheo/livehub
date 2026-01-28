@@ -1,6 +1,6 @@
 import { ServerService } from './server.service.js';
 import { ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFoundException, ConflictException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFoundException } from '@nestjs/common';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { UpdateMemberRole } from './dto/update-member-role.dto.js';
 import { CreateServer } from './dto/create-server.dto.js';
