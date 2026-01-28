@@ -1,0 +1,73 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.submit {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.submitDisabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.submit:not(.submitDisabled):hover {
+  background-color: #111111;
+  transform: translateY(-1px);
+}
+
+.switchContainer {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.switchLink {
+  background: none;
+  border: none;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.switchLink:hover {
+  color: #000000;
+}

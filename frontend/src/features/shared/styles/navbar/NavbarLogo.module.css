@@ -1,0 +1,11 @@
+.logoContainer {
+  display: flex;
+  align-items: center;
+}
+
+.logoImage {
+  display: block;
+  height: 58px;
+  width: auto;
+}
+

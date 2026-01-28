@@ -3,9 +3,14 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/lib/schemas";
-import styles from "./ExampleForm.module.css";
+import { useAppStore } from "@/src/core/store/appStore";
+import { useLoginMutation } from "../api/useLoginMutation";
+import styles from "../styles/AuthForm.module.css";
 
-export function ExampleForm() {
+export function LoginForm() {
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const loginMutation = useLoginMutation();
+
   const {
     register,
     handleSubmit,
@@ -15,18 +20,20 @@ export function ExampleForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log(data);
-    // Traitez votre formulaire ici
+    await loginMutation.mutateAsync(data);
+    // TODO: appeler l’API login quand le backend sera branché
   };
+
+  const isPending = isSubmitting || loginMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={styles.field}>
-        <label htmlFor="email" className={styles.label}>
+        <label htmlFor="login-email" className={styles.label}>
           Email
         </label>
         <input
-          id="email"
+          id="login-email"
           type="email"
           {...register("email")}
           aria-invalid={errors.email ? "true" : "false"}
@@ -40,11 +47,11 @@ export function ExampleForm() {
       </div>
 
       <div className={styles.field}>
-        <label htmlFor="password" className={styles.label}>
-          Mot de passe
+        <label htmlFor="login-password" className={styles.label}>
+          Password
         </label>
         <input
-          id="password"
+          id="login-password"
           type="password"
           {...register("password")}
           aria-invalid={errors.password ? "true" : "false"}
@@ -59,14 +66,21 @@ export function ExampleForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className={`${styles.submit} ${
-          isSubmitting ? styles.submitDisabled : ""
-        }`}
+        disabled={isPending}
+        className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
       >
-        {isSubmitting ? "Envoi..." : "Se connecter"}
+        {isPending ? "Sending..." : "Sign in"}
       </button>
+
+      <div className={styles.switchContainer}>
+        <button
+          type="button"
+          className={styles.switchLink}
+          onClick={() => openAuthModal("register")}
+        >
+          No account? Sign up
+        </button>
+      </div>
     </form>
   );
 }
-
