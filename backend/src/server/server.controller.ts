@@ -1,6 +1,6 @@
 import { ServerService } from './server.service.js';
 import { ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFoundException, ConflictException } from '@nestjs/common';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { UpdateMemberRole } from './dto/update-member-role.dto.js';
 import { CreateServer } from './dto/create-server.dto.js';
@@ -15,10 +15,18 @@ export class ServerController {
         description: "Server created successfully",
         type: CreateServer
     })
-    createServer(@Body() data: CreateServer) {
+    async createServer(@Body() data: CreateServer) {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
         const userId = 1;
-        return this.serverService.createServer(data, userId);
+        const result = await this.serverService.createServer(data, userId);
+        if (result.isErr()) {
+            const error = result.unwrapErr();
+            if (error.includes('constraint')) {
+                throw new ConflictException(error);
+            }
+            throw new NotFoundException(error);
+        }
+        return result.unwrap();
     }
 
     @Get('/')
@@ -38,8 +46,12 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "Server with this ID does not exist"
     })
-    getServerById(@Param('id', ParseIntPipe) id: number) {
-        return this.serverService.getServerById(id);
+    async getServerById(@Param('id', ParseIntPipe) id: number) {
+        const result = await this.serverService.getServerById(id);
+        if (result.isErr()) {
+            throw new NotFoundException(result.unwrapErr());
+        }
+        return result.unwrap();
     }
 
     @Put('/:id')
@@ -50,8 +62,19 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "Server with this ID does not exist"
     })
-    updateServer(@Body() data: UpdateServer, @Param('id', ParseIntPipe) id: number) {
-        return this.serverService.updateServer(id, data);
+    @ApiConflictResponse({ 
+        description: "Unique constraint violation"
+    })
+    async updateServer(@Body() data: UpdateServer, @Param('id', ParseIntPipe) id: number) {
+        const result = await this.serverService.updateServer(id, data);
+        if (result.isErr()) {
+            const error = result.unwrapErr();
+            if (error.includes('constraint')) {
+                throw new ConflictException(error);
+            }
+            throw new NotFoundException(error);
+        }
+        return result.unwrap();
     }
 
     @Delete('/:id')
@@ -61,8 +84,12 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "Server with this ID does not exist"
     })
-    deleteServer(@Param('id', ParseIntPipe) id: number) {
-        return this.serverService.deleteServer(id);
+    async deleteServer(@Param('id', ParseIntPipe) id: number) {
+        const result = await this.serverService.deleteServer(id);
+        if (result.isErr()) {
+            throw new NotFoundException(result.unwrapErr());
+        }
+        return result.unwrap();
     }
 
     @Post('/:id/join')
@@ -75,10 +102,18 @@ export class ServerController {
     @ApiConflictResponse({ 
         description: "You are already a member of this server"
     })
-    joinServer(@Param('id', ParseIntPipe) serverId: number) {
+    async joinServer(@Param('id', ParseIntPipe) serverId: number) {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
         const userId = 1;
-        return this.serverService.joinServer(serverId, userId);
+        const result = await this.serverService.joinServer(serverId, userId);
+        if (result.isErr()) {
+            const error = result.unwrapErr();
+            if (error.includes('already') || error.includes('constraint')) {
+                throw new ConflictException(error);
+            }
+            throw new NotFoundException(error);
+        }
+        return result.unwrap();
     }
 
     @Delete('/:id/leave')
@@ -88,10 +123,14 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "You are not a member of this server"
     })
-    leaveServer(@Param('id', ParseIntPipe) serverId: number) {
+    async leaveServer(@Param('id', ParseIntPipe) serverId: number) {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
         const userId = 1;
-        return this.serverService.leaveServer(serverId, userId);
+        const result = await this.serverService.leaveServer(serverId, userId);
+        if (result.isErr()) {
+            throw new NotFoundException(result.unwrapErr());
+        }
+        return result.unwrap();
     }
 
     @Get('/:id/members')
@@ -101,8 +140,12 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "Server with this ID does not exist"
     })
-    getServerMembers(@Param('id', ParseIntPipe) serverId: number) {
-        return this.serverService.getServerMembers(serverId);
+    async getServerMembers(@Param('id', ParseIntPipe) serverId: number) {
+        const result = await this.serverService.getServerMembers(serverId);
+        if (result.isErr()) {
+            throw new NotFoundException(result.unwrapErr());
+        }
+        return result.unwrap();
     }
 
     @Put('/:id/members/:userId')
@@ -113,11 +156,15 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "This user is not a member of this server"
     })
-    updateMemberRole(
+    async updateMemberRole(
         @Param('id', ParseIntPipe) serverId: number,
         @Param('userId', ParseIntPipe) userId: number,
         @Body() data: UpdateMemberRole
     ) {
-        return this.serverService.updateMemberRole(serverId, userId, data.role);
+        const result = await this.serverService.updateMemberRole(serverId, userId, data.role);
+        if (result.isErr()) {
+            throw new NotFoundException(result.unwrapErr());
+        }
+        return result.unwrap();
     }
 }

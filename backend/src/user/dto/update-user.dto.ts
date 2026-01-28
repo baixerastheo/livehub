@@ -24,7 +24,7 @@ export class UpdateUser {
     @Matches(/^[a-zA-Z0-9_]+$/, {
         message: "The 'username' field must only contain letters, numbers and underscores!"
     })
-    username?: string;
+    nomUtilisateur?: string;
 
     @ApiProperty({
         description: "User password",
@@ -45,7 +45,7 @@ export class UpdateUser {
     @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
         message: "The 'password' field must contain at least one uppercase letter, one lowercase letter, one number and one special character (@$!%*?&)!"
     })
-    password?: string;
+    motDePasse?: string;
 
     @ApiProperty({
         description: "User status",
@@ -57,5 +57,5 @@ export class UpdateUser {
     @IsEnum(StatutUtilisateur, {
         message: "The 'status' field must be a valid value (EN_LIGNE, ABSENT, INVISIBLE, HORS_LIGNE)!"
     })
-    status?: StatutUtilisateur;
+    statut?: StatutUtilisateur;
 }

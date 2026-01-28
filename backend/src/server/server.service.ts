@@ -1,8 +1,9 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { Result, Ok, Err } from '../result.js';
 
 @Injectable()
 export class ServerService {
@@ -12,76 +13,102 @@ export class ServerService {
         return await this.prisma.serveur.findMany()
     }
 
-    async getServerById(id: number) {
-        const server = await this.prisma.serveur.findUnique({
-            where: { id },
-            include: {
-                membres: {
-                    include: {
-                        utilisateur: true
-                    }
-                },
-                canaux: true
+    async getServerById(id: number): Promise<Result<any, string>> {
+        try {
+            const server = await this.prisma.serveur.findUnique({
+                where: { id },
+                include: {
+                    membres: {
+                        include: {
+                            utilisateur: true
+                        }
+                    },
+                    canaux: true
+                }
+            });
+            if (!server) {
+                return Err(`Server with ID ${id} not found`);
             }
-        });
-        if (!server) {
-            throw new NotFoundException("Server with this ID does not exist!");
+            return Ok(server);
+        } catch (error) {
+            throw error; 
         }
-        return server;
     }
 
-    async createServer(data: CreateServer, creatorId: number) {
-        if (!data) {
-            throw new NotFoundException("Server data is required!");
+    async createServer(data: CreateServer, creatorId: number): Promise<Result<any, string>> {
+        try {
+            if (!data) {
+                return Err('Server data is required');
+            }
+
+            const server = await this.prisma.serveur.create({
+                data: {
+                    nom: data.name
+                }
+            });
+
+            await this.prisma.membreServeur.create({
+                data: {
+                    serveurId: server.id,
+                    utilisateurId: creatorId,
+                    role: Role.PROPRIETAIRE
+                }
+            });
+            
+            const result = await this.getServerById(server.id);
+            return result;
+        } catch (error: any) {
+            if (error.code === 'P2002') {
+                return Err('Unique constraint violation');
+            }
+            throw error;
         }
-
-        const server = await this.prisma.serveur.create({
-            data: {
-                nom: data.name
-            }
-        });
-
-        await this.prisma.membreServeur.create({
-            data: {
-                serveurId: server.id,
-                utilisateurId: creatorId,
-                role: Role.PROPRIETAIRE
-            }
-        });
-        return this.getServerById(server.id);
     }
 
-    async updateServer(id: number, data: UpdateServer) {
-        if (!data) {
-            throw new NotFoundException("Server data is required!");
+    async updateServer(id: number, data: UpdateServer): Promise<Result<any, string>> {
+        try {
+            if (!data) {
+                return Err('Server data is required');
+            }
+
+            const server = await this.prisma.serveur.findUnique({
+                where: { id }
+            });
+            if (!server) {
+                return Err(`Server with ID ${id} not found`);
+            }
+
+            const updateData: any = {};
+            if (data.name !== undefined) updateData.nom = data.name;
+
+            const updatedServer = await this.prisma.serveur.update({
+                where: { id },
+                data: updateData
+            });
+            return Ok(updatedServer);
+        } catch (error: any) {
+            if (error.code === 'P2002') {
+                return Err('Unique constraint violation');
+            }
+            throw error; 
         }
-
-        const server = await this.prisma.serveur.findUnique({
-            where: { id }
-        });
-        if (!server) {
-            throw new NotFoundException("Server with this ID does not exist, it cannot be updated!");
-        }
-
-        const updateData: any = {};
-        if (data.name !== undefined) updateData.nom = data.name;
-
-        return await this.prisma.serveur.update({
-            where: { id },
-            data: updateData
-        });
     }
 
-    async deleteServer(id: number) {
-        const server = await this.prisma.serveur.findUnique({
-            where: { id }
-        });
-        if (!server) {
-            throw new NotFoundException("Server with this ID does not exist, it cannot be deleted!");
+    async deleteServer(id: number): Promise<Result<any, string>> {
+        try {
+            const server = await this.prisma.serveur.findUnique({
+                where: { id }
+            });
+            if (!server) {
+                return Err(`Server with ID ${id} not found`);
+            }
+            const deletedServer = await this.prisma.serveur.delete({
+                where: { id }
+            });
+            return Ok(deletedServer);
+        } catch (error) {
+            throw error;
         }
-        return await this.prisma.serveur.delete({
-            where: { id }
-        });
     }
 
     async getUserServers(userId: number) {
@@ -103,101 +130,124 @@ export class ServerService {
         return members.map(m => m.serveur);
     }
 
-    async joinServer(serverId: number, userId: number) {
-        const server = await this.prisma.serveur.findUnique({
-            where: { id: serverId }
-        });
-        if (!server) {
-            throw new NotFoundException("Server with this ID does not exist!");
-        }
+    async joinServer(serverId: number, userId: number): Promise<Result<any, string>> {
+        try {
+            const server = await this.prisma.serveur.findUnique({
+                where: { id: serverId }
+            });
+            if (!server) {
+                return Err(`Server with ID ${serverId} not found`);
+            }
 
-        const member = await this.prisma.membreServeur.findUnique({
-            where: {
-                utilisateurId_serveurId: {
-                    utilisateurId: userId,
-                    serveurId: serverId
+            const member = await this.prisma.membreServeur.findUnique({
+                where: {
+                    utilisateurId_serveurId: {
+                        utilisateurId: userId,
+                        serveurId: serverId
+                    }
                 }
+            });
+            if (member) {
+                return Err('You are already a member of this server');
             }
-        });
-        if (member) {
-            throw new ConflictException("You are already a member of this server!");
-        }
 
-        return await this.prisma.membreServeur.create({
-            data: {
-                serveurId: serverId,
-                utilisateurId: userId,
-                role: Role.MEMBRE
-            },
-            include: {
-                serveur: true,
-                utilisateur: true
+            const newMember = await this.prisma.membreServeur.create({
+                data: {
+                    serveurId: serverId,
+                    utilisateurId: userId,
+                    role: Role.MEMBRE
+                },
+                include: {
+                    serveur: true,
+                    utilisateur: true
+                }
+            });
+            return Ok(newMember);
+        } catch (error: any) {
+            if (error.code === 'P2002') {
+                return Err('Unique constraint violation');
             }
-        });
+            throw error; 
+        }
     }
 
-    async leaveServer(serverId: number, userId: number) {
-        const member = await this.prisma.membreServeur.findUnique({
-            where: {
-                utilisateurId_serveurId: {
-                    utilisateurId: userId,
-                    serveurId: serverId
+    async leaveServer(serverId: number, userId: number): Promise<Result<any, string>> {
+        try {
+            const member = await this.prisma.membreServeur.findUnique({
+                where: {
+                    utilisateurId_serveurId: {
+                        utilisateurId: userId,
+                        serveurId: serverId
+                    }
                 }
+            });
+            if (!member) {
+                return Err('You are not a member of this server');
             }
-        });
-        if (!member) {
-            throw new NotFoundException("You are not a member of this server!");
+
+            // a faire : gerer le cas ou le proprio part
+
+            const deletedMember = await this.prisma.membreServeur.delete({
+                where: {
+                    id: member.id
+                }
+            });
+            return Ok(deletedMember);
+        } catch (error) {
+            throw error; 
         }
-
-        // a faire : gerer le cas ou le proprio part
-
-        return await this.prisma.membreServeur.delete({
-            where: {
-                id: member.id
-            }
-        });
     }
 
-    async getServerMembers(serverId: number) {
-        const server = await this.prisma.serveur.findUnique({
-            where: { id: serverId }
-        });
-        if (!server) {
-            throw new NotFoundException("Server with this ID does not exist!");
-        }
-
-        return await this.prisma.membreServeur.findMany({
-            where: { serveurId: serverId },
-            include: {
-                utilisateur: true
+    async getServerMembers(serverId: number): Promise<Result<any[], string>> {
+        try {
+            const server = await this.prisma.serveur.findUnique({
+                where: { id: serverId }
+            });
+            if (!server) {
+                return Err(`Server with ID ${serverId} not found`);
             }
-        });
+
+            const members = await this.prisma.membreServeur.findMany({
+                where: { serveurId: serverId },
+                include: {
+                    utilisateur: true
+                }
+            });
+            return Ok(members);
+        } catch (error) {
+            throw error;
+        }
     }
 
-    async updateMemberRole(serverId: number, userId: number, newRole: Role) {
-        const member = await this.prisma.membreServeur.findUnique({
-            where: {
-                utilisateurId_serveurId: {
-                    utilisateurId: userId,
-                    serveurId: serverId
+    async updateMemberRole(serverId: number, userId: number, newRole: Role): Promise<Result<any, string>> {
+        try {
+            const member = await this.prisma.membreServeur.findUnique({
+                where: {
+                    utilisateurId_serveurId: {
+                        utilisateurId: userId,
+                        serveurId: serverId
+                    }
                 }
+            });
+            if (!member) {
+                return Err('This user is not a member of this server');
             }
-        });
-        if (!member) {
-            throw new NotFoundException("This user is not a member of this server!");
-        }
 
-        return await this.prisma.membreServeur.update({
-            where: {
-                id: member.id
-            },
-            data: {
-                role: newRole
-            },
-            include: {
-                utilisateur: true,
-                serveur: true
-            }
-        });
+            const updatedMember = await this.prisma.membreServeur.update({
+                where: {
+                    id: member.id
+                },
+                data: {
+                    role: newRole
+                },
+                include: {
+                    utilisateur: true,
+                    serveur: true
+                }
+            });
+            return Ok(updatedMember);
+        } catch (error) {
+            throw error; 
+        }
     }
 }
