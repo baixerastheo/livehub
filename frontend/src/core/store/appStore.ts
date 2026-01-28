@@ -2,16 +2,22 @@ import { create } from "zustand";
 
 type AppState = {
   isSidebarOpen: boolean;
-  isLoginModalOpen: boolean;
+  authModal: {
+    isOpen: boolean;
+    mode: "login" | "register";
+  };
   toggleSidebar: () => void;
   closeSidebar: () => void;
-  openLoginModal: () => void;
-  closeLoginModal: () => void;
+  openAuthModal: (mode: "login" | "register") => void;
+  closeAuthModal: () => void;
 };
 
 export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
-  isLoginModalOpen: false,
+  authModal: {
+    isOpen: false,
+    mode: "login",
+  },
   toggleSidebar: () =>
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
@@ -20,13 +26,19 @@ export const useAppStore = create<AppState>((set) => ({
     set({
       isSidebarOpen: false,
     }),
-  openLoginModal: () =>
+  openAuthModal: (mode) =>
     set({
-      isLoginModalOpen: true,
+      authModal: {
+        isOpen: true,
+        mode,
+      },
     }),
-  closeLoginModal: () =>
+  closeAuthModal: () =>
     set({
-      isLoginModalOpen: false,
+      authModal: {
+        isOpen: false,
+        mode: "login",
+      },
     }),
 }));
 

@@ -1,0 +1,105 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, type RegisterFormData } from "@/lib/schemas";
+import { useAppStore } from "@/src/core/store/appStore";
+import { useRegisterMutation } from "../api/useRegisterMutation";
+import styles from "../styles/AuthForm.module.css";
+
+export function RegisterForm() {
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const registerMutation = useRegisterMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    const { confirmPassword: _, ...payload } = data;
+    await registerMutation.mutateAsync(payload);
+    // TODO: appeler l’API register quand le backend sera branché
+  };
+
+  const isPending = isSubmitting || registerMutation.isPending;
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      <div className={styles.field}>
+        <label htmlFor="register-email" className={styles.label}>
+          Email
+        </label>
+        <input
+          id="register-email"
+          type="email"
+          {...register("email")}
+          aria-invalid={errors.email ? "true" : "false"}
+          className={styles.input}
+        />
+        {errors.email && (
+          <span role="alert" className={styles.error}>
+            {errors.email.message}
+          </span>
+        )}
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="register-password" className={styles.label}>
+          Password
+        </label>
+        <input
+          id="register-password"
+          type="password"
+          {...register("password")}
+          aria-invalid={errors.password ? "true" : "false"}
+          className={styles.input}
+        />
+        {errors.password && (
+          <span role="alert" className={styles.error}>
+            {errors.password.message}
+          </span>
+        )}
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="register-confirmPassword" className={styles.label}>
+          Confirm password
+        </label>
+        <input
+          id="register-confirmPassword"
+          type="password"
+          {...register("confirmPassword")}
+          aria-invalid={errors.confirmPassword ? "true" : "false"}
+          className={styles.input}
+        />
+        {errors.confirmPassword && (
+          <span role="alert" className={styles.error}>
+            {errors.confirmPassword.message}
+          </span>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
+      >
+        {isPending ? "Sending..." : "Create account"}
+      </button>
+
+      <div className={styles.switchContainer}>
+        <button
+          type="button"
+          className={styles.switchLink}
+          onClick={() => openAuthModal("login")}
+        >
+          Already have an account? Sign in
+        </button>
+      </div>
+    </form>
+  );
+}

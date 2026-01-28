@@ -3,7 +3,7 @@
 import React from "react";
 import { Navbar } from "@/src/features/shared/components/navbar/Navbar";
 import { Sidebar } from "@/src/features/shared/components/sidebar/Sidebar";
-import { LoginModal } from "@/src/features/shared/components/modal/LoginModal";
+import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export function AppShell({ children }: AppShellProps) {
           {children}
         </div>
       </div>
-      <LoginModal />
+      <AuthModal />
     </>
   );
 }
