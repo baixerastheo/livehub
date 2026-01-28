@@ -20,13 +20,13 @@ export class ServerController {
         const userId = 1;
         const result = await this.serverService.createServer(data, userId);
         if (result.isErr()) {
-            const error = result.unwrapErr();
+            const error = result.error;
             if (error.includes('constraint')) {
                 throw new ConflictException(error);
             }
             throw new NotFoundException(error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Get('/')
@@ -49,9 +49,9 @@ export class ServerController {
     async getServerById(@Param('id', ParseIntPipe) id: number) {
         const result = await this.serverService.getServerById(id);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Put('/:id')
@@ -68,13 +68,13 @@ export class ServerController {
     async updateServer(@Body() data: UpdateServer, @Param('id', ParseIntPipe) id: number) {
         const result = await this.serverService.updateServer(id, data);
         if (result.isErr()) {
-            const error = result.unwrapErr();
+            const error = result.error;
             if (error.includes('constraint')) {
                 throw new ConflictException(error);
             }
             throw new NotFoundException(error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Delete('/:id')
@@ -87,9 +87,9 @@ export class ServerController {
     async deleteServer(@Param('id', ParseIntPipe) id: number) {
         const result = await this.serverService.deleteServer(id);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Post('/:id/join')
@@ -107,13 +107,13 @@ export class ServerController {
         const userId = 1;
         const result = await this.serverService.joinServer(serverId, userId);
         if (result.isErr()) {
-            const error = result.unwrapErr();
+            const error = result.error;
             if (error.includes('already') || error.includes('constraint')) {
                 throw new ConflictException(error);
             }
             throw new NotFoundException(error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Delete('/:id/leave')
@@ -128,9 +128,9 @@ export class ServerController {
         const userId = 1;
         const result = await this.serverService.leaveServer(serverId, userId);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Get('/:id/members')
@@ -143,9 +143,9 @@ export class ServerController {
     async getServerMembers(@Param('id', ParseIntPipe) serverId: number) {
         const result = await this.serverService.getServerMembers(serverId);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Put('/:id/members/:userId')
@@ -163,8 +163,8 @@ export class ServerController {
     ) {
         const result = await this.serverService.updateMemberRole(serverId, userId, data.role);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 }

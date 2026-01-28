@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { CreateUser } from './dto/create-user.dto.js';
 import { UpdateUser } from './dto/update-user.dto.js';
-import { Result, Ok, Err } from '../result.js';
+import { Result, ok, err } from '../result.js';
 
 
 @Injectable()
@@ -18,9 +18,9 @@ export class UserService {
             where: {id}
         });
         if (!user){
-            return Err("User with ID " + id + " not found");
+            return err("User with ID " + id + " not found");
         }
-        return Ok(user);
+        return ok(user);
     }
 
     async GetUserByEmail(email: string): Promise<Result<any, string>> {
@@ -28,9 +28,9 @@ export class UserService {
             where:{email}
         })
         if (!user){
-            return Err("User with Email " + email + " not found");
+            return err("User with Email " + email + " not found");
         }
-        return Ok(user);
+        return ok(user);
     }
 
     async GetUserByUsername(username: string): Promise<Result<any, string>>{
@@ -39,29 +39,25 @@ export class UserService {
         })
     
         if (!user){
-            return Err("User with username " + username + " not found");
+            return err("User with username " + username + " not found");
         }
-        return Ok(user);
+        return ok(user);
     }
 
     async createUser(data: CreateUser): Promise<Result<any, string>> {
         try {
-            if (!data) {
-                return Err('User data is required');
-            }
-
             const emailExist = await this.prisma.utilisateur.findUnique({
                 where: { email: data.email }
             });
             if (emailExist) {
-                return Err('Email already exists');
+                return err('Email already exists');
             }
 
             const usernameExist = await this.prisma.utilisateur.findUnique({
                 where: { nomUtilisateur: data.nomUtilisateur }
             });
             if (usernameExist) {
-                return Err('Username already exists');
+                return err('Username already exists');
             }
 
             const user = await this.prisma.utilisateur.create({
@@ -71,12 +67,11 @@ export class UserService {
                     motDePasse: data.motDePasse,
                     statut: data.statut
                 }
-                 
             });
-            return Ok(user);
+            return ok(user);
         } catch (error) {
             if (error.code === 'P2002') {
-                return Err('Unique constraint violation');
+                return err('Unique constraint violation');
             }
             throw error;
         }
@@ -87,25 +82,21 @@ export class UserService {
             where: {id}
         });
         if (!user){
-            return Err("User with ID " + id + " not found");
+            return err("User with ID " + id + " not found");
         }
         const deletedUser = await this.prisma.utilisateur.delete({
             where: {id}
         });
-        return Ok(deletedUser);
+        return ok(deletedUser);
     }
 
     async updateUser(id: number, data: UpdateUser): Promise<Result<any, string>> {
         try {
-            if (!data) {
-                return Err('User data is required');
-            }
-
             const user = await this.prisma.utilisateur.findUnique({
                 where: {id}
             });
             if (!user){
-                return Err("User with ID " + id + " not found");
+                return err("User with ID " + id + " not found");
             }
             const newUsername = data.nomUtilisateur;
             if (newUsername !== user.nomUtilisateur) {
@@ -113,7 +104,7 @@ export class UserService {
                     where: { nomUtilisateur: newUsername }
                 });
                 if (usernameExist) {
-                    return Err('Username already exists');
+                    return err('Username already exists');
                 }
             }
 
@@ -125,10 +116,10 @@ export class UserService {
                     statut: data.statut
                 }
             });
-            return Ok(updatedUser);
+            return ok(updatedUser);
         } catch (error) {
             if (error.code === 'P2002') {
-                return Err('Unique constraint violation');
+                return err('Unique constraint violation');
             }
             throw error; 
         }

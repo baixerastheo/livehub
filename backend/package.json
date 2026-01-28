@@ -36,7 +36,7 @@
     "bcrypt": "^5.1.1",
     "class-validator": "^0.14.3",
     "dotenv": "^16.6.1",
-    "oxide.ts": "^1.0.0",
+    "neverthrow": "^7.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.17.2",

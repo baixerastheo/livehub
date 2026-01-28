@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service.js';
 import { CreateServer } from './dto/create-server.dto.js';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
-import { Result, Ok, Err } from '../result.js';
+import { Result, ok, err } from '../result.js';
 
 
 @Injectable()
@@ -19,16 +19,13 @@ export class ServerService {
             where: { id }
         });
         if (!server) {
-            return Err('Server with ID' + id + 'not found');
+            return err(`Server with ID ${id} not found`);
         }
-        return Ok(server);
+        return ok(server);
     }
 
     async createServer(data: CreateServer, creatorId: number): Promise<Result<any, string>> {
         try {
-            if (!data) {
-                return Err('Server data is required');
-            }
 
             const server = await this.prisma.serveur.create({
                 data: {
@@ -44,11 +41,10 @@ export class ServerService {
                 }
             });
             
-            const result = await this.getServerById(server.id);
-            return result;
+            return ok(server);
         } catch (error: any) {
             if (error?.code === 'P2002') {
-                return Err('Unique constraint violation');
+                return err('Unique constraint violation');
             }
             throw error;
         }
@@ -56,15 +52,11 @@ export class ServerService {
 
     async updateServer(id: number, data: UpdateServer): Promise<Result<any, string>> {
         try {
-            if (!data) {
-                return Err('Server data is required');
-            }
-
             const server = await this.prisma.serveur.findUnique({
                 where: { id }
             });
             if (!server) {
-                return Err('Server with ID '+ id +' not found');
+                return err('Server with ID '+ id +' not found');
             }
             const updatedServer = await this.prisma.serveur.update({
                 where: { id },
@@ -72,10 +64,10 @@ export class ServerService {
                     nom: data.name
                 }
             });
-            return Ok(updatedServer);
+            return ok(updatedServer);
         } catch (error: any) {
             if (error?.code === 'P2002') {
-                return Err('Unique constraint violation');
+                return err('Unique constraint violation');
             }
             throw error; 
         }
@@ -86,12 +78,12 @@ export class ServerService {
             where: { id }
         });
         if (!server) {
-            return Err(`Server with ID ${id} not found`);
+            return err(`Server with ID ${id} not found`);
         }
         const deletedServer = await this.prisma.serveur.delete({
             where: { id }
         });
-        return Ok(deletedServer);
+        return ok(deletedServer);
     }
 
     async getUserServers(userId: number) {
@@ -119,7 +111,7 @@ export class ServerService {
                 where: { id: serverId }
             });
             if (!server) {
-                return Err(`Server with ID ${serverId} not found`);
+                return err(`Server with ID ${serverId} not found`);
             }
 
             const member = await this.prisma.membreServeur.findUnique({
@@ -131,7 +123,7 @@ export class ServerService {
                 }
             });
             if (member) {
-                return Err('You are already a member of this server');
+                return err('You are already a member of this server');
             }
 
             const newMember = await this.prisma.membreServeur.create({
@@ -145,10 +137,10 @@ export class ServerService {
                     utilisateur: true
                 }
             });
-            return Ok(newMember);
+            return ok(newMember);
         } catch (error) {
             if (error.code === 'P2002') {
-                return Err('Unique constraint violation');
+                return err('Unique constraint violation');
             }
             throw error; 
         }
@@ -164,7 +156,7 @@ export class ServerService {
             }
         });
         if (!member) {
-            return Err('You are not a member of this server');
+            return err('You are not a member of this server');
         }
 
         // a faire : gerer le cas ou le proprio part
@@ -174,7 +166,7 @@ export class ServerService {
                 id: member.id
             }
         });
-        return Ok(deletedMember);
+        return ok(deletedMember);
     }
 
     async getServerMembers(serverId: number): Promise<Result<any[], string>> {
@@ -182,7 +174,7 @@ export class ServerService {
             where: { id: serverId }
         });
         if (!server) {
-            return Err(`Server with ID ${serverId} not found`);
+            return err(`Server with ID ${serverId} not found`);
         }
 
         const members = await this.prisma.membreServeur.findMany({
@@ -191,38 +183,34 @@ export class ServerService {
                 utilisateur: true
             }
         });
-        return Ok(members);
+        return ok(members);
     }
 
     async updateMemberRole(serverId: number, userId: number, newRole: Role): Promise<Result<any, string>> {
-        try {
-            const member = await this.prisma.membreServeur.findUnique({
-                where: {
-                    utilisateurId_serveurId: {
-                        utilisateurId: userId,
-                        serveurId: serverId
-                    }
+        const member = await this.prisma.membreServeur.findUnique({
+            where: {
+                utilisateurId_serveurId: {
+                    utilisateurId: userId,
+                    serveurId: serverId
                 }
-            });
-            if (!member) {
-                return Err('This user is not a member of this server');
             }
-
-            const updatedMember = await this.prisma.membreServeur.update({
-                where: {
-                    id: member.id
-                },
-                data: {
-                    role: newRole
-                },
-                include: {
-                    utilisateur: true,
-                    serveur: true
-                }
-            });
-            return Ok(updatedMember);
-        } catch (error) {
-            throw error; 
+        });
+        if (!member) {
+            return err('This user is not a member of this server');
         }
+
+        const updatedMember = await this.prisma.membreServeur.update({
+            where: {
+                id: member.id
+            },
+            data: {
+                role: newRole
+            },
+            include: {
+                utilisateur: true,
+                serveur: true
+            }
+        });
+        return ok(updatedMember);
     }
 }

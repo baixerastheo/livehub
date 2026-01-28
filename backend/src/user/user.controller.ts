@@ -27,9 +27,9 @@ export class UserController {
     async GetUserByEmail(@Param('email') email: string){
         const result = await this.userService.GetUserByEmail(email);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
 
@@ -43,9 +43,9 @@ export class UserController {
     async GetUserByUsername(@Param('username') username: string){
         const result = await this.userService.GetUserByUsername(username);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Get('/:id')
@@ -58,9 +58,9 @@ export class UserController {
     async getUserById(@Param('id', ParseIntPipe) id: number) {
         const result = await this.userService.getUserById(id);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Delete('/:id')
@@ -73,9 +73,9 @@ export class UserController {
     async deleteUser(@Param('id', ParseIntPipe) id: number){
         const result = await this.userService.deleteUser(id);
         if (result.isErr()) {
-            throw new NotFoundException(result.unwrapErr());
+            throw new NotFoundException(result.error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Post('/')
@@ -92,7 +92,7 @@ export class UserController {
     async createUser(@Body() data: CreateUser){
         const result = await this.userService.createUser(data);
         if (result.isErr()) {
-            const error = result.unwrapErr();
+            const error = result.error;
             if (error.includes('Email') || error.includes('Username') || error.includes('constraint')) {
                 throw new ConflictException(error);
             }
@@ -101,7 +101,7 @@ export class UserController {
             }
             throw new InternalServerErrorException(error);
         }
-        return result.unwrap();
+        return result.value;
     }
 
     @Put('/:id')
@@ -121,7 +121,7 @@ export class UserController {
     async updateUser(@Body() data: UpdateUser, @Param('id', ParseIntPipe) id: number){
         const result = await this.userService.updateUser(id, data);
         if (result.isErr()) {
-            const error = result.unwrapErr();
+            const error = result.error;
             if (error.includes('Username') || error.includes('constraint')) {
                 throw new ConflictException(error);
             }
@@ -133,9 +133,6 @@ export class UserController {
             }
             throw new InternalServerErrorException(error);
         }
-        return result.unwrap();
+        return result.value;
     }
-
-    
-
 }
