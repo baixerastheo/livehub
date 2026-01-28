@@ -1,6 +1,6 @@
 import { UserService } from './user.service.js';
-import { ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse, ApiBadRequestResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFoundException, ConflictException,BadRequestException,InternalServerErrorException} from '@nestjs/common';
+import { ApiCreatedResponse, ApiOkResponse, ApiNotFoundResponse, ApiConflictResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, NotFoundException, ConflictException } from '@nestjs/common';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { CreateUser } from './dto/create-user.dto.js';
 
@@ -12,8 +12,8 @@ export class UserController {
     @ApiOkResponse({ 
         description: "All users retrieved successfully"
     })
-    async getAllUsers(){
-        return await this.userService.getAllUsers();
+    getAllUsers(){
+        return this.userService.getAllUsers();
     }
 
     @Get('/email/:email')
@@ -30,7 +30,6 @@ export class UserController {
         }
         return result.value;
     }
-
 
     @Get('/username/:username')
     @ApiOkResponse({ 
@@ -85,20 +84,10 @@ export class UserController {
     @ApiConflictResponse({ 
         description: "Email or username already exists"
     })
-    @ApiBadRequestResponse({
-        description: "Invalid user data"
-    })
     async createUser(@Body() data: CreateUser){
         const result = await this.userService.createUser(data);
         if (result.isErr()) {
-            const error = result.error;
-            if (error.includes('Email') || error.includes('Username') || error.includes('constraint')) {
-                throw new ConflictException(error);
-            }
-            if (error.includes('required')) {
-                throw new BadRequestException(error);
-            }
-            throw new InternalServerErrorException(error);
+            throw new ConflictException(result.error);
         }
         return result.value;
     }
@@ -114,23 +103,10 @@ export class UserController {
     @ApiConflictResponse({ 
         description: "Username already exists"
     })
-    @ApiBadRequestResponse({
-        description: "Invalid user data"
-    })
     async updateUser(@Body() data: UpdateUser, @Param('id', ParseIntPipe) id: number){
         const result = await this.userService.updateUser(id, data);
         if (result.isErr()) {
-            const error = result.error;
-            if (error.includes('Username') || error.includes('constraint')) {
-                throw new ConflictException(error);
-            }
-            if (error.includes('not found')) {
-                throw new NotFoundException(error);
-            }
-            if (error.includes('required')) {
-                throw new BadRequestException(error);
-            }
-            throw new InternalServerErrorException(error);
+            throw new NotFoundException(result.error);
         }
         return result.value;
     }

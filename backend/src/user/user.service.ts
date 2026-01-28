@@ -8,7 +8,7 @@ import { ok, err } from '../result.js';
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async getAllUsers(){
+    getAllUsers(){
         return this.prisma.utilisateur.findMany();
     }
 
@@ -36,7 +36,6 @@ export class UserService {
         const user = await this.prisma.utilisateur.findUnique({
             where:{nomUtilisateur: username}
         });
-    
         if (!user){
             return err("User with username " + username + " not found");
         }
@@ -44,37 +43,30 @@ export class UserService {
     }
 
     async createUser(data: CreateUser) {
-        try {
-            const emailExist = await this.prisma.utilisateur.findUnique({
-                where: { email: data.email }
-            });
-            if (emailExist) {
-                return err('Email already exists');
-            }
+        const emailExist = await this.prisma.utilisateur.findUnique({
+            where: { email: data.email }
+        });
+        if (emailExist) {
+            return err('Email already exists');
+        }
 
-            const usernameExist = await this.prisma.utilisateur.findUnique({
-                where: { nomUtilisateur: data.nomUtilisateur }
-            });
-            if (usernameExist) {
-                return err('Username already exists');
-            }
+        const usernameExist = await this.prisma.utilisateur.findUnique({
+            where: { nomUtilisateur: data.nomUtilisateur }
+        });
+        if (usernameExist) {
+            return err('Username already exists');
+        }
 
-            const user = await this.prisma.utilisateur.create({
-                data: {
-                    nomUtilisateur: data.nomUtilisateur,
-                    email: data.email,
-                    motDePasse: data.motDePasse,
-                    statut: data.statut
-                }
-            });
-            return ok(user);
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-                return err('Unique constraint violation');
+        const user = await this.prisma.utilisateur.create({
+            data: {
+                nomUtilisateur: data.nomUtilisateur,
+                email: data.email,
+                motDePasse: data.motDePasse,
+                statut: data.statut
             }
-            throw error;
+        });
+        return ok(user);
     }
-}
 
     async deleteUser(id: number) {
         const user = await this.prisma.utilisateur.findUnique({
@@ -90,37 +82,30 @@ export class UserService {
     }
 
     async updateUser(id: number, data: UpdateUser) {
-        try {
-            const user = await this.prisma.utilisateur.findUnique({
-                where: {id}
-            });
-            if (!user){
-                return err("User with ID " + id + " not found");
-            }
-            const newUsername = data.nomUtilisateur;
-            if (newUsername !== user.nomUtilisateur) {
-                const usernameExist = await this.prisma.utilisateur.findUnique({
-                    where: { nomUtilisateur: newUsername }
-                });
-                if (usernameExist) {
-                    return err('Username already exists');
-                }
-            }
-
-            const updatedUser = await this.prisma.utilisateur.update({
-                where: {id}, 
-                data: {
-                    nomUtilisateur: data.nomUtilisateur,
-                    motDePasse: data.motDePasse,
-                    statut: data.statut
-                }
-            });
-            return ok(updatedUser);
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-                return err('Unique constraint violation');
-            }
-            throw error; 
+        const user = await this.prisma.utilisateur.findUnique({
+            where: {id}
+        });
+        if (!user){
+            return err("User with ID " + id + " not found");
         }
+        const newUsername = data.nomUtilisateur;
+        if (newUsername !== user.nomUtilisateur) {
+            const usernameExist = await this.prisma.utilisateur.findUnique({
+                where: { nomUtilisateur: newUsername }
+            });
+            if (usernameExist) {
+                return err('Username already exists');
+            }
+        }
+
+        const updatedUser = await this.prisma.utilisateur.update({
+            where: {id}, 
+            data: {
+                nomUtilisateur: data.nomUtilisateur,
+                motDePasse: data.motDePasse,
+                statut: data.statut
+            }
+        });
+        return ok(updatedUser);
     }
 }
