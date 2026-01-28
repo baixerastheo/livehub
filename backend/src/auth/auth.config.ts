@@ -50,10 +50,7 @@ export function getJwtDefaultExpiresIn(): string {
   return process.env.JWT_EXPIRES_IN ?? '1d';
 }
 
-export function getRefreshTokenSameSite():
-  | 'lax'
-  | 'strict'
-  | 'none' {
+export function getRefreshTokenSameSite(): 'lax' | 'strict' | 'none' {
   const fromEnv = process.env.JWT_REFRESH_SAMESITE?.toLowerCase();
 
   if (fromEnv === 'lax' || fromEnv === 'strict' || fromEnv === 'none') {

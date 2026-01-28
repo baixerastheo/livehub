@@ -23,7 +23,9 @@ import type { AuthenticatedUser } from './types.js';
 import { getRefreshTokenSameSite } from './auth.config.js';
 
 type RequestWithUser = ExpressRequest & { user: AuthenticatedUser };
-type RequestWithCookies = ExpressRequest & { cookies?: Record<string, string> };
+type RequestWithCookies = Omit<ExpressRequest, 'cookies'> & {
+  cookies?: Record<string, string>;
+};
 
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 const CSRF_COOKIE_NAME = 'csrf_token';
@@ -81,9 +83,8 @@ function clearRefreshTokenCookie(res: Response): void {
 
 function assertValidCsrf(req: RequestWithCookies): void {
   const csrfCookie = req.cookies?.[CSRF_COOKIE_NAME] ?? '';
-  const headerValue = req.headers[CSRF_HEADER_NAME] ??
-    req.headers[CSRF_HEADER_NAME.toLowerCase()];
-  const csrfHeader = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+  // Use Express' typed accessor to avoid `any` headers indexing.
+  const csrfHeader = req.get(CSRF_HEADER_NAME) ?? '';
 
   if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
     throw new ForbiddenException('Invalid CSRF token');
@@ -137,7 +138,6 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     assertValidCsrf(req);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const refreshToken: string = req.cookies?.refresh_token ?? '';
 
     const result = await this.authService.refreshTokens(refreshToken);

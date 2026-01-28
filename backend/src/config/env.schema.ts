@@ -14,9 +14,7 @@ export const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().optional(),
   JWT_EXPIRES_IN: z.string().optional(),
 
-  JWT_REFRESH_SAMESITE: z
-    .enum(['lax', 'strict', 'none'])
-    .optional(),
+  JWT_REFRESH_SAMESITE: z.enum(['lax', 'strict', 'none']).optional(),
 });
 
 export type EnvVars = z.infer<typeof envSchema>;
@@ -36,4 +34,3 @@ export function validateEnv(
 
   return result.data;
 }
-

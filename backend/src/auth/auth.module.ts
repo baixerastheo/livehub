@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
-import {
-  getJwtAccessSecret,
-  getJwtDefaultExpiresIn,
-} from './auth.config.js';
+import { getJwtAccessSecret, getJwtDefaultExpiresIn } from './auth.config.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { UserModule } from '../user/user.module.js';

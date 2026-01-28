@@ -87,7 +87,10 @@ export class AuthService {
     });
   }
 
-  login(user: AuthenticatedUser): { accessToken: string; refreshToken: string } {
+  login(user: AuthenticatedUser): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     const accessToken = this.getAccessToken(user);
     const refreshToken = this.getRefreshToken(user);
     return { accessToken, refreshToken };

@@ -20,4 +20,3 @@ if (envPath) {
 } else {
   dotenv.config();
 }
-
