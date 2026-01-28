@@ -9,8 +9,8 @@ import { ok, err } from '../result.js';
 export class ServerService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async getAllServers() {
-        return await this.prisma.serveur.findMany();
+    getAllServers() {
+        return this.prisma.serveur.findMany();
     }
 
     async getServerById(id: number) {
@@ -24,52 +24,37 @@ export class ServerService {
     }
 
     async createServer(data: CreateServer, creatorId: number) {
-        try {
-            const server = await this.prisma.serveur.create({
-                data: {
-                    nom: data.name
-                }
-            });
-
-            await this.prisma.membreServeur.create({
-                data: {
-                    serveurId: server.id,
-                    utilisateurId: creatorId,
-                    role: Role.PROPRIETAIRE
-                }
-            });
-            
-            return ok(server);
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-                return err('Unique constraint violation');
+        const server = await this.prisma.serveur.create({
+            data: {
+                nom: data.name
             }
-            throw error;
-        }
+        });
+
+        await this.prisma.membreServeur.create({
+            data: {
+                serveurId: server.id,
+                utilisateurId: creatorId,
+                role: Role.PROPRIETAIRE
+            }
+        });
+        return ok(server);
     }
 
     async updateServer(id: number, data: UpdateServer) {
-        try {
-            const server = await this.prisma.serveur.findUnique({
-                where: { id }
-            });
-            if (!server) {
-                return err('Server with ID '+ id +' not found');
+        const server = await this.prisma.serveur.findUnique({
+            where: { id }
+        });
+        if (!server) {
+            return err('Server with ID '+ id +' not found');
+        }
+        const updatedServer = await this.prisma.serveur.update({
+            where: { id },
+            data:{
+                nom: data.name
             }
-            const updatedServer = await this.prisma.serveur.update({
-                where: { id },
-                data:{
-                    nom: data.name
-                }
-            });
-            return ok(updatedServer);
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-                return err('Unique constraint violation');
-            }
-            throw error;
+        });
+        return ok(updatedServer);
     }
-}
 
     async deleteServer(id: number) {
         const server = await this.prisma.serveur.findUnique({
@@ -104,44 +89,37 @@ export class ServerService {
     }
 
     async joinServer(serverId: number, userId: number) {
-        try {
-            const server = await this.prisma.serveur.findUnique({
-                where: { id: serverId }
-            });
-            if (!server) {
-                return err(`Server with ID ${serverId} not found`);
-            }
-
-            const member = await this.prisma.membreServeur.findUnique({
-                where: {
-                    utilisateurId_serveurId: {
-                        utilisateurId: userId,
-                        serveurId: serverId
-                    }
-                }
-            });
-            if (member) {
-                return err('You are already a member of this server');
-            }
-
-            const newMember = await this.prisma.membreServeur.create({
-                data: {
-                    serveurId: serverId,
-                    utilisateurId: userId,
-                    role: Role.MEMBRE
-                },
-                include: {
-                    serveur: true,
-                    utilisateur: true
-                }
-            });
-            return ok(newMember);
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-                return err('Unique constraint violation');
-            }
-            throw error; 
+        const server = await this.prisma.serveur.findUnique({
+            where: { id: serverId }
+        });
+        if (!server) {
+            return err(`Server with ID ${serverId} not found`);
         }
+
+        const member = await this.prisma.membreServeur.findUnique({
+            where: {
+                utilisateurId_serveurId: {
+                    utilisateurId: userId,
+                    serveurId: serverId
+                }
+            }
+        });
+        if (member) {
+            return err('You are already a member of this server');
+        }
+
+        const newMember = await this.prisma.membreServeur.create({
+            data: {
+                serveurId: serverId,
+                utilisateurId: userId,
+                role: Role.MEMBRE
+            },
+            include: {
+                serveur: true,
+                utilisateur: true
+            }
+        });
+        return ok(newMember);
     }
 
     async leaveServer(serverId: number, userId: number) {

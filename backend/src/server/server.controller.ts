@@ -5,7 +5,6 @@ import { UpdateServer } from './dto/update-server.dto.js';
 import { UpdateMemberRole } from './dto/update-member-role.dto.js';
 import { CreateServer } from './dto/create-server.dto.js';
 
-
 @Controller('servers')
 export class ServerController {
     constructor(private readonly serverService: ServerService) {}
@@ -20,11 +19,7 @@ export class ServerController {
         const userId = 1;
         const result = await this.serverService.createServer(data, userId);
         if (result.isErr()) {
-            const error = result.error;
-            if (error.includes('constraint')) {
-                throw new ConflictException(error);
-            }
-            throw new NotFoundException(error);
+            throw new NotFoundException(result.error);
         }
         return result.value;
     }
@@ -62,17 +57,10 @@ export class ServerController {
     @ApiNotFoundResponse({ 
         description: "Server with this ID does not exist"
     })
-    @ApiConflictResponse({ 
-        description: "Unique constraint violation"
-    })
     async updateServer(@Body() data: UpdateServer, @Param('id', ParseIntPipe) id: number) {
         const result = await this.serverService.updateServer(id, data);
         if (result.isErr()) {
-            const error = result.error;
-            if (error.includes('constraint')) {
-                throw new ConflictException(error);
-            }
-            throw new NotFoundException(error);
+            throw new NotFoundException(result.error);
         }
         return result.value;
     }
@@ -107,11 +95,7 @@ export class ServerController {
         const userId = 1;
         const result = await this.serverService.joinServer(serverId, userId);
         if (result.isErr()) {
-            const error = result.error;
-            if (error.includes('already') || error.includes('constraint')) {
-                throw new ConflictException(error);
-            }
-            throw new NotFoundException(error);
+            throw new NotFoundException(result.error);
         }
         return result.value;
     }
