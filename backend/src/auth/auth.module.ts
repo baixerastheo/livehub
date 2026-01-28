@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
+import { getJwtAccessSecret, getJwtDefaultExpiresIn } from './auth.config.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { UserModule } from '../user/user.module.js';
@@ -11,8 +12,8 @@ import { LocalStrategy } from './strategy/local.strategy.js';
   imports: [
     UserModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'changeme',
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '1d' },
+      secret: getJwtAccessSecret(),
+      signOptions: { expiresIn: getJwtDefaultExpiresIn() },
     }),
   ],
   controllers: [AuthController],

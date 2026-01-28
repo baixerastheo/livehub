@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useRegisterMutation } from "../api/useRegisterMutation";
+import { useRegisterMutation } from "@/src/features/auth/api/useRegisterMutation";
 import styles from "../styles/AuthForm.module.css";
 
 export function RegisterForm() {
@@ -22,13 +22,30 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     const { confirmPassword: _, ...payload } = data;
     await registerMutation.mutateAsync(payload);
-    // TODO: appeler l’API register quand le backend sera branché
   };
 
   const isPending = isSubmitting || registerMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      <div className={styles.field}>
+        <label htmlFor="register-username" className={styles.label}>
+          Username
+        </label>
+        <input
+          id="register-username"
+          type="text"
+          {...register("username")}
+          aria-invalid={errors.username ? "true" : "false"}
+          className={styles.input}
+        />
+        {errors.username && (
+          <span role="alert" className={styles.error}>
+            {errors.username.message}
+          </span>
+        )}
+      </div>
+
       <div className={styles.field}>
         <label htmlFor="register-email" className={styles.label}>
           Email

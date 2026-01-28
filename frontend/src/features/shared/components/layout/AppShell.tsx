@@ -4,12 +4,15 @@ import React from "react";
 import { Navbar } from "@/src/features/shared/components/navbar/Navbar";
 import { Sidebar } from "@/src/features/shared/components/sidebar/Sidebar";
 import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
+import { useAuthBootstrap } from "@/src/features/auth/hooks/useAuthBootstrap";
 
 type AppShellProps = {
   children: React.ReactNode;
 };
 
 export function AppShell({ children }: AppShellProps) {
+  useAuthBootstrap();
+
   return (
     <>
       <Navbar />

@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-
 import type { Utilisateur as User } from '../../generated/prisma/client.js';
+import type { AuthenticatedUser } from './types.js';
+import {
+  getJwtAccessSecret,
+  getJwtAccessExpiresIn,
+  getJwtRefreshSecret,
+  getJwtRefreshExpiresIn,
+} from './auth.config.js';
 import { UserService } from '../user/user.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { Result, ok, err } from '../result.js';
@@ -15,17 +21,17 @@ export class AuthService {
   ) {}
 
   async validateUser(
-    identifier: string,
+    login: string,
     password: string,
   ): Promise<Result<Omit<User, 'motDePasse'>, string>> {
-    const emailResult = await this.findUserByEmail(identifier);
+    const emailResult = await this.findUserByEmail(login);
 
     const userResult = emailResult.isOk()
       ? emailResult
-      : await this.findUserByUsername(identifier);
+      : await this.findUserByUsername(login);
 
     if (userResult.isErr()) {
-      return err(`User with identifier ${identifier} not found`);
+      return err('Invalid credentials');
     }
 
     const user = userResult.unwrapOr(null as never);
@@ -43,16 +49,14 @@ export class AuthService {
       .mapErr(() => 'Invalid password');
   }
 
-  private async findUserByEmail(
-    identifier: string,
-  ): Promise<Result<User, string>> {
-    return this.usersService.GetUserByEmail(identifier);
+  private async findUserByEmail(login: string): Promise<Result<User, string>> {
+    return this.usersService.GetUserByEmail(login);
   }
 
   private async findUserByUsername(
-    identifier: string,
+    login: string,
   ): Promise<Result<User, string>> {
-    return this.usersService.GetUserByUsername(identifier);
+    return this.usersService.GetUserByUsername(login);
   }
 
   private async validatePassword(
@@ -67,27 +71,26 @@ export class AuthService {
     }
   }
 
-  private getAccessToken(user: User): string {
+  private getAccessToken(user: AuthenticatedUser): string {
     const payload = { sub: user.id, email: user.email, status: user.statut };
     return this.jwtService.sign(payload, {
-      secret:
-        process.env.JWT_ACCESS_SECRET ?? process.env.JWT_SECRET ?? 'changeme',
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+      secret: getJwtAccessSecret(),
+      expiresIn: getJwtAccessExpiresIn(),
     });
   }
 
-  private getRefreshToken(user: User): string {
+  private getRefreshToken(user: AuthenticatedUser): string {
     const payload = { sub: user.id, email: user.email };
     return this.jwtService.sign(payload, {
-      secret:
-        process.env.JWT_REFRESH_SECRET ??
-        process.env.JWT_SECRET ??
-        'changeme_refresh',
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
+      secret: getJwtRefreshSecret(),
+      expiresIn: getJwtRefreshExpiresIn(),
     });
   }
 
-  login(user: User): { accessToken: string; refreshToken: string } {
+  login(user: AuthenticatedUser): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     const accessToken = this.getAccessToken(user);
     const refreshToken = this.getRefreshToken(user);
     return { accessToken, refreshToken };
@@ -131,10 +134,7 @@ export class AuthService {
         sub: number;
         email: string;
       }>(refreshToken, {
-        secret:
-          process.env.JWT_REFRESH_SECRET ??
-          process.env.JWT_SECRET ??
-          'changeme_refresh',
+        secret: getJwtRefreshSecret(),
       });
 
       const userResult = await this.usersService.getUserById(payload.sub);
