@@ -4,7 +4,7 @@ import { useAppStore } from "@/src/core/store/appStore";
 export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
   const closeSidebar = useAppStore((state) => state.closeSidebar);
-  const openLoginModal = useAppStore((state) => state.openLoginModal);
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
 
   return (
     <>
@@ -14,7 +14,7 @@ export function Sidebar() {
         <button
           type="button"
           className={styles.closeButton}
-          aria-label="Fermer la liste des conversations"
+          aria-label="Close conversation list"
           onClick={closeSidebar}
         >
           ×
@@ -29,7 +29,7 @@ export function Sidebar() {
         <button
           type="button"
           className={styles.startButton}
-          onClick={openLoginModal}
+          onClick={() => openAuthModal("login")}
         >
           Start conversation
         </button>
@@ -38,7 +38,7 @@ export function Sidebar() {
         <button
           type="button"
           className={styles.sidebarBackdrop}
-          aria-label="Fermer la liste des conversations"
+          aria-label="Close conversation list"
           onClick={closeSidebar}
         />
       )}

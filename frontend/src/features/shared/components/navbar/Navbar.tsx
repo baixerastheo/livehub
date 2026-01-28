@@ -13,7 +13,7 @@ export function Navbar() {
         <button
           type="button"
           className={styles.menuButton}
-          aria-label="Afficher/masquer la liste des conversations"
+          aria-label="Toggle conversation list"
           onClick={toggleSidebar}
         >
           <span aria-hidden="true">
