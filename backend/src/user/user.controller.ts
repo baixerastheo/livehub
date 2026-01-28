@@ -24,13 +24,13 @@ import { CreateUser } from './dto/create-user.dto.js';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/')
-  @ApiOkResponse({
-    description: 'All users retrieved successfully',
-  })
-  getAllUsers() {
-    return this.userService.getAllUsers();
-  }
+    @Get('/')
+    @ApiOkResponse({ 
+        description: "All users retrieved successfully"
+    })
+    async getAllUsers(){
+        return await this.userService.getAllUsers();
+    }
 
   @Get('/email/:email')
   @ApiOkResponse({

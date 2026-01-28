@@ -7,18 +7,10 @@ import { ok, err } from '../result.js';
 
 @Injectable()
 export class ServerService {
-  constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) {}
 
-  getAllServers() {
-    return this.prisma.serveur.findMany();
-  }
-
-  async getServerById(id: number) {
-    const server = await this.prisma.serveur.findUnique({
-      where: { id },
-    });
-    if (!server) {
-      return err('Server with ID ' + id + ' not found');
+    async getAllServers() {
+        return await this.prisma.serveur.findMany();
     }
     return ok(server);
   }
@@ -96,43 +88,48 @@ export class ServerService {
       return err(`Server with ID ${serverId} not found`);
     }
 
-    const member = await this.prisma.membreServeur.findUnique({
-      where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
-          serveurId: serverId,
-        },
-      },
-    });
-    if (member) {
-      return err('You are already a member of this server');
+    async getUserServers(userId: number) {
+        const members = await this.prisma.membreServeur.findMany({
+            where: { utilisateurId: userId },
+            include: {
+                serveur: true
+            }
+        });
+        return members
     }
 
-    const newMember = await this.prisma.membreServeur.create({
-      data: {
-        serveurId: serverId,
-        utilisateurId: userId,
-        role: Role.MEMBRE,
-      },
-      include: {
-        serveur: true,
-        utilisateur: true,
-      },
-    });
-    return ok(newMember);
-  }
+    async joinServer(serverId: number, userId: number) {
+        const server = await this.prisma.serveur.findUnique({
+            where: { id: serverId }
+        });
+        if (!server) {
+            return err('Server with ID' + serverId +'not found');
+        }
 
-  async leaveServer(serverId: number, userId: number) {
-    const member = await this.prisma.membreServeur.findUnique({
-      where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
-          serveurId: serverId,
-        },
-      },
-    });
-    if (!member) {
-      return err('You are not a member of this server');
+        const member = await this.prisma.membreServeur.findUnique({
+            where: {
+                utilisateurId_serveurId: {
+                    utilisateurId: userId,
+                    serveurId: serverId
+                }
+            }
+        });
+        if (member) {
+            return err('You are already a member of this server');
+        }
+
+        const newMember = await this.prisma.membreServeur.create({
+            data: {
+                serveurId: serverId,
+                utilisateurId: userId,
+                role: Role.MEMBRE
+            },
+            include: {
+                serveur: true,
+                utilisateur: true
+            }
+        });
+        return ok(newMember);
     }
 
     // a faire : gerer le cas ou le proprio part
