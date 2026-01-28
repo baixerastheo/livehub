@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "esm"
 }
 
 datasource db {
@@ -8,7 +9,7 @@ datasource db {
 }
 
 model Utilisateur {
-  id              String          @id @default(uuid())
+  id              Int          @id @default(autoincrement())
   email           String          @unique
   motDePasse      String
   nomUtilisateur  String         @unique
@@ -33,7 +34,7 @@ enum StatutUtilisateur {
 }
 
 model Serveur {
-  id          String        @id @default(uuid())
+  id          Int        @id @default(autoincrement())
   nom         String
   membres     MembreServeur[]
   canaux      Canal[]
@@ -45,10 +46,10 @@ model Serveur {
 }
 
 model MembreServeur {
-  id          String   @id @default(uuid())
-  serveurId   String
+  id          Int   @id @default(autoincrement())
+  serveurId   Int
   serveur     Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  utilisateurId String
+  utilisateurId Int
   utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
   role        Role     @default(MEMBRE)
   rejointLe   DateTime @default(now())
@@ -66,8 +67,8 @@ enum Role {
 }
 
 model Canal {
-  id        String    @id @default(uuid())
-  serveurId String
+  id        Int    @id @default(autoincrement())
+  serveurId Int
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   nom       String
   messages  Message[]
@@ -78,10 +79,10 @@ model Canal {
 }
 
 model Message {
-  id         String   @id @default(uuid())
-  canalId    String
+  id         Int   @id @default(autoincrement())
+  canalId    Int
   canal      Canal    @relation(fields: [canalId], references: [id], onDelete: Cascade)
-  auteurId   String
+  auteurId   Int
   auteur     Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
   contenu    String
   creeLe     DateTime @default(now())
@@ -96,9 +97,9 @@ model Message {
 model Invitation {
   id              String    @id @default(uuid())
   code            String    @unique
-  serveurId       String
+  serveurId       Int
   serveur         Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  creeParId       String
+  creeParId       Int
   creePar         Utilisateur @relation(fields: [creeParId], references: [id], onDelete: Cascade)
   expireLe        DateTime?
   creeLe          DateTime  @default(now())
@@ -109,10 +110,10 @@ model Invitation {
 }
 
 model MessagePrive {
-  id            String    @id @default(uuid())
-  expediteurId  String
+  id            Int    @id @default(autoincrement())
+  expediteurId  Int
   expediteur    Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
-  destinataireId String
+  destinataireId Int
   destinataire  Utilisateur @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
   contenu       String
   lu            Boolean   @default(false)
