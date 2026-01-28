@@ -28,10 +28,10 @@ export class ServerController {
     @ApiOkResponse({ 
         description: "User's servers retrieved successfully"
     })
-    getUserServers() {
+    async getUserServers() {
         //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
         const userId = 4;
-        return this.serverService.getUserServers(userId);
+        return await this.serverService.getUserServers(userId);
     }
 
     @Get('/:id')
