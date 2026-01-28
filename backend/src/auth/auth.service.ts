@@ -30,7 +30,10 @@ export class AuthService {
 
     const user = userResult.unwrapOr(null as never);
 
-    const passwordResult = await this.validatePassword(password, user.motDePasse);
+    const passwordResult = await this.validatePassword(
+      password,
+      user.motDePasse,
+    );
 
     return passwordResult
       .map(() => {
@@ -40,11 +43,15 @@ export class AuthService {
       .mapErr(() => 'Invalid password');
   }
 
-  private async findUserByEmail(identifier: string): Promise<Result<User, string>> {
+  private async findUserByEmail(
+    identifier: string,
+  ): Promise<Result<User, string>> {
     return this.usersService.GetUserByEmail(identifier);
   }
 
-  private async findUserByUsername(identifier: string): Promise<Result<User, string>> {
+  private async findUserByUsername(
+    identifier: string,
+  ): Promise<Result<User, string>> {
     return this.usersService.GetUserByUsername(identifier);
   }
 
@@ -63,7 +70,8 @@ export class AuthService {
   private getAccessToken(user: User): string {
     const payload = { sub: user.id, email: user.email, status: user.statut };
     return this.jwtService.sign(payload, {
-      secret: process.env.JWT_ACCESS_SECRET ?? process.env.JWT_SECRET ?? 'changeme',
+      secret:
+        process.env.JWT_ACCESS_SECRET ?? process.env.JWT_SECRET ?? 'changeme',
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
     });
   }
@@ -71,14 +79,15 @@ export class AuthService {
   private getRefreshToken(user: User): string {
     const payload = { sub: user.id, email: user.email };
     return this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET ?? process.env.JWT_SECRET ?? 'changeme_refresh',
+      secret:
+        process.env.JWT_REFRESH_SECRET ??
+        process.env.JWT_SECRET ??
+        'changeme_refresh',
       expiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
     });
   }
 
-  async login(
-    user: User,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  login(user: User): { accessToken: string; refreshToken: string } {
     const accessToken = this.getAccessToken(user);
     const refreshToken = this.getRefreshToken(user);
     return { accessToken, refreshToken };
@@ -98,11 +107,13 @@ export class AuthService {
     }
 
     const user = createResult.unwrapOr(null as never);
-    const tokens = await this.login(user);
+    const tokens = this.login(user);
     return ok(tokens);
   }
 
-  async profile(user: { id: number }): Promise<Result<Omit<User, 'motDePasse'>, string>> {
+  async profile(user: {
+    id: number;
+  }): Promise<Result<Omit<User, 'motDePasse'>, string>> {
     const findResult = await this.usersService.getUserById(user.id);
     if (findResult.isErr()) {
       return err(findResult.error);
@@ -116,12 +127,15 @@ export class AuthService {
     refreshToken: string,
   ): Promise<Result<{ accessToken: string; refreshToken: string }, string>> {
     try {
-      const payload = await this.jwtService.verifyAsync<{ sub: number; email: string }>(
-        refreshToken,
-        {
-          secret: process.env.JWT_REFRESH_SECRET ?? process.env.JWT_SECRET ?? 'changeme_refresh',
-        },
-      );
+      const payload = await this.jwtService.verifyAsync<{
+        sub: number;
+        email: string;
+      }>(refreshToken, {
+        secret:
+          process.env.JWT_REFRESH_SECRET ??
+          process.env.JWT_SECRET ??
+          'changeme_refresh',
+      });
 
       const userResult = await this.usersService.getUserById(payload.sub);
       if (userResult.isErr()) {
@@ -129,15 +143,14 @@ export class AuthService {
       }
 
       const user = userResult.unwrapOr(null as never);
-      const tokens = await this.login(user);
+      const tokens = this.login(user);
       return ok(tokens);
     } catch {
       return err('Invalid or expired refresh token');
     }
   }
 
-  async logout(): Promise<void> {
+  logout(): void {
     return;
   }
 }
-

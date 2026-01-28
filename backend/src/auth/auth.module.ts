@@ -20,4 +20,3 @@ import { LocalStrategy } from './strategy/local.strategy.js';
   exports: [AuthService],
 })
 export class AuthModule {}
-

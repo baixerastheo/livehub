@@ -23,4 +23,8 @@ async function bootstrap() {
   console.log(`API running at http://localhost:${port}`);
   console.log(`Swagger docs available at http://localhost:${port}/api`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('Error while starting Nest application', err);
+  process.exit(1);
+});

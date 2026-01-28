@@ -21,4 +21,3 @@ export class LoginDto {
   @IsString({ message: "The 'password' field must be a string!" })
   password: string;
 }
-
