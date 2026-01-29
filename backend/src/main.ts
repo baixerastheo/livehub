@@ -1,10 +1,19 @@
-import 'dotenv/config';
+import './bootstrap-env.js';
+
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000',
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('LiveHub API')
@@ -20,4 +29,8 @@ async function bootstrap() {
   console.log('API running at http://localhost:' + port);
   console.log('Swagger docs available at http://localhost:' + port + '/api');
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('Error while starting Nest application', err);
+  process.exit(1);
+});

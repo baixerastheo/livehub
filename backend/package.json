@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
@@ -33,16 +34,20 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@prisma/config": "^7.3.0",
-    "bcrypt": "^5.1.1",
+    "@types/cookie-parser": "^1.4.10",
+    "bcrypt": "^6.0.0",
     "class-validator": "^0.14.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.6.1",
     "neverthrow": "^7.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "pg": "^8.17.2",
     "prisma": "^7.3.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

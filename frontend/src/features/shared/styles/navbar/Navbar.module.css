@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding: 0.75rem 1.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   background-color: #ffffff;
@@ -13,6 +14,7 @@
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .right {
@@ -20,9 +22,142 @@
   align-items: center;
   gap: 0.75rem;
   min-width: 220px;
-  max-width: 360px;
   width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   justify-content: flex-end;
+}
+
+.authArea {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.userInfo {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.75);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authButton {
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #000000;
+  height: 36px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.authButton:hover {
+  background: #f6f6f6;
+}
+
+.profileWrapper {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profileButton {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.profileButton:hover {
+  background: #f6f6f6;
+}
+
+.profileAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.profileAvatarImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  z-index: 60;
+}
+
+.profileHeader {
+  padding: 0.9rem 1rem 0.75rem;
+}
+
+.profileUsername {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.profileSubtle {
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dropdownActions {
+  padding: 0.35rem;
+}
+
+.dropdownButton {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.dropdownButton:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dropdownButtonDanger {
+  color: #b42318;
+}
+
+.dropdownButtonDanger:hover {
+  background: rgba(180, 35, 24, 0.08);
 }
 
 .menuButton {
@@ -59,7 +194,6 @@
 
   .right {
     min-width: 0;
-    max-width: none;
   }
 }
 
