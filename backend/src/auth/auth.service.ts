@@ -13,6 +13,12 @@ import { UserService } from '../user/user.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { Result, ok, err } from '../result.js';
 
+type PublicProfile = {
+  id: number;
+  email: string;
+  username: string;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -116,14 +122,18 @@ export class AuthService {
 
   async profile(user: {
     id: number;
-  }): Promise<Result<Omit<User, 'motDePasse'>, string>> {
+  }): Promise<Result<PublicProfile, string>> {
     const findResult = await this.usersService.getUserById(user.id);
     if (findResult.isErr()) {
       return err(findResult.error);
     }
     const fullUser = findResult.unwrapOr(null as never);
-    const { motDePasse: _password, ...userWithoutPassword } = fullUser;
-    return ok(userWithoutPassword);
+
+    return ok({
+      id: fullUser.id,
+      email: fullUser.email,
+      username: fullUser.nomUtilisateur,
+    });
   }
 
   async refreshTokens(
