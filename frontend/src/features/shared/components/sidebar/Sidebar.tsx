@@ -1,10 +1,14 @@
 import styles from "../../styles/sidebar/Sidebar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
+import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
 
 export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
   const closeSidebar = useAppStore((state) => state.closeSidebar);
   const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const isNotAuthenticated = useAuthStore(
+    (state) => state.status === "unauthenticated",
+  );
 
   return (
     <>
@@ -29,7 +33,11 @@ export function Sidebar() {
         <button
           type="button"
           className={styles.startButton}
-          onClick={() => openAuthModal("login")}
+          onClick={() => {
+            if (isNotAuthenticated) {
+              openAuthModal("login");
+            }
+          }}
         >
           Start conversation
         </button>
@@ -45,5 +53,3 @@ export function Sidebar() {
     </>
   );
 }
-
-

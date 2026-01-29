@@ -8,6 +8,7 @@ import { Sidebar } from "@/src/features/shared/components/sidebar/Sidebar";
 import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
 import { useAuthBootstrap } from "@/src/features/auth/hooks/useAuthBootstrap";
 import { useMeQuery } from "@/src/features/auth/api/useMeQuery";
+import { ProfileDefaultPage } from "@/src/features/profilePage/components/ProfileDefaultPage";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -41,6 +42,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </div>
       <AuthModal />
+      <ProfileDefaultPage />
     </>
   );
 }
