@@ -12,11 +12,7 @@ function getStoredTheme(): ThemeMode {
 }
 
 export function SettingSection() {
-  const [theme, setTheme] = useState<ThemeMode>("light");
-
-  useEffect(() => {
-    setTheme(getStoredTheme());
-  }, []);
+  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
 
   useEffect(() => {
     if (typeof window === "undefined") return;
