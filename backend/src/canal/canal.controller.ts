@@ -67,9 +67,7 @@ export class CanalController {
     @ApiNotFoundResponse({ 
         description: "Channel with this ID does not exist"
     })
-    async updateChannel(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() data: UpdateCanal
+    async updateChannel(@Param('id', ParseIntPipe) id: number,@Body() data: UpdateCanal
     ) {
         const result = await this.canalService.UpdateChannel(id, data);
         if (result.isErr()) {
