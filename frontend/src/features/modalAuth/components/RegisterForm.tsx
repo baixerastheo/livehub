@@ -21,7 +21,11 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    const { confirmPassword: _, ...payload } = data;
+    const payload = {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    };
     await registerMutation.mutateAsync(payload);
     closeAuthModal();
   };

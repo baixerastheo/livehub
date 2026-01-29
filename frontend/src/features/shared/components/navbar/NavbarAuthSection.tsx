@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
@@ -55,9 +56,11 @@ export function NavbarAuthSection() {
           onClick={toggleProfileMenu}
         >
           <span className={styles.profileAvatar} aria-hidden="true">
-            <img
+            <Image
               src="/icons/avatar-default.svg"
               alt=""
+              width={28}
+              height={28}
               className={styles.profileAvatarImage}
             />
           </span>
