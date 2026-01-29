@@ -2,7 +2,6 @@ import { create } from "zustand";
 
 type AuthStatus = "idle" | "authenticated" | "unauthenticated";
 
-// À adapter plus tard quand tu auras le vrai type renvoyé par /auth/profile
 export interface AuthUser {
   id: number;
   email: string;

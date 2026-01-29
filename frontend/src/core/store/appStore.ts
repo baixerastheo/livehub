@@ -6,10 +6,16 @@ type AppState = {
     isOpen: boolean;
     mode: "login" | "register";
   };
+  profileMenu: {
+    isOpen: boolean;
+  };
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openAuthModal: (mode: "login" | "register") => void;
   closeAuthModal: () => void;
+  openProfileMenu: () => void;
+  closeProfileMenu: () => void;
+  toggleProfileMenu: () => void;
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -17,6 +23,9 @@ export const useAppStore = create<AppState>((set) => ({
   authModal: {
     isOpen: false,
     mode: "login",
+  },
+  profileMenu: {
+    isOpen: false,
   },
   toggleSidebar: () =>
     set((state) => ({
@@ -40,5 +49,23 @@ export const useAppStore = create<AppState>((set) => ({
         mode: "login",
       },
     }),
+  openProfileMenu: () =>
+    set({
+      profileMenu: {
+        isOpen: true,
+      },
+    }),
+  closeProfileMenu: () =>
+    set({
+      profileMenu: {
+        isOpen: false,
+      },
+    }),
+  toggleProfileMenu: () =>
+    set((state) => ({
+      profileMenu: {
+        isOpen: !state.profileMenu.isOpen,
+      },
+    })),
 }));
 

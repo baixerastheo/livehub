@@ -5,7 +5,6 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface FetchJsonOptions extends Omit<RequestInit, "body"> {
   method?: HttpMethod;
-  // body sera sérialisé en JSON si c'est un objet
   body?: unknown;
 }
 
