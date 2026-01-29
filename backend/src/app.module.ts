@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module.js';
 import { ServerModule } from './server/server.module.js';
 import { CanalModule } from './canal/canal.module.js';
