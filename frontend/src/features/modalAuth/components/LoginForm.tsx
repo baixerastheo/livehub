@@ -2,13 +2,14 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginFormData } from "@/lib/schemas";
+import { loginSchema, type LoginFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useLoginMutation } from "../api/useLoginMutation";
+import { useLoginMutation } from "@/src/features/auth/api/useLoginMutation";
 import styles from "../styles/AuthForm.module.css";
 
 export function LoginForm() {
   const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const closeAuthModal = useAppStore((state) => state.closeAuthModal);
   const loginMutation = useLoginMutation();
 
   const {
@@ -21,7 +22,7 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     await loginMutation.mutateAsync(data);
-    // TODO: appeler l’API login quand le backend sera branché
+    closeAuthModal();
   };
 
   const isPending = isSubmitting || loginMutation.isPending;
@@ -29,19 +30,19 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={styles.field}>
-        <label htmlFor="login-email" className={styles.label}>
-          Email
+        <label htmlFor="login-identifier" className={styles.label}>
+          Email or username
         </label>
         <input
-          id="login-email"
-          type="email"
-          {...register("email")}
-          aria-invalid={errors.email ? "true" : "false"}
+          id="login-identifier"
+          type="text"
+          {...register("login")}
+          aria-invalid={errors.login ? "true" : "false"}
           className={styles.input}
         />
-        {errors.email && (
+        {errors.login && (
           <span role="alert" className={styles.error}>
-            {errors.email.message}
+            {errors.login.message}
           </span>
         )}
       </div>
