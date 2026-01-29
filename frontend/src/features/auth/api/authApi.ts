@@ -1,5 +1,5 @@
-import { fetchJson } from "@/lib/apiClient";
-import { getCsrfToken } from "@/lib/csrf";
+import { fetchJson } from "@/src/lib/apiClient";
+import { getCsrfToken } from "@/src/lib/csrf";
 import type { AuthUser } from "@/src/core/store/auth/useAuthStore";
 
 function buildCsrfHeaders(): HeadersInit {

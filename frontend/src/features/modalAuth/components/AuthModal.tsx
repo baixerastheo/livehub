@@ -14,7 +14,14 @@ export function AuthModal() {
   const isLogin = authModal.mode === "login";
 
   return (
-    <div className={styles.backdrop} aria-modal="true" role="dialog">
+    <div
+      className={styles.backdrop}
+      aria-modal="true"
+      role="dialog"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) closeAuthModal();
+      }}
+    >
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>

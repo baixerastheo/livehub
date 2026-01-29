@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import type { RegisterFormData } from "@/lib/schemas";
-import { fetchJson } from "@/lib/apiClient";
+import type { RegisterFormData } from "@/src/lib/schemas";
+import { fetchJson } from "@/src/lib/apiClient";
 import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
 
 async function registerApi(
@@ -25,7 +25,7 @@ export function useRegisterMutation() {
     mutationFn: registerApi,
     onSuccess: ({ accessToken }) => {
       setAccessToken(accessToken);
-      // TODO: optionnel - déclencher un chargement de /auth/profile ici
+      // TODO: optionnel, déclencher un chargement de /auth/profile ici
     },
   });
 }

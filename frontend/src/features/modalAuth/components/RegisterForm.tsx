@@ -2,13 +2,14 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterFormData } from "@/lib/schemas";
+import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useRegisterMutation } from "@/src/features/auth/api/useRegisterMutation";
 import styles from "../styles/AuthForm.module.css";
 
 export function RegisterForm() {
   const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const closeAuthModal = useAppStore((state) => state.closeAuthModal);
   const registerMutation = useRegisterMutation();
 
   const {
@@ -22,6 +23,7 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     const { confirmPassword: _, ...payload } = data;
     await registerMutation.mutateAsync(payload);
+    closeAuthModal();
   };
 
   const isPending = isSubmitting || registerMutation.isPending;
