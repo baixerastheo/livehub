@@ -7,7 +7,15 @@ import { MessageModule } from './message/message.module.js';
 import { AuthModule } from './auth/auth.module.js';
 
 @Module({
-  imports: [UserModule, ServerModule, CanalModule, InvitationModule, MessageModule, MessageModule, AuthModule],
+  imports: [
+    UserModule,
+    ServerModule,
+    CanalModule,
+    InvitationModule,
+    MessageModule,
+    MessageModule,
+    AuthModule,
+  ],
   providers: [],
   controllers: [],
 })

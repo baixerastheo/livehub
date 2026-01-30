@@ -13,6 +13,16 @@ import { UserService } from '../user/user.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { Result, ok, err } from '../result.js';
 
+type PublicProfile = {
+  id: number;
+  email: string;
+  username: string;
+};
+
+function isBcryptHash(value: string): boolean {
+  return /^\$2[aby]\$/.test(value);
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,6 +51,15 @@ export class AuthService {
       user.motDePasse,
     );
 
+    // Legacy migration: some users may have a non-bcrypt password stored (e.g. created via /users).
+    // If login succeeds with a legacy password, upgrade it to bcrypt.
+    if (passwordResult.isOk() && !isBcryptHash(user.motDePasse)) {
+      await this.usersService.updatePassword(
+        user.id,
+        await bcrypt.hash(password, 10),
+      );
+    }
+
     return passwordResult
       .map(() => {
         const { motDePasse: _password, ...result } = user;
@@ -63,6 +82,11 @@ export class AuthService {
     password: string,
     hashedPassword: string,
   ): Promise<Result<boolean, string>> {
+    // Legacy support: if the stored value is not a bcrypt hash, treat it as plaintext.
+    if (!isBcryptHash(hashedPassword)) {
+      return password === hashedPassword ? ok(true) : err('Invalid password');
+    }
+
     try {
       const isValid = await bcrypt.compare(password, hashedPassword);
       return isValid ? ok(true) : err('Invalid password');
@@ -114,16 +138,18 @@ export class AuthService {
     return ok(tokens);
   }
 
-  async profile(user: {
-    id: number;
-  }): Promise<Result<Omit<User, 'motDePasse'>, string>> {
+  async profile(user: { id: number }): Promise<Result<PublicProfile, string>> {
     const findResult = await this.usersService.getUserById(user.id);
     if (findResult.isErr()) {
       return err(findResult.error);
     }
     const fullUser = findResult.unwrapOr(null as never);
-    const { motDePasse: _password, ...userWithoutPassword } = fullUser;
-    return ok(userWithoutPassword);
+
+    return ok({
+      id: fullUser.id,
+      email: fullUser.email,
+      username: fullUser.nomUtilisateur,
+    });
   }
 
   async refreshTokens(

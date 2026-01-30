@@ -163,7 +163,6 @@ export class AuthController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(
     @Request() req: RequestWithCookies,
