@@ -9,20 +9,23 @@ import { authService } from "@/src/features/auth/auth.service";
 
 export function useLoginMutation() {
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const setUser = useAuthStore((state) => state.setUser);
 
   return useMutation({
     mutationFn: async (payload: LoginFormData) => {
       const validated = loginSchema.parse(payload);
       return authService.login(validated);
     },
-    onSuccess: ({ accessToken }) => {
+    onSuccess: ({ accessToken, user }) => {
       setAccessToken(accessToken);
+      if (user) setUser(user);
     },
   });
 }
 
 export function useRegisterMutation() {
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const setUser = useAuthStore((state) => state.setUser);
 
   return useMutation({
     mutationFn: async (payload: RegisterFormData) => {
@@ -34,8 +37,9 @@ export function useRegisterMutation() {
       };
       return authService.register(rest);
     },
-    onSuccess: ({ accessToken }) => {
+    onSuccess: ({ accessToken, user }) => {
       setAccessToken(accessToken);
+      if (user) setUser(user);
     },
   });
 }
