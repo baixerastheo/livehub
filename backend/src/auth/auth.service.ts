@@ -4,9 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ok, err } from 'neverthrow';
-import type { Result } from 'neverthrow';
 import { LoginDto } from './dto/login.dto.js';
-import type { AuthenticatedUser } from './types.js';
+
 
 @Injectable()
 export class AuthService {
@@ -42,32 +41,18 @@ export class AuthService {
       return this.jwtService.sign(payload) 
     }
 
-    async validateUser(login: string, password: string): Promise<Result<AuthenticatedUser, string>> {
-      const trimmed = login.trim();
-      const isEmail = trimmed.includes('@');
-      const user = isEmail
-        ? await this.usersService.GetUserByEmail(trimmed)
-        : await this.usersService.GetUserByUsername(trimmed);
+    async login(loginDto: LoginDto) {
+      const user = await this.usersService.GetUserByEmail(loginDto.login);
       if (user.isErr()) {
         return err('User not found');
       }
-      const isPasswordValid = await bcrypt.compare(password, user.value.motDePasse);
+      const isPasswordValid = await bcrypt.compare(loginDto.password, user.value.motDePasse);
       if (!isPasswordValid) {
         return err('Invalid password');
       }
-      const { motDePasse: _password, ...userWithoutPassword } = user.value;
-      return ok(userWithoutPassword);
-    }
-
-    async login(loginDto: LoginDto) {
-      const result = await this.validateUser(loginDto.login, loginDto.password);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      const userWithoutPassword = result.unwrapOr(null as never);
-      const tokens = this.generateTokens(userWithoutPassword.id, userWithoutPassword.email);
+      const tokens = this.generateTokens(user.value.id, user.value.email);
       return ok({
-        user: { ...userWithoutPassword, username: userWithoutPassword.nomUtilisateur },
+        user: user.value,
         access_token: tokens,
       });
     }

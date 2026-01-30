@@ -27,10 +27,7 @@ export class AuthController {
   @ApiResponse({ status: 429, description: 'Trop de tentatives. Réessayez plus tard.' })
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
-  async register(
-    @Body() registerDto: RegisterDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async register(@Body() registerDto: RegisterDto,@Res({ passthrough: true }) res: Response,) {
     const result = await this.authService.Register(registerDto);
     if (result.isErr()) {
       throw new BadRequestException(result.error);
@@ -93,11 +90,10 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  GetProfile(@Req() req: { user: { nomUtilisateur: string; [k: string]: unknown } }) {
-    const user = req.user;
+  GetProfile(@Req() req: { user: { nomUtilisateur: string; } }) {
+    const { user } = req;
     return {
       message: 'Profile retrieved successfully',
       user: { ...user, username: user.nomUtilisateur },
     };
-  }
-}
+  }}
