@@ -1,175 +1,103 @@
 import {
   BadRequestException,
-  Body,
   Controller,
-  ForbiddenException,
-  Get,
   Post,
-  Request,
-  UseGuards,
+  Body,
+  Get,
+  Req,
   Res,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { randomBytes } from 'crypto';
-import type { Request as ExpressRequest, Response } from 'express';
-
+import { Throttle } from '@nestjs/throttler';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
-import { LocalAuthGuard } from './authGuard/local-auth.guard.js';
 import { JwtAuthGuard } from './authGuard/jwt-auth.guard.js';
-import type { Result } from '../result.js';
-import type { AuthenticatedUser } from './types.js';
-import { getRefreshTokenSameSite } from './auth.config.js';
 
-type RequestWithUser = ExpressRequest & { user: AuthenticatedUser };
-type RequestWithCookies = Omit<ExpressRequest, 'cookies'> & {
-  cookies?: Record<string, string>;
-};
-
-const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
-const CSRF_COOKIE_NAME = 'csrf_token';
-const CSRF_HEADER_NAME = 'x-csrf-token';
-
-function getRefreshTokenMaxAgeMs(): number {
-  return (
-    parseInt(process.env.JWT_REFRESH_MAX_AGE_MS ?? '', 10) ||
-    7 * 24 * 60 * 60 * 1000
-  );
-}
-
-function setRefreshTokenCookie(res: Response, refreshToken: string): void {
-  const maxAge = getRefreshTokenMaxAgeMs();
-  const sameSite = getRefreshTokenSameSite();
-
-  res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite,
-    maxAge,
-    path: '/',
-  });
-
-  const csrfToken = randomBytes(32).toString('hex');
-
-  res.cookie(CSRF_COOKIE_NAME, csrfToken, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite,
-    maxAge,
-    path: '/',
-  });
-}
-
-function clearRefreshTokenCookie(res: Response): void {
-  const sameSite = getRefreshTokenSameSite();
-
-  res.cookie(REFRESH_TOKEN_COOKIE_NAME, '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite,
-    maxAge: 0,
-    path: '/',
-  });
-
-  res.cookie(CSRF_COOKIE_NAME, '', {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite,
-    maxAge: 0,
-    path: '/',
-  });
-}
-
-function assertValidCsrf(req: RequestWithCookies): void {
-  const csrfCookie = req.cookies?.[CSRF_COOKIE_NAME] ?? '';
-  // Use Express' typed accessor to avoid `any` headers indexing.
-  const csrfHeader = req.get(CSRF_HEADER_NAME) ?? '';
-
-  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
-    throw new ForbiddenException('Invalid CSRF token');
-  }
-}
-
-function unwrapOrThrowBadRequest<T>(result: Result<T, string>): T {
-  if (result.isErr()) {
-    throw new BadRequestException(result.error);
-  }
-
-  return result.unwrapOr(null as never);
-}
-
-@ApiTags('auth')
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 429, description: 'Trop de tentatives. Réessayez plus tard.' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
   async register(
-    @Body() dto: RegisterDto,
+    @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
-    const result = await this.authService.register(dto);
-
-    const tokens = unwrapOrThrowBadRequest(result);
-
-    setRefreshTokenCookie(res, tokens.refreshToken);
-
-    return { accessToken: tokens.accessToken };
+  ) {
+    const result = await this.authService.Register(registerDto);
+    if (result.isErr()) {
+      throw new BadRequestException(result.error);
+    }
+    const { user, access_token } = result.value;
+    res.cookie('access_token', access_token, {
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'lax',
+      path: '/',
+      httpOnly: false,
+    });
+    return { user, access_token };
   }
 
-  @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
-  login(
-    @Body() _dto: LoginDto,
-    @Request() req: RequestWithUser,
+  async login(
+    @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ): { accessToken: string } {
-    const tokens = this.authService.login(req.user);
-    setRefreshTokenCookie(res, tokens.refreshToken);
-
-    return { accessToken: tokens.accessToken };
+  ) {
+    const result = await this.authService.login(loginDto);
+    if (result.isErr()) {
+      throw new UnauthorizedException(result.error);
+    }
+    const { user, access_token } = result.value;
+    res.cookie('access_token', access_token, {
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'lax',
+      path: '/',
+      httpOnly: false,
+    });
+    return { user, access_token };
   }
 
+  @ApiOperation({ summary: 'Refresh token from cookie' })
+  @ApiResponse({ status: 200, description: 'Token returned' })
+  @ApiResponse({ status: 401, description: 'No token in cookie' })
   @Post('refresh')
-  async refresh(
-    @Request() req: RequestWithCookies,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
-    assertValidCsrf(req);
-
-    const refreshToken: string = req.cookies?.refresh_token ?? '';
-
-    const result = await this.authService.refreshTokens(refreshToken);
-
-    const tokens = unwrapOrThrowBadRequest(result);
-
-    setRefreshTokenCookie(res, tokens.refreshToken);
-
-    return { accessToken: tokens.accessToken };
+  refresh(@Req() req: { cookies?: { access_token?: string } }) {
+    const token = req.cookies?.access_token;
+    if (!token) {
+      throw new UnauthorizedException('No token in cookie');
+    }
+    return { access_token: token };
   }
 
+  @ApiOperation({ summary: 'Logout' })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', { path: '/' });
+    return this.authService.logout();
+  }
+
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  profile(@Request() req: RequestWithUser): {
-    id: number;
-    email: string;
-    username: string;
-  } {
+  GetProfile(@Req() req: { user: { nomUtilisateur: string; [k: string]: unknown } }) {
+    const user = req.user;
     return {
-      id: req.user.id,
-      email: req.user.email,
-      username: req.user.nomUtilisateur,
+      message: 'Profile retrieved successfully',
+      user: { ...user, username: user.nomUtilisateur },
     };
-  }
-
-  @Post('logout')
-  logout(
-    @Request() req: RequestWithCookies,
-    @Res({ passthrough: true }) res: Response,
-  ): void {
-    assertValidCsrf(req);
-    clearRefreshTokenCookie(res);
-    this.authService.logout();
   }
 }

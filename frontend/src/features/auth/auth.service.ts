@@ -1,31 +1,44 @@
 import { fetchJson } from "@/src/lib/apiClient";
-import { getCsrfToken } from "@/src/lib/csrf";
 import type { AuthUser } from "@/src/core/store/auth/useAuthStore";
 import type { LoginFormData, RegisterFormData } from "@/src/lib/schemas";
 
-function buildCsrfHeaders(): HeadersInit {
-  const token = getCsrfToken();
-  return token ? { "x-csrf-token": token } : {};
-}
+/** Backend auth response (snake_case) */
+type BackendAuthResponse = {
+  user: { id: number; email: string; username: string; [k: string]: unknown };
+  access_token: string;
+};
 
-export type AuthTokenResponse = { accessToken: string };
+/** Backend profile response */
+type BackendProfileResponse = { user: AuthUser };
+
+export type AuthTokenResponse = { accessToken: string; user?: AuthUser };
+
+function mapAuthResponse(res: BackendAuthResponse): AuthTokenResponse {
+  return {
+    accessToken: res.access_token,
+    user: res.user
+      ? { id: res.user.id, email: res.user.email, username: res.user.username }
+      : undefined,
+  };
+}
 
 export async function login(
   data: LoginFormData,
 ): Promise<AuthTokenResponse> {
-  return fetchJson<AuthTokenResponse>("/auth/login", {
+  const res = await fetchJson<BackendAuthResponse>("/auth/login", {
     method: "POST",
     body: {
       login: data.login,
       password: data.password,
     },
   });
+  return mapAuthResponse(res);
 }
 
 export async function register(
   data: Omit<RegisterFormData, "confirmPassword">,
 ): Promise<AuthTokenResponse> {
-  return fetchJson<AuthTokenResponse>("/auth/register", {
+  const res = await fetchJson<BackendAuthResponse>("/auth/register", {
     method: "POST",
     body: {
       username: data.username,
@@ -33,29 +46,30 @@ export async function register(
       password: data.password,
     },
   });
+  return mapAuthResponse(res);
 }
 
 export async function refresh(): Promise<AuthTokenResponse> {
-  return fetchJson<AuthTokenResponse>("/auth/refresh", {
+  const res = await fetchJson<{ access_token: string }>("/auth/refresh", {
     method: "POST",
-    headers: buildCsrfHeaders(),
   });
+  return { accessToken: res.access_token };
 }
 
 export async function logout(): Promise<void> {
   await fetchJson<void>("/auth/logout", {
     method: "POST",
-    headers: buildCsrfHeaders(),
   });
 }
 
 export async function getProfile(accessToken: string): Promise<AuthUser> {
-  return fetchJson<AuthUser>("/auth/profile", {
+  const res = await fetchJson<BackendProfileResponse>("/auth/profile", {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  return res.user;
 }
 
 export const authService = {
