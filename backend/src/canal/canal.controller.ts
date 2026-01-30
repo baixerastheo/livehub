@@ -1,5 +1,19 @@
-import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,NotFoundException,} from '@nestjs/common';
-import {ApiOkResponse,ApiCreatedResponse,ApiNotFoundResponse,} from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { CanalService } from './canal.service.js';
 import { CreateCanal } from './dto/create-canal.dto.js';
 import { UpdateCanal } from './dto/update-canal.dto.js';
@@ -100,4 +114,3 @@ export class CanalController {
     return result.value;
   }
 }
-

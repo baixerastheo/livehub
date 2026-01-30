@@ -46,7 +46,10 @@ export class AuthService {
 
     const user = userResult.unwrapOr(null as never);
 
-    const passwordResult = await this.validatePassword(password, user.motDePasse);
+    const passwordResult = await this.validatePassword(
+      password,
+      user.motDePasse,
+    );
 
     // Legacy migration: some users may have a non-bcrypt password stored (e.g. created via /users).
     // If login succeeds with a legacy password, upgrade it to bcrypt.
@@ -135,9 +138,7 @@ export class AuthService {
     return ok(tokens);
   }
 
-  async profile(user: {
-    id: number;
-  }): Promise<Result<PublicProfile, string>> {
+  async profile(user: { id: number }): Promise<Result<PublicProfile, string>> {
     const findResult = await this.usersService.getUserById(user.id);
     if (findResult.isErr()) {
       return err(findResult.error);
