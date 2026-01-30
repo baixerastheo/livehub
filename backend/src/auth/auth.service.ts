@@ -19,6 +19,10 @@ type PublicProfile = {
   username: string;
 };
 
+function isBcryptHash(value: string): boolean {
+  return /^\$2[aby]\$/.test(value);
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -42,10 +46,16 @@ export class AuthService {
 
     const user = userResult.unwrapOr(null as never);
 
-    const passwordResult = await this.validatePassword(
-      password,
-      user.motDePasse,
-    );
+    const passwordResult = await this.validatePassword(password, user.motDePasse);
+
+    // Legacy migration: some users may have a non-bcrypt password stored (e.g. created via /users).
+    // If login succeeds with a legacy password, upgrade it to bcrypt.
+    if (passwordResult.isOk() && !isBcryptHash(user.motDePasse)) {
+      await this.usersService.updatePassword(
+        user.id,
+        await bcrypt.hash(password, 10),
+      );
+    }
 
     return passwordResult
       .map(() => {
@@ -69,6 +79,11 @@ export class AuthService {
     password: string,
     hashedPassword: string,
   ): Promise<Result<boolean, string>> {
+    // Legacy support: if the stored value is not a bcrypt hash, treat it as plaintext.
+    if (!isBcryptHash(hashedPassword)) {
+      return password === hashedPassword ? ok(true) : err('Invalid password');
+    }
+
     try {
       const isValid = await bcrypt.compare(password, hashedPassword);
       return isValid ? ok(true) : err('Invalid password');

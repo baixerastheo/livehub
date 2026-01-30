@@ -1,0 +1,64 @@
+.menuBar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 22px;
+  height: 46px;
+  position: relative;
+}
+
+.menuBar::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.menuTab {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.78);
+  font-weight: 700;
+  padding: 0;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.menuTab:hover {
+  color: rgba(0, 0, 0, 0.92);
+}
+
+.menuTabActive {
+  color: rgba(0, 0, 0, 0.98);
+}
+
+.menuTabActive::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #000000;
+  border-radius: 999px;
+}
+
+@media (max-width: 620px) {
+  .menuBar {
+    gap: 12px;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .menuBar::-webkit-scrollbar {
+    display: none;
+  }
+}
+

@@ -151,12 +151,18 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async profile(@Request() req: RequestWithUser) {
-    const result = await this.authService.profile({ id: req.user.id });
-    return unwrapOrThrowBadRequest(result);
+  profile(@Request() req: RequestWithUser): {
+    id: number;
+    email: string;
+    username: string;
+  } {
+    return {
+      id: req.user.id,
+      email: req.user.email,
+      username: req.user.nomUtilisateur,
+    };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(
     @Request() req: RequestWithCookies,
