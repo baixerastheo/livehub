@@ -3,7 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service.js';
 import { RegisterDto } from './dto/register.dto.js';
-import { Result, ok, err } from '../result.js';
+import { ok, err } from 'neverthrow';
+import type { Result } from 'neverthrow';
 import { LoginDto } from './dto/login.dto.js';
 import type { AuthenticatedUser } from './types.js';
 
@@ -71,7 +72,7 @@ export class AuthService {
       });
     }
 
-  async logout() {
+  logout() {
     return { message: 'Logged out successfully' };
   }
 }
