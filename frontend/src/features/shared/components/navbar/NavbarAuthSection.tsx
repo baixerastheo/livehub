@@ -5,7 +5,7 @@ import Image from "next/image";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
-import { useLogoutMutation } from "@/src/features/auth/api/useLogoutMutation";
+import { useLogoutMutation } from "@/src/features/auth/auth.hooks";
 import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
