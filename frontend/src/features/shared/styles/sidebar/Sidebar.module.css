@@ -1,7 +1,7 @@
 .sidebar {
-  width: 260px;
+  width: 450px;
   min-width: 220px;
-  max-width: 280px;
+  max-width: 500px;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   background-color: #fafafa;
   padding: 1rem 0.75rem;
@@ -36,6 +36,9 @@
 
 .startButton {
   margin-top: 1.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
   padding: 0.55rem 0.75rem;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -43,6 +46,7 @@
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 500;
+  max-width: 400px;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.05s ease;
 }
@@ -71,12 +75,12 @@
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100%;
-    max-width: 100%;
-    z-index: 40;
+    top: var(--app-navbar-height);
+    left: 76px;
+    height: calc(100vh - var(--app-navbar-height));
+    width: calc(100% - 76px);
+    max-width: calc(100% - 76px);
+    z-index: 60;
     box-shadow: none;
     overflow-y: hidden;
     transform: translateX(-100%);
@@ -93,13 +97,16 @@
 
   .sidebarBackdrop {
     position: fixed;
-    inset: 0;
-    background: #fafafa;
+    top: var(--app-navbar-height);
+    left: 76px;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
     border: none;
     padding: 0;
     margin: 0;
     cursor: default;
-    z-index: 30;
+    z-index: 55;
     display: block;
   }
 

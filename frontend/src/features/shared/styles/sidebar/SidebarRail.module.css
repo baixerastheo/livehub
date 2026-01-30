@@ -1,0 +1,128 @@
+.rail {
+  width: 150px;
+  min-width: 100px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f3f4f6;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.railBackdrop {
+  display: none;
+}
+
+.railItem {
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 8px;
+  border-radius: 8;
+  color: rgba(0, 0, 0, 0.72);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.railItem:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.railItemActive {
+  background: rgba(131, 131, 131, 0.12);
+  color: rgb(0, 0, 0);
+}
+
+.railItemActive::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 999px;
+  background: rgb(0, 0, 0);
+}
+
+.railIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  line-height: 0;
+}
+
+.railIconSvg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.railLabel {
+  font-size: 0.9rem;
+  line-height: 1.1;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .rail {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 0;
+    height: calc(100vh - var(--app-navbar-height));
+    width: 76px;
+    min-width: 76px;
+    padding: 10px 6px;
+    z-index: 50;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  }
+
+  .railOpen {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .railBackdrop {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
+    z-index: 45;
+    display: block;
+  }
+
+  .railItem {
+    padding: 14px 6px;
+  }
+
+  .railIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .railLabel {
+    display: none;
+  }
+}
+

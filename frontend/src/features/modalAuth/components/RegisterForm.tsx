@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useRegisterMutation } from "@/src/features/auth/api/useRegisterMutation";
+import { useRegisterMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
 
 export function RegisterForm() {
@@ -15,25 +15,33 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    clearErrors,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    const payload = {
-      username: data.username,
-      email: data.email,
-      password: data.password,
-    };
-    await registerMutation.mutateAsync(payload);
-    closeAuthModal();
+    clearErrors("root");
+    try {
+      await registerMutation.mutateAsync(data);
+      closeAuthModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unauthorized";
+      setError("root", { message });
+    }
   };
 
   const isPending = isSubmitting || registerMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      {errors.root?.message && (
+        <p role="alert" className={styles.error}>
+          {errors.root.message}
+        </p>
+      )}
       <div className={styles.field}>
         <label htmlFor="register-username" className={styles.label}>
           Username

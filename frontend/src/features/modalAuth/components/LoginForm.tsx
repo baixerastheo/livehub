@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useLoginMutation } from "@/src/features/auth/api/useLoginMutation";
+import { useLoginMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
 
 export function LoginForm() {
@@ -15,20 +15,33 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    clearErrors,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    await loginMutation.mutateAsync(data);
-    closeAuthModal();
+    clearErrors("root");
+    try {
+      await loginMutation.mutateAsync(data);
+      closeAuthModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unauthorized";
+      setError("root", { message });
+    }
   };
 
   const isPending = isSubmitting || loginMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      {errors.root?.message && (
+        <p role="alert" className={styles.error}>
+          {errors.root.message}
+        </p>
+      )}
       <div className={styles.field}>
         <label htmlFor="login-identifier" className={styles.label}>
           Email or username

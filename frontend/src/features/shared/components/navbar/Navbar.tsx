@@ -9,7 +9,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ children }: NavbarProps) {
-  const toggleSidebar = useAppStore((state) => state.toggleSidebar);
+  const toggleMobileSidebars = useAppStore((state) => state.toggleMobileSidebars);
 
   return (
     <header className={styles.navbar}>
@@ -18,7 +18,7 @@ export function Navbar({ children }: NavbarProps) {
           type="button"
           className={styles.menuButton}
           aria-label="Toggle conversation list"
-          onClick={toggleSidebar}
+          onClick={toggleMobileSidebars}
         >
           <span aria-hidden="true">
             <BiArrowFromLeft size={22} />

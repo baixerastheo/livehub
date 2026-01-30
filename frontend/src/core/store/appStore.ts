@@ -1,9 +1,12 @@
 import { create } from "zustand";
 
 export type AccountModalSection = "profile" | "friends" | "settings";
+export type SidebarSection = "activity" | "conversation" | "teams";
 
 type AppState = {
   isSidebarOpen: boolean;
+  isSidebarRailOpen: boolean;
+  sidebarSection: SidebarSection;
   authModal: {
     isOpen: boolean;
     mode: "login" | "register";
@@ -16,7 +19,14 @@ type AppState = {
     isOpen: boolean;
   };
   toggleSidebar: () => void;
+  openSidebar: () => void;
   closeSidebar: () => void;
+  toggleSidebarRail: () => void;
+  openSidebarRail: () => void;
+  closeSidebarRail: () => void;
+  setSidebarSection: (section: SidebarSection) => void;
+  toggleMobileSidebars: () => void;
+  closeMobileSidebars: () => void;
   openAuthModal: (mode: "login" | "register") => void;
   closeAuthModal: () => void;
   openAccountModal: (section?: AccountModalSection) => void;
@@ -29,6 +39,8 @@ type AppState = {
 
 export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
+  isSidebarRailOpen: false,
+  sidebarSection: "conversation",
   authModal: {
     isOpen: false,
     mode: "login",
@@ -44,8 +56,42 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
     })),
+  openSidebar: () =>
+    set({
+      isSidebarOpen: true,
+    }),
   closeSidebar: () =>
     set({
+      isSidebarOpen: false,
+    }),
+  toggleSidebarRail: () =>
+    set((state) => ({
+      isSidebarRailOpen: !state.isSidebarRailOpen,
+    })),
+  openSidebarRail: () =>
+    set({
+      isSidebarRailOpen: true,
+    }),
+  closeSidebarRail: () =>
+    set({
+      isSidebarRailOpen: false,
+    }),
+  setSidebarSection: (section) =>
+    set({
+      sidebarSection: section,
+    }),
+  toggleMobileSidebars: () =>
+    set((state) => {
+      const shouldOpen = !state.isSidebarRailOpen || !state.isSidebarOpen;
+
+      return {
+        isSidebarRailOpen: shouldOpen,
+        isSidebarOpen: shouldOpen,
+      };
+    }),
+  closeMobileSidebars: () =>
+    set({
+      isSidebarRailOpen: false,
       isSidebarOpen: false,
     }),
   openAuthModal: (mode) =>
