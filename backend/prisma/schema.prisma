@@ -24,6 +24,7 @@ model Utilisateur {
 
   @@index([email])
   @@index([nomUtilisateur])
+  @@map("Utilisateur")
 }
 
 enum StatutUtilisateur {
