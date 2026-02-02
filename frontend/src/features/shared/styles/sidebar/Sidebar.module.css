@@ -1,7 +1,7 @@
 .sidebar {
-  width: 450px;
+  width: 330px;
   min-width: 220px;
-  max-width: 500px;
+  max-width: 390px;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   background-color: #fafafa;
   padding: 1rem 0.75rem;

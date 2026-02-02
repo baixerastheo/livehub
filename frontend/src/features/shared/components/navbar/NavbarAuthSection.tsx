@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
@@ -9,6 +10,7 @@ import { useLogoutMutation } from "@/src/features/auth/auth.hooks";
 import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
+  const router = useRouter();
   const status = useAuthStore((state) => state.status);
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
@@ -75,7 +77,7 @@ export function NavbarAuthSection() {
             }}
             onMyFriends={() => {
               closeProfileMenu();
-              openAccountModal("friends");
+              router.push("/people?tab=friends");
             }}
             onLogout={() => {
               closeProfileMenu();

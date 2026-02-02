@@ -4,7 +4,6 @@ import { useEffect, useMemo } from "react";
 import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../styles/ProfileDefaultPage.module.css";
 import { ProfileSection } from "./ProfileSection";
-import { FriendListSection } from "./FriendListSection";
 import { SettingSection } from "./SettingSection";
 import { ProfileModalMenu } from "./ProfileModalMenu";
 
@@ -32,8 +31,6 @@ export function ProfileDefaultPage() {
     switch (accountModal.section) {
       case "profile":
         return "My Account";
-      case "friends":
-        return "Friends";
       case "settings":
         return "Settings";
       default:
@@ -73,7 +70,6 @@ export function ProfileDefaultPage() {
 
         <div className={styles.body}>
           {accountModal.section === "profile" ? <ProfileSection /> : null}
-          {accountModal.section === "friends" ? <FriendListSection /> : null}
           {accountModal.section === "settings" ? <SettingSection /> : null}
         </div>
       </div>

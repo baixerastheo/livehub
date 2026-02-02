@@ -14,6 +14,8 @@ model Utilisateur {
   motDePasse      String
   nomUtilisateur  String         @unique
   statut          StatutUtilisateur @default(EN_LIGNE)
+  avatarPath      String?
+  avatarUpdatedAt DateTime?
   creeLe          DateTime        @default(now())
   modifieLe       DateTime        @updatedAt
   serveurs        MembreServeur[]
@@ -21,6 +23,10 @@ model Utilisateur {
   invitations     Invitation[]
   messagesEnvoyes MessagePrive[] @relation("MessagesEnvoyes")
   messagesRecus   MessagePrive[] @relation("MessagesRecus")
+  demandesAmiEnvoyees DemandeAmi[] @relation("DemandesAmiEnvoyees")
+  demandesAmiRecues   DemandeAmi[] @relation("DemandesAmiRecues")
+  amitiesA Amitie[] @relation("AmitieA")
+  amitiesB Amitie[] @relation("AmitieB")
 
   @@index([email])
   @@index([nomUtilisateur])
@@ -31,6 +37,12 @@ enum StatutUtilisateur {
   ABSENT
   INVISIBLE
   HORS_LIGNE
+}
+
+enum StatutDemandeAmi {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
 }
 
 model Serveur {
@@ -124,4 +136,36 @@ model MessagePrive {
   @@index([expediteurId, destinataireId])
   @@index([destinataireId])
   @@index([expediteurId])
+}
+
+model DemandeAmi {
+  id        String @id @default(uuid())
+  pairAId   Int
+  pairBId   Int
+  deId      Int
+  de        Utilisateur @relation("DemandesAmiEnvoyees", fields: [deId], references: [id], onDelete: Cascade)
+  aId       Int
+  a         Utilisateur @relation("DemandesAmiRecues", fields: [aId], references: [id], onDelete: Cascade)
+  statut    StatutDemandeAmi @default(EN_ATTENTE)
+  creeLe    DateTime @default(now())
+  modifieLe DateTime @updatedAt
+
+  @@index([pairAId, pairBId])
+  @@index([deId])
+  @@index([aId])
+  @@index([statut])
+  @@unique([pairAId, pairBId])
+}
+
+model Amitie {
+  id        String @id @default(uuid())
+  userAId   Int
+  userA     Utilisateur @relation("AmitieA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   Int
+  userB     Utilisateur @relation("AmitieB", fields: [userBId], references: [id], onDelete: Cascade)
+  creeLe    DateTime @default(now())
+
+  @@index([userAId])
+  @@index([userBId])
+  @@unique([userAId, userBId])
 }
