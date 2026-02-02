@@ -1,13 +1,34 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, Query, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiForbiddenResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  Query,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
 import { MessageService } from './message.service.js';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 
+@ApiTags('Messages')
 @Controller()
 export class MessageController {
     constructor(private readonly messageService: MessageService) {}
 
     @Get('channels/:id/messages')
+    @HttpCode(HttpStatus.OK)
     @ApiOkResponse({
         description: 'Channel message history',
     })
@@ -23,13 +44,13 @@ export class MessageController {
     }
 
     @Post('channels/:id/messages')
+    @HttpCode(HttpStatus.CREATED)
     @ApiCreatedResponse({
         description: 'Message sent successfully',
     })
     @ApiNotFoundResponse({
         description: 'Channel not found or you are not a member of the server',
     })
-    
     async SendMessage(@Param('id', ParseIntPipe) canalId: number, @Body() dto: CreateMessageDto) {
         const idUser = 4
         const result = await this.messageService.createMessage(dto.contenu, canalId, idUser);
@@ -40,6 +61,7 @@ export class MessageController {
     }
 
     @Delete('messages/:id')
+    @HttpCode(HttpStatus.OK)
     @ApiOkResponse({
         description: 'Message deleted successfully',
     })

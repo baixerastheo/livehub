@@ -1,5 +1,6 @@
 import { UserService } from './user.service.js';
 import {
+  ApiTags,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
@@ -14,17 +15,21 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { CreateUser } from './dto/create-user.dto.js';
 
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'All users retrieved successfully',
   })
@@ -33,6 +38,7 @@ export class UserController {
   }
 
   @Get('/email/:email')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Users retrieved successfully',
   })
@@ -48,6 +54,7 @@ export class UserController {
   }
 
   @Get('/username/:username')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User retrieved successfully',
   })
@@ -63,6 +70,7 @@ export class UserController {
   }
 
   @Get('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User retrieved successfully',
   })
@@ -78,6 +86,7 @@ export class UserController {
   }
 
   @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User deleted successfully',
   })
@@ -93,6 +102,7 @@ export class UserController {
   }
 
   @Post('/')
+  @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'User created successfully',
     type: CreateUser,
@@ -109,6 +119,7 @@ export class UserController {
   }
 
   @Put('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User updated successfully',
     type: UpdateUser,
@@ -125,7 +136,11 @@ export class UserController {
   ) {
     const result = await this.userService.updateUser(id, data);
     if (result.isErr()) {
-      throw new NotFoundException(result.error);
+      const msg = result.error;
+      if (msg === 'Username already exists') {
+        throw new ConflictException(msg);
+      }
+      throw new NotFoundException(msg);
     }
     return result.value;
   }

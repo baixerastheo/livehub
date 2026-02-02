@@ -1,27 +1,49 @@
-import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,NotFoundException,} from '@nestjs/common';
-import {ApiOkResponse,ApiCreatedResponse,ApiNotFoundResponse,} from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
 import { CanalService } from './canal.service.js';
 import { CreateCanal } from './dto/create-canal.dto.js';
 import { UpdateCanal } from './dto/update-canal.dto.js';
 
+@ApiTags('Channels')
 @Controller()
 export class CanalController {
   constructor(private readonly canalService: CanalService) {}
 
   @Post('/servers/:serverId/channels')
+  @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'Channel created successfully',
     type: CreateCanal,
   })
   @ApiNotFoundResponse({
-    description:
-      "Server with this ID does not exist or you don't have permission",
+    description: 'Server with this ID does not exist',
+  })
+  @ApiForbiddenResponse({
+    description: "You don't have permission to create channels",
   })
   async createChannel(
     @Param('serverId', ParseIntPipe) serverId: number,
     @Body() data: CreateCanal,
   ) {
-    //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
     const userId = 4;
     const result = await this.canalService.CreateChannel(
       serverId,
@@ -29,12 +51,20 @@ export class CanalController {
       data,
     );
     if (result.isErr()) {
-      throw new NotFoundException(result.error);
+      const msg = result.error;
+      if (
+        msg === 'You are not a member of this server' ||
+        msg === 'Only owners and administrators can create channels'
+      ) {
+        throw new ForbiddenException(msg);
+      }
+      throw new NotFoundException(msg);
     }
     return result.value;
   }
 
   @Get('/servers/:serverId/channels')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Server channels retrieved successfully',
   })
@@ -52,6 +82,7 @@ export class CanalController {
   }
 
   @Get('/channels/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Channel retrieved successfully',
   })
@@ -67,6 +98,7 @@ export class CanalController {
   }
 
   @Put('/channels/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Channel updated successfully',
     type: UpdateCanal,
@@ -86,6 +118,7 @@ export class CanalController {
   }
 
   @Delete('/channels/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Channel deleted successfully',
   })
