@@ -22,6 +22,12 @@ import {
 } from '@nestjs/common';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { CreateUser } from './dto/create-user.dto.js';
+import type { Utilisateur } from '../../generated/prisma/client.js';
+
+function toPublicUser(user: Utilisateur) {
+  const { motDePasse: _password, ...rest } = user;
+  return rest;
+}
 
 @ApiTags('Users')
 @Controller('users')
@@ -34,7 +40,8 @@ export class UserController {
     description: 'All users retrieved successfully',
   })
   async getAllUsers() {
-    return await this.userService.getAllUsers();
+    const users = await this.userService.getAllUsers();
+    return users.map(toPublicUser);
   }
 
   @Get('/email/:email')
@@ -50,7 +57,7 @@ export class UserController {
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 
   @Get('/username/:username')
@@ -66,7 +73,7 @@ export class UserController {
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 
   @Get('/:id')
@@ -82,7 +89,7 @@ export class UserController {
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 
   @Delete('/:id')
@@ -98,7 +105,7 @@ export class UserController {
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 
   @Post('/')
@@ -115,7 +122,7 @@ export class UserController {
     if (result.isErr()) {
       throw new ConflictException(result.error);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 
   @Put('/:id')
@@ -142,6 +149,6 @@ export class UserController {
       }
       throw new NotFoundException(msg);
     }
-    return result.value;
+    return toPublicUser(result.value);
   }
 }

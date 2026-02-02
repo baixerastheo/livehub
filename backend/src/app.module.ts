@@ -7,6 +7,7 @@ import { CanalModule } from './canal/canal.module.js';
 import { InvitationModule } from './invitation/invitation.module.js';
 import { MessageModule } from './message/message.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { FriendsModule } from './friends/friends.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './auth/auth.module.js';
     MessageModule,
     MessageModule,
     AuthModule,
+    FriendsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
   controllers: [],

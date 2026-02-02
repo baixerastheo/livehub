@@ -27,7 +27,7 @@ export function NavbarModalProfile({
           My Account
         </button>
         <button type="button" className={styles.dropdownButton} onClick={onMyFriends}>
-          My Friend
+          Friends
         </button>
         <div className={styles.dropdownDivider} />
         <button

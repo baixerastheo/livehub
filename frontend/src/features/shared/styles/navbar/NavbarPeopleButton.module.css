@@ -1,0 +1,35 @@
+.navIconButton {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.navIconButton:hover {
+  background: #f6f6f6;
+}
+
+.navIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

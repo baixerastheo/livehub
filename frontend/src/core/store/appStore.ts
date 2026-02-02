@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AccountModalSection = "profile" | "friends" | "settings";
+export type AccountModalSection = "profile" | "settings";
 export type SidebarSection = "activity" | "conversation" | "teams";
 
 type AppState = {

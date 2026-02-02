@@ -25,17 +25,6 @@ export function ProfileModalMenu({ active, onChange }: ProfileModalMenuProps) {
       <button
         type="button"
         role="tab"
-        aria-selected={active === "friends"}
-        className={`${styles.menuTab} ${
-          active === "friends" ? styles.menuTabActive : ""
-        }`}
-        onClick={() => onChange("friends")}
-      >
-        Amis
-      </button>
-      <button
-        type="button"
-        role="tab"
         aria-selected={active === "settings"}
         className={`${styles.menuTab} ${
           active === "settings" ? styles.menuTabActive : ""
