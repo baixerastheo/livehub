@@ -1,5 +1,6 @@
 import { ServerService } from './server.service.js';
 import {
+  ApiTags,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
@@ -14,17 +15,22 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { UpdateServer } from './dto/update-server.dto.js';
 import { UpdateMemberRole } from './dto/update-member-role.dto.js';
 import { CreateServer } from './dto/create-server.dto.js';
 
+@ApiTags('Servers')
 @Controller('servers')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @Post('/')
+  @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'Server created successfully',
     type: CreateServer,
@@ -40,6 +46,7 @@ export class ServerController {
   }
 
   @Get('/')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: "User's servers retrieved successfully",
   })
@@ -50,6 +57,7 @@ export class ServerController {
   }
 
   @Get('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Server retrieved successfully',
   })
@@ -65,6 +73,7 @@ export class ServerController {
   }
 
   @Put('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Server updated successfully',
     type: UpdateServer,
@@ -84,6 +93,7 @@ export class ServerController {
   }
 
   @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Server deleted successfully',
   })
@@ -99,6 +109,7 @@ export class ServerController {
   }
 
   @Post('/:id/join')
+  @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'You have successfully joined the server',
   })
@@ -109,16 +120,19 @@ export class ServerController {
     description: 'You are already a member of this server',
   })
   async joinServer(@Param('id', ParseIntPipe) serverId: number) {
-    //Manque a recuperer l'id de l'user connecter avec le token donc 1 pour l'instant
     const userId = 3;
     const result = await this.serverService.joinServer(serverId, userId);
     if (result.isErr()) {
+      if (result.error === 'You are already a member of this server') {
+        throw new ConflictException(result.error);
+      }
       throw new NotFoundException(result.error);
     }
     return result.value;
   }
 
   @Delete('/:id/leave')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'You have successfully left the server',
   })
@@ -136,6 +150,7 @@ export class ServerController {
   }
 
   @Get('/:id/members')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Server members retrieved successfully',
   })
@@ -151,6 +166,7 @@ export class ServerController {
   }
 
   @Put('/:id/members/:userId')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Member role updated successfully',
     type: UpdateMemberRole,
