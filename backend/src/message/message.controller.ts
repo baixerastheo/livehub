@@ -37,9 +37,7 @@ export class MessageController {
     })
     async getChannelMessages(@Param('id', ParseIntPipe) id: number) {
         const result = await this.messageService.getHistoryMessageByChannel(id);
-        if (result.isErr()) {
-            throw new NotFoundException(result.error);
-        }
+        if (result.isErr()) throw new NotFoundException(result.error);
         return result.value;
     }
 
@@ -52,11 +50,9 @@ export class MessageController {
         description: 'Channel not found or you are not a member of the server',
     })
     async SendMessage(@Param('id', ParseIntPipe) canalId: number, @Body() dto: CreateMessageDto) {
-        const idUser = 4
+        const idUser = 4;
         const result = await this.messageService.createMessage(dto.contenu, canalId, idUser);
-        if (result.isErr()) {
-            throw new NotFoundException(result.error);
-        }
+        if (result.isErr()) throw new NotFoundException(result.error);
         return result.value;
     }
 
@@ -78,9 +74,7 @@ export class MessageController {
         const result = await this.messageService.deleteMessage(id, utilisateurId);
         if (result.isErr()) {
             const msg = result.error;
-            if (msg.startsWith('No message')) {
-                throw new NotFoundException(msg);
-            }
+            if (msg.startsWith('No message')) throw new NotFoundException(msg);
             throw new ForbiddenException(msg);
         }
         return result.value;
