@@ -50,7 +50,10 @@ export class FriendsController {
 
   @Post('requests')
   async sendRequest(@Req() req: AuthedReq, @Body() dto: SendFriendRequestDto) {
-    const result = await this.friendsService.sendRequest(req.user.id, dto.toUserId);
+    const result = await this.friendsService.sendRequest(
+      req.user.id,
+      dto.toUserId,
+    );
     if (result.isErr()) {
       const e = result.error;
       if (e.code === 'USER_NOT_FOUND') throw new NotFoundException(e.message);
@@ -68,9 +71,11 @@ export class FriendsController {
     const result = await this.friendsService.acceptRequest(id, req.user.id);
     if (result.isErr()) {
       const e = result.error;
-      if (e.code === 'REQUEST_NOT_FOUND') throw new NotFoundException(e.message);
+      if (e.code === 'REQUEST_NOT_FOUND')
+        throw new NotFoundException(e.message);
       if (e.code === 'NOT_ALLOWED') throw new ForbiddenException(e.message);
-      if (e.code === 'REQUEST_NOT_PENDING') throw new BadRequestException(e.message);
+      if (e.code === 'REQUEST_NOT_PENDING')
+        throw new BadRequestException(e.message);
       throw new BadRequestException(e.message);
     }
     return { ok: true };
@@ -81,12 +86,13 @@ export class FriendsController {
     const result = await this.friendsService.declineRequest(id, req.user.id);
     if (result.isErr()) {
       const e = result.error;
-      if (e.code === 'REQUEST_NOT_FOUND') throw new NotFoundException(e.message);
+      if (e.code === 'REQUEST_NOT_FOUND')
+        throw new NotFoundException(e.message);
       if (e.code === 'NOT_ALLOWED') throw new ForbiddenException(e.message);
-      if (e.code === 'REQUEST_NOT_PENDING') throw new BadRequestException(e.message);
+      if (e.code === 'REQUEST_NOT_PENDING')
+        throw new BadRequestException(e.message);
       throw new BadRequestException(e.message);
     }
     return { ok: true };
   }
 }
-

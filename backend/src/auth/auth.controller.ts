@@ -24,7 +24,10 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
-  @ApiResponse({ status: 429, description: 'Trop de tentatives. Réessayez plus tard.' })
+  @ApiResponse({
+    status: 429,
+    description: 'Trop de tentatives. Réessayez plus tard.',
+  })
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
   async register(
@@ -93,7 +96,9 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  GetProfile(@Req() req: { user: { nomUtilisateur: string; [k: string]: unknown } }) {
+  GetProfile(
+    @Req() req: { user: { nomUtilisateur: string; [k: string]: unknown } },
+  ) {
     const user = req.user;
     return {
       message: 'Profile retrieved successfully',

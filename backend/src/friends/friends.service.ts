@@ -56,14 +56,18 @@ export class FriendsService {
     toUserId: number,
   ): Promise<Result<void, FriendsError>> {
     if (fromUserId === toUserId) {
-      return err({ code: 'SELF', message: 'Cannot send a friend request to yourself' });
+      return err({
+        code: 'SELF',
+        message: 'Cannot send a friend request to yourself',
+      });
     }
 
     const toUser = await this.prisma.utilisateur.findUnique({
       where: { id: toUserId },
       select: { id: true },
     });
-    if (!toUser) return err({ code: 'USER_NOT_FOUND', message: 'User not found' });
+    if (!toUser)
+      return err({ code: 'USER_NOT_FOUND', message: 'User not found' });
 
     const { userAId, userBId } = orderPair(fromUserId, toUserId);
     const existingFriendship = await this.prisma.amitie.findUnique({
@@ -78,7 +82,10 @@ export class FriendsService {
       where: { pairAId_pairBId: { pairAId: userAId, pairBId: userBId } },
     });
     if (existingRequest?.statut === 'EN_ATTENTE') {
-      return err({ code: 'REQUEST_PENDING', message: 'Friend request already pending' });
+      return err({
+        code: 'REQUEST_PENDING',
+        message: 'Friend request already pending',
+      });
     }
 
     if (!existingRequest) {
@@ -116,9 +123,13 @@ export class FriendsService {
     const request = await this.prisma.demandeAmi.findUnique({
       where: { id: requestId },
     });
-    if (!request) return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
+    if (!request)
+      return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
     if (request.statut !== 'EN_ATTENTE') {
-      return err({ code: 'REQUEST_NOT_PENDING', message: 'Request is not pending' });
+      return err({
+        code: 'REQUEST_NOT_PENDING',
+        message: 'Request is not pending',
+      });
     }
     if (request.aId !== currentUserId) {
       return err({ code: 'NOT_ALLOWED', message: 'Not allowed' });
@@ -150,9 +161,13 @@ export class FriendsService {
     const request = await this.prisma.demandeAmi.findUnique({
       where: { id: requestId },
     });
-    if (!request) return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
+    if (!request)
+      return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
     if (request.statut !== 'EN_ATTENTE') {
-      return err({ code: 'REQUEST_NOT_PENDING', message: 'Request is not pending' });
+      return err({
+        code: 'REQUEST_NOT_PENDING',
+        message: 'Request is not pending',
+      });
     }
     if (request.aId !== currentUserId) {
       return err({ code: 'NOT_ALLOWED', message: 'Not allowed' });
@@ -166,4 +181,3 @@ export class FriendsService {
     return ok(undefined);
   }
 }
-

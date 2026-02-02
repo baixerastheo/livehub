@@ -5,4 +5,3 @@ export class SendFriendRequestDto {
   @Min(1)
   toUserId!: number;
 }
-
