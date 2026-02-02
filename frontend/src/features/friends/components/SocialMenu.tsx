@@ -1,22 +1,11 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import styles from "../styles/SocialMenu.module.css";
 
-type SocialTab = "users" | "friends" | "requests";
+export type SocialTab = "users" | "friends" | "requests";
 
-function normalizeTab(value: string | null): SocialTab {
-  if (value === "friends") return "friends";
-  if (value === "requests") return "requests";
-  return "users";
-}
-
-export function SocialMenu() {
-  const sp = useSearchParams();
-  const active = normalizeTab(sp?.get("tab") ?? null);
-
+export function SocialMenu({ active }: { active: SocialTab }) {
   return (
     <nav className={styles.tabs} aria-label="Social navigation">
       <Link
