@@ -5,7 +5,7 @@ import Image from "next/image";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
-import { useLogoutMutation } from "@/src/features/auth/api/useLogoutMutation";
+import { useLogoutMutation } from "@/src/features/auth/auth.hooks";
 import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
@@ -15,6 +15,7 @@ export function NavbarAuthSection() {
   const isOpen = useAppStore((state) => state.profileMenu.isOpen);
   const closeProfileMenu = useAppStore((state) => state.closeProfileMenu);
   const toggleProfileMenu = useAppStore((state) => state.toggleProfileMenu);
+  const openAccountModal = useAppStore((state) => state.openAccountModal);
 
   const isAuthenticated = status === "authenticated";
 
@@ -68,8 +69,14 @@ export function NavbarAuthSection() {
         {isOpen ? (
           <NavbarModalProfile
             username={username}
-            onMyAccount={closeProfileMenu}
-            onMyFriends={closeProfileMenu}
+            onMyAccount={() => {
+              closeProfileMenu();
+              openAccountModal("profile");
+            }}
+            onMyFriends={() => {
+              closeProfileMenu();
+              openAccountModal("friends");
+            }}
             onLogout={() => {
               closeProfileMenu();
               logoutMutation.mutate();
