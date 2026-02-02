@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma.service.js';
 import { CreateUser } from './dto/create-user.dto.js';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { ok, err } from '../result.js';
+
+function isBcryptHash(value: string): boolean {
+  return /^\$2[aby]\$/.test(value);
+}
 
 @Injectable()
 export class UserService {
@@ -61,7 +66,9 @@ export class UserService {
       data: {
         nomUtilisateur: data.nomUtilisateur,
         email: data.email,
-        motDePasse: data.motDePasse,
+        motDePasse: isBcryptHash(data.motDePasse)
+          ? data.motDePasse
+          : await bcrypt.hash(data.motDePasse, 10),
         statut: data.statut,
       },
     });
@@ -102,9 +109,21 @@ export class UserService {
       where: { id },
       data: {
         nomUtilisateur: data.nomUtilisateur,
-        motDePasse: data.motDePasse,
+        motDePasse: data.motDePasse
+          ? isBcryptHash(data.motDePasse)
+            ? data.motDePasse
+            : await bcrypt.hash(data.motDePasse, 10)
+          : undefined,
         statut: data.statut,
       },
+    });
+    return ok(updatedUser);
+  }
+
+  async updatePassword(id: number, motDePasse: string) {
+    const updatedUser = await this.prisma.utilisateur.update({
+      where: { id },
+      data: { motDePasse },
     });
     return ok(updatedUser);
   }

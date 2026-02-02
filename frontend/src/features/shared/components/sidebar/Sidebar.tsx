@@ -1,10 +1,22 @@
 import styles from "../../styles/sidebar/Sidebar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
+import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
 
 export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
-  const closeSidebar = useAppStore((state) => state.closeSidebar);
+  const section = useAppStore((state) => state.sidebarSection);
+  const closeMobileSidebars = useAppStore((state) => state.closeMobileSidebars);
   const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const isNotAuthenticated = useAuthStore(
+    (state) => state.status === "unauthenticated",
+  );
+
+  const header =
+    section === "activity"
+      ? "Notifications"
+      : section === "teams"
+        ? "Servers"
+        : "Conversations";
 
   return (
     <>
@@ -15,35 +27,49 @@ export function Sidebar() {
           type="button"
           className={styles.closeButton}
           aria-label="Close conversation list"
-          onClick={closeSidebar}
+          onClick={closeMobileSidebars}
         >
           ×
         </button>
-        <div className={styles.header}>Conversations</div>
+        <div className={styles.header}>{header}</div>
         <div className={styles.emptyState}>
-          <p className={styles.emptyTitle}>No conversation</p>
+          <p className={styles.emptyTitle}>
+            {section === "activity"
+              ? "No notification"
+              : section === "teams"
+                ? "No server"
+                : "No conversation"}
+          </p>
           <p className={styles.emptySubtitle}>
-            Start a new conversation to see it here.
+            {section === "activity"
+              ? "Your recent activity will appear here."
+              : section === "teams"
+                ? "Join or create a server to see it here."
+                : "Start a new conversation to see it here."}
           </p>
         </div>
-        <button
-          type="button"
-          className={styles.startButton}
-          onClick={() => openAuthModal("login")}
-        >
-          Start conversation
-        </button>
+        {section === "conversation" && (
+          <button
+            type="button"
+            className={styles.startButton}
+            onClick={() => {
+              if (isNotAuthenticated) {
+                openAuthModal("login");
+              }
+            }}
+          >
+            Start conversation
+          </button>
+        )}
       </aside>
       {isOpen && (
         <button
           type="button"
           className={styles.sidebarBackdrop}
           aria-label="Close conversation list"
-          onClick={closeSidebar}
+          onClick={closeMobileSidebars}
         />
       )}
     </>
   );
 }
-
-

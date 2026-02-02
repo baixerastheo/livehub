@@ -25,7 +25,7 @@ import { CreateMessageDto } from './dto/create-message.dto.js';
 @ApiTags('Messages')
 @Controller()
 export class MessageController {
-    constructor(private readonly messageService: MessageService) {}
+  constructor(private readonly messageService: MessageService) {}
 
     @Get('channels/:id/messages')
     @HttpCode(HttpStatus.OK)
@@ -42,6 +42,8 @@ export class MessageController {
         }
         return result.value;
     }
+    return result.value;
+  }
 
     @Post('channels/:id/messages')
     @HttpCode(HttpStatus.CREATED)
@@ -59,6 +61,8 @@ export class MessageController {
         }
         return result.value;
     }
+    return result.value;
+  }
 
     @Delete('messages/:id')
     @HttpCode(HttpStatus.OK)
@@ -85,4 +89,6 @@ export class MessageController {
         }
         return result.value;
     }
+    return result.value;
+  }
 }

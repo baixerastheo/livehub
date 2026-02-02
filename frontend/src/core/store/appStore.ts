@@ -1,18 +1,37 @@
 import { create } from "zustand";
 
+export type AccountModalSection = "profile" | "friends" | "settings";
+export type SidebarSection = "activity" | "conversation" | "teams";
+
 type AppState = {
   isSidebarOpen: boolean;
+  isSidebarRailOpen: boolean;
+  sidebarSection: SidebarSection;
   authModal: {
     isOpen: boolean;
     mode: "login" | "register";
+  };
+  accountModal: {
+    isOpen: boolean;
+    section: AccountModalSection;
   };
   profileMenu: {
     isOpen: boolean;
   };
   toggleSidebar: () => void;
+  openSidebar: () => void;
   closeSidebar: () => void;
+  toggleSidebarRail: () => void;
+  openSidebarRail: () => void;
+  closeSidebarRail: () => void;
+  setSidebarSection: (section: SidebarSection) => void;
+  toggleMobileSidebars: () => void;
+  closeMobileSidebars: () => void;
   openAuthModal: (mode: "login" | "register") => void;
   closeAuthModal: () => void;
+  openAccountModal: (section?: AccountModalSection) => void;
+  closeAccountModal: () => void;
+  setAccountModalSection: (section: AccountModalSection) => void;
   openProfileMenu: () => void;
   closeProfileMenu: () => void;
   toggleProfileMenu: () => void;
@@ -20,9 +39,15 @@ type AppState = {
 
 export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
+  isSidebarRailOpen: false,
+  sidebarSection: "conversation",
   authModal: {
     isOpen: false,
     mode: "login",
+  },
+  accountModal: {
+    isOpen: false,
+    section: "profile",
   },
   profileMenu: {
     isOpen: false,
@@ -31,8 +56,42 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
     })),
+  openSidebar: () =>
+    set({
+      isSidebarOpen: true,
+    }),
   closeSidebar: () =>
     set({
+      isSidebarOpen: false,
+    }),
+  toggleSidebarRail: () =>
+    set((state) => ({
+      isSidebarRailOpen: !state.isSidebarRailOpen,
+    })),
+  openSidebarRail: () =>
+    set({
+      isSidebarRailOpen: true,
+    }),
+  closeSidebarRail: () =>
+    set({
+      isSidebarRailOpen: false,
+    }),
+  setSidebarSection: (section) =>
+    set({
+      sidebarSection: section,
+    }),
+  toggleMobileSidebars: () =>
+    set((state) => {
+      const shouldOpen = !state.isSidebarRailOpen || !state.isSidebarOpen;
+
+      return {
+        isSidebarRailOpen: shouldOpen,
+        isSidebarOpen: shouldOpen,
+      };
+    }),
+  closeMobileSidebars: () =>
+    set({
+      isSidebarRailOpen: false,
       isSidebarOpen: false,
     }),
   openAuthModal: (mode) =>
@@ -49,6 +108,27 @@ export const useAppStore = create<AppState>((set) => ({
         mode: "login",
       },
     }),
+  openAccountModal: (section = "profile") =>
+    set({
+      accountModal: {
+        isOpen: true,
+        section,
+      },
+    }),
+  closeAccountModal: () =>
+    set({
+      accountModal: {
+        isOpen: false,
+        section: "profile",
+      },
+    }),
+  setAccountModalSection: (section) =>
+    set((state) => ({
+      accountModal: {
+        ...state.accountModal,
+        section,
+      },
+    })),
   openProfileMenu: () =>
     set({
       profileMenu: {

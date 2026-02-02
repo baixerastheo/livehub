@@ -1,0 +1,72 @@
+.sectionStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.cardSubtle {
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.preferenceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preferenceTitle {
+  font-weight: 800;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  border-radius: 999px;
+}
+
+.segment {
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.segment:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.segmentActive {
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+  color: rgba(0, 0, 0, 0.9);
+}
+

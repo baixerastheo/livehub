@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 interface AppState {
-  // Ajoutez vos états ici
+  
   count: number;
   increment: () => void;
   decrement: () => void;
