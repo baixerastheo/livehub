@@ -14,7 +14,6 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:4001',
 
   // Session configuration
@@ -38,12 +37,10 @@ export const auth = betterAuth({
     },
   },
 
-
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
   },
-
 
   advanced: {
     cookiePrefix: 'livehub',

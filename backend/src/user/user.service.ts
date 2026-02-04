@@ -124,5 +124,4 @@ export class UserService {
     });
     return ok(updatedUser);
   }
-
 }
