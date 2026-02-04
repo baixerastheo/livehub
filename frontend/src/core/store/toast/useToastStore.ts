@@ -32,3 +32,17 @@ export const useToastStore = create<ToastState>((set) => ({
     })),
 }));
 
+/**
+ * Hook for showing toasts with convenience methods
+ */
+export function useToast() {
+  const push = useToastStore((state) => state.push);
+
+  return {
+    toast: {
+      info: (message: string) => push({ type: "info", message }),
+      success: (message: string) => push({ type: "success", message }),
+      error: (message: string) => push({ type: "error", message }),
+    },
+  };
+}

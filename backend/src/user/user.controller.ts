@@ -1,6 +1,5 @@
 import { UserService } from './user.service.js';
 import {
-  ApiTags,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
@@ -12,40 +11,27 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   Put,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
 import { UpdateUser } from './dto/update-user.dto.js';
 import { CreateUser } from './dto/create-user.dto.js';
-import type { Utilisateur } from '../../generated/prisma/client.js';
 
-function toPublicUser(user: Utilisateur) {
-  const { motDePasse: _password, ...rest } = user;
-  return rest;
-}
-
-@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/')
-  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'All users retrieved successfully',
   })
   async getAllUsers() {
-    const users = await this.userService.getAllUsers();
-    return users.map(toPublicUser);
+    return await this.userService.getAllUsers();
   }
 
   @Get('/email/:email')
-  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'Users retrieved successfully',
   })
@@ -57,76 +43,71 @@ export class UserController {
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 
-  @Get('/username/:username')
-  @HttpCode(HttpStatus.OK)
+  @Get('/name/:name')
   @ApiOkResponse({
     description: 'User retrieved successfully',
   })
   @ApiNotFoundResponse({
-    description: 'User with this Username does not exist',
+    description: 'User with this name does not exist',
   })
-  async GetUserByUsername(@Param('username') username: string) {
-    const result = await this.userService.GetUserByUsername(username);
+  async GetUserByName(@Param('name') name: string) {
+    const result = await this.userService.GetUserByName(name);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 
   @Get('/:id')
-  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User retrieved successfully',
   })
   @ApiNotFoundResponse({
     description: 'User with this ID does not exist',
   })
-  async getUserById(@Param('id', ParseIntPipe) id: number) {
+  async getUserById(@Param('id') id: string) {
     const result = await this.userService.getUserById(id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 
   @Delete('/:id')
-  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User deleted successfully',
   })
   @ApiNotFoundResponse({
     description: 'User with this ID does not exist',
   })
-  async deleteUser(@Param('id', ParseIntPipe) id: number) {
+  async deleteUser(@Param('id') id: string) {
     const result = await this.userService.deleteUser(id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 
   @Post('/')
-  @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'User created successfully',
     type: CreateUser,
   })
   @ApiConflictResponse({
-    description: 'Email or username already exists',
+    description: 'Email or name already exists',
   })
   async createUser(@Body() data: CreateUser) {
     const result = await this.userService.createUser(data);
     if (result.isErr()) {
       throw new ConflictException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 
   @Put('/:id')
-  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     description: 'User updated successfully',
     type: UpdateUser,
@@ -135,20 +116,13 @@ export class UserController {
     description: 'User with this ID does not exist',
   })
   @ApiConflictResponse({
-    description: 'Username already exists',
+    description: 'Name already exists',
   })
-  async updateUser(
-    @Body() data: UpdateUser,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async updateUser(@Body() data: UpdateUser, @Param('id') id: string) {
     const result = await this.userService.updateUser(id, data);
     if (result.isErr()) {
-      const msg = result.error;
-      if (msg === 'Username already exists') {
-        throw new ConflictException(msg);
-      }
-      throw new NotFoundException(msg);
+      throw new NotFoundException(result.error);
     }
-    return toPublicUser(result.value);
+    return result.value;
   }
 }

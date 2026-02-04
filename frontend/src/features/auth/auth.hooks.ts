@@ -1,73 +1,49 @@
 "use client";
+import { useMutation } from "@tanstack/react-query";
+import { signIn, signUp, signOut } from "@/src/lib/auth-client";
 
-import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import type { LoginFormData, RegisterFormData } from "@/src/lib/schemas";
-import { loginSchema, registerSchema } from "@/src/lib/schemas";
-import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
-import { authService } from "@/src/features/auth/auth.service";
+interface Login { email: string; password: string }
+interface Register { name: string; email: string; password: string }
 
 export function useLoginMutation() {
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const setUser = useAuthStore((state) => state.setUser);
-
   return useMutation({
-    mutationFn: async (payload: LoginFormData) => {
-      const validated = loginSchema.parse(payload);
-      return authService.login(validated);
-    },
-    onSuccess: ({ accessToken, user }) => {
-      setAccessToken(accessToken);
-      if (user) setUser(user);
+    mutationFn: async (credentials: Login) => {
+      const result = await signIn.email({
+        email: credentials.email,
+        password: credentials.password,
+      });
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
     },
   });
 }
 
 export function useRegisterMutation() {
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const setUser = useAuthStore((state) => state.setUser);
-
   return useMutation({
-    mutationFn: async (payload: RegisterFormData) => {
-      const validated = registerSchema.parse(payload);
-      const rest = {
-        username: validated.username,
-        email: validated.email,
-        password: validated.password,
-      };
-      return authService.register(rest);
-    },
-    onSuccess: ({ accessToken, user }) => {
-      setAccessToken(accessToken);
-      if (user) setUser(user);
+    mutationFn: async (credentials: Register  ) => {
+      const result = await signUp.email({
+        name: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+      });
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
     },
   });
 }
 
 export function useLogoutMutation() {
-  const logoutLocal = useAuthStore((state) => state.logoutLocal);
-
   return useMutation({
-    mutationFn: authService.logout,
-    onSettled: () => {
-      logoutLocal();
+    mutationFn: async () => {
+      const result = await signOut();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
     },
   });
 }
-
-export function useMeQuery() {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const setUser = useAuthStore((state) => state.setUser);
-
-  const query = useQuery({
-    queryKey: ["auth", "me", accessToken ?? ""] as const,
-    queryFn: accessToken ? () => authService.getProfile(accessToken) : skipToken,
-  });
-
-  useEffect(() => {
-    if (query.data) setUser(query.data);
-  }, [query.data, setUser]);
-
-  return query;
-}
-

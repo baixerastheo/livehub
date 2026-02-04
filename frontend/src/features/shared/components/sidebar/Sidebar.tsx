@@ -1,15 +1,10 @@
 import styles from "../../styles/sidebar/Sidebar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
 
 export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
   const section = useAppStore((state) => state.sidebarSection);
   const closeMobileSidebars = useAppStore((state) => state.closeMobileSidebars);
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
-  const isNotAuthenticated = useAuthStore(
-    (state) => state.status === "unauthenticated",
-  );
 
   const header =
     section === "activity"
@@ -49,15 +44,7 @@ export function Sidebar() {
           </p>
         </div>
         {section === "conversation" && (
-          <button
-            type="button"
-            className={styles.startButton}
-            onClick={() => {
-              if (isNotAuthenticated) {
-                openAuthModal("login");
-              }
-            }}
-          >
+          <button type="button" className={styles.startButton}>
             Start conversation
           </button>
         )}

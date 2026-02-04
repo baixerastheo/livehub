@@ -4,14 +4,15 @@ import { useAppStore } from "@/src/core/store/appStore";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import styles from "../styles/AuthModal.module.css";
+import { useAuthModal } from "./useAuthModal";
 
 export function AuthModal() {
-  const authModal = useAppStore((state) => state.authModal);
-  const closeAuthModal = useAppStore((state) => state.closeAuthModal);
+  const { isOpen, mode } = useAuthModal();
+  const closeAuthModal = useAuthModal().close;
 
-  if (!authModal.isOpen) return null;
+  if (!isOpen) return null;
 
-  const isLogin = authModal.mode === "login";
+  const isLogin = mode === "login";
 
   return (
     <div
@@ -43,4 +44,3 @@ export function AuthModal() {
     </div>
   );
 }
-

@@ -7,10 +7,6 @@ type AppState = {
   isSidebarOpen: boolean;
   isSidebarRailOpen: boolean;
   sidebarSection: SidebarSection;
-  authModal: {
-    isOpen: boolean;
-    mode: "login" | "register";
-  };
   accountModal: {
     isOpen: boolean;
     section: AccountModalSection;
@@ -27,8 +23,6 @@ type AppState = {
   setSidebarSection: (section: SidebarSection) => void;
   toggleMobileSidebars: () => void;
   closeMobileSidebars: () => void;
-  openAuthModal: (mode: "login" | "register") => void;
-  closeAuthModal: () => void;
   openAccountModal: (section?: AccountModalSection) => void;
   closeAccountModal: () => void;
   setAccountModalSection: (section: AccountModalSection) => void;
@@ -41,10 +35,6 @@ export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
   isSidebarRailOpen: false,
   sidebarSection: "conversation",
-  authModal: {
-    isOpen: false,
-    mode: "login",
-  },
   accountModal: {
     isOpen: false,
     section: "profile",
@@ -93,20 +83,6 @@ export const useAppStore = create<AppState>((set) => ({
     set({
       isSidebarRailOpen: false,
       isSidebarOpen: false,
-    }),
-  openAuthModal: (mode) =>
-    set({
-      authModal: {
-        isOpen: true,
-        mode,
-      },
-    }),
-  closeAuthModal: () =>
-    set({
-      authModal: {
-        isOpen: false,
-        mode: "login",
-      },
     }),
   openAccountModal: (section = "profile") =>
     set({

@@ -1,10 +1,10 @@
 "use client";
 
-import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../styles/Home.module.css";
+import { useAuthModal } from "../../modalAuth/components/useAuthModal";
 
 export function HomeAuthCallToAction() {
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const { openLogin, openRegister } = useAuthModal();
 
   return (
     <div className={styles.authContainer}>
@@ -13,14 +13,14 @@ export function HomeAuthCallToAction() {
         <button
           type="button"
           className={styles.primaryButton}
-          onClick={() => openAuthModal("login")}
+          onClick={openLogin}
         >
           Sign in
         </button>
         <button
           type="button"
           className={styles.secondaryButton}
-          onClick={() => openAuthModal("register")}
+          onClick={openRegister}
         >
           Sign up
         </button>
@@ -28,4 +28,3 @@ export function HomeAuthCallToAction() {
     </div>
   );
 }
-
