@@ -14,3 +14,16 @@ export const {
   useSession,
   getSession,
 } = authClient;
+
+export const signInWithRoblox = () => {
+  return signIn.social({
+    provider: "roblox",
+    callbackURL: "/", 
+  });
+}
+  export const signInWithGoogle = () => {
+  return signIn.social({
+    provider: "google",
+    callbackURL: "/", 
+  });
+};
