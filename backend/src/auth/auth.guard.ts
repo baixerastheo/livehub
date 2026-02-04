@@ -8,6 +8,12 @@ import { Request } from 'express';
 import { auth } from '../lib/auth.js';
 import { fromNodeHeaders } from 'better-auth/node';
 
+type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
+type RequestWithAuth = Request & {
+  user: NonNullable<Session>['user'];
+  session: NonNullable<Session>['session'];
+};
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,12 +28,11 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Not authenticated');
       }
 
-      // Attach user and session to request
-      (request as any).user = session.user;
-      (request as any).session = session.session;
+      (request as RequestWithAuth).user = session.user;
+      (request as RequestWithAuth).session = session.session;
 
       return true;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid session');
     }
   }

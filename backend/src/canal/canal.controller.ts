@@ -35,7 +35,6 @@ export class CanalController {
     @Param('serverId', ParseIntPipe) serverId: number,
     @Body() data: CreateCanal,
   ) {
-
     //récupérer userId depuis la session Better Auth
     const userId = '';
     const result = await this.canalService.CreateChannel(
