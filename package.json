@@ -10,7 +10,7 @@
     "build:frontend": "pnpm --filter frontend build",
     "build:backend": "pnpm --filter backend build",
     "lint": "pnpm -r lint",
-    "review:check": "pnpm --filter frontend lint && pnpm --filter backend lint && pnpm --filter frontend exec tsc --noEmit && pnpm --filter backend exec tsc --noEmit",
+    "review:check": "pnpm --filter frontend lint && pnpm --filter backend lint && pnpm --filter frontend run typecheck && pnpm --filter backend run typecheck",
     "test": "pnpm -r test",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
