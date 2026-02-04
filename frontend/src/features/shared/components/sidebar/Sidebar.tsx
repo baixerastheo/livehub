@@ -80,7 +80,11 @@ export function Sidebar() {
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>
       <SidebarCloseButton />
       <SidebarHeader>{header}</SidebarHeader>
-      {section === "conversation" && <SidebarConversationsContent />}
+      {section === "conversation" && (
+        <React.Suspense fallback={null}>
+          <SidebarConversationsContent />
+        </React.Suspense>
+      )}
       {section === "activity" && (
         <SidebarEmptyStatePart
           title="No notification"
