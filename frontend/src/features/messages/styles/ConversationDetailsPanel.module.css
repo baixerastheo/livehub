@@ -1,0 +1,47 @@
+.rightPanel {
+  width: 320px;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+  padding: 14px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panelTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.panelCard {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.panelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panelLabel {
+  font-weight: 700;
+}
+
+.panelValue {
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 980px) {
+  .rightPanel {
+    display: none;
+  }
+}

@@ -18,7 +18,7 @@ type UserDirectoryProps = {
    */
   onMessage?: (user: UtilisateurDto) => void | Promise<void>;
   /**
-   * User IDs to hide from the directory (ex: already friends).
+   * User IDs to hide from the directory (ex: already friends).p
    */
   hiddenUserIds?: number[];
   /**

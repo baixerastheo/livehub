@@ -1,0 +1,84 @@
+.composer {
+  padding: 12px 18px 16px;
+  border-top: none;
+  background: #ffffff;
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.composerBar {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.composerLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.composerIconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.78);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.composerIconButton:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.composerDivider {
+  width: 1px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0 6px;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.input::placeholder {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.composerBar:focus-within {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.composerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+  .composer {
+    padding: 10px 12px 14px;
+  }
+}
