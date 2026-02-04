@@ -6,7 +6,7 @@ import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
 import { useRegisterMutation } from "@/src/features/auth/auth.hooks";
 import { signInWithRoblox, signInWithGoogle } from "@/src/lib/auth-client";
 import styles from "../styles/AuthForm.module.css";
-import { useAuthModal } from "./useAuthModal";
+import { useAuthModal } from "../store/useAuthModal";
 
 export function RegisterForm() {
   const openAuthModal = useAuthModal().openLogin;

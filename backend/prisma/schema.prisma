@@ -34,6 +34,26 @@ model Amitie {
   @@index([userBId])
 }
 
+enum StatutDemandeAmitie {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+model DemandeAmitie {
+  id         String              @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  statut     StatutDemandeAmitie @default(EN_ATTENTE)
+  creeLe     DateTime            @default(now())
+  fromUser   User                @relation("DemandeAmitie_fromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User                @relation("DemandeAmitie_toUser", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([fromUserId])
+  @@index([toUserId])
+}
+
 
 
 model Serveur {
@@ -140,8 +160,10 @@ model User {
   invitations      Invitation[]
   messagesEnvoyes  MessagePrive[]  @relation("MessagesEnvoyes")
   messagesRecus    MessagePrive[]  @relation("MessagesRecus")
-  amitiesCommeA    Amitie[]        @relation("Amitie_userAIdToUser")
-  amitiesCommeB    Amitie[]        @relation("Amitie_userBIdToUser")
+  amitiesCommeA       Amitie[]         @relation("Amitie_userAIdToUser")
+  amitiesCommeB       Amitie[]         @relation("Amitie_userBIdToUser")
+  demandesEnvoyees    DemandeAmitie[]  @relation("DemandeAmitie_fromUser")
+  demandesRecues      DemandeAmitie[]  @relation("DemandeAmitie_toUser")
 
   @@unique([email])
   @@index([name])

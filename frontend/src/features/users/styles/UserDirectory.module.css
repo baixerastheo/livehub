@@ -1,0 +1,254 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 18px 22px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.subtle {
+  margin-top: 2px;
+  font-size: 0.86rem;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.searchWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+}
+
+
+
+.searchInput {
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0 12px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: rgba(0, 0, 0, 0.22);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.notice {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.82);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+}
+
+.state {
+  padding: 12px;
+  color: rgba(0, 0, 0, 0.62);
+  font-size: 0.9rem;
+}
+
+.stateError {
+  padding: 12px;
+  color: rgb(180, 24, 24);
+  font-size: 0.9rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.userBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.username {
+  font-size: 0.95rem;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userSubtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.statusDot[data-status="EN_LIGNE"] {
+  background: rgb(34, 197, 94);
+}
+.statusDot[data-status="ABSENT"] {
+  background: rgb(234, 179, 8);
+}
+.statusDot[data-status="INVISIBLE"] {
+  background: rgba(0, 0, 0, 0.35);
+}
+.statusDot[data-status="HORS_LIGNE"] {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.primaryButton,
+.secondaryButton {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease, background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.primaryButton {
+  background: rgb(0, 0, 0);
+  color: white;
+}
+
+.primaryButton:hover {
+  background: rgb(24, 24, 24);
+}
+
+.secondaryButton {
+  background: transparent;
+  color: rgba(0, 0, 0, 0.82);
+}
+
+.secondaryButton:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.primaryButton:active,
+.secondaryButton:active {
+  transform: scale(0.98);
+}
+
+.buttonIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 14px 12px 18px;
+  }
+
+  .searchWrap {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .row {
+    padding: 10px 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .username {
+    font-size: 0.92rem;
+  }
+}
+
