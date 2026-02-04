@@ -48,7 +48,10 @@ export class FriendsController {
   }
 
   @Post('requests')
-  async sendRequest(@Req() req: RequestWithAuth, @Body() dto: SendFriendRequestDto) {
+  async sendRequest(
+    @Req() req: RequestWithAuth,
+    @Body() dto: SendFriendRequestDto,
+  ) {
     const result = await this.friendsService.sendRequest(
       req.user.id,
       dto.toUserId,

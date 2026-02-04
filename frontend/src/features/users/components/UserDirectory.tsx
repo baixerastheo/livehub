@@ -32,7 +32,7 @@ export function UserDirectory({
 }: UserDirectoryProps) {
   const [q, setQ] = React.useState("");
   const [notice, setNotice] = React.useState<string | null>(null);
-  const noticeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noticeTimeoutRef = React.useRef<number | null>(null);
 
   const openLogin = useAuthModal((state) => state.openLogin);
   const { user: authUser, isAuthenticated } = useAuth();

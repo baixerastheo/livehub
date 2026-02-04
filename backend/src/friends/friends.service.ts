@@ -4,10 +4,7 @@ import { PrismaService } from '../prisma.service.js';
 import { err, ok, Result } from '../result.js';
 import { publicUserSelect } from '../user/public-user.js';
 
-function orderPair(
-  a: string,
-  b: string,
-): { userAId: string; userBId: string } {
+function orderPair(a: string, b: string): { userAId: string; userBId: string } {
   return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
 }
 
@@ -38,9 +35,7 @@ export class FriendsService {
       },
     });
 
-    return rows.map((r) =>
-      r.userAId === userId ? r.userB : r.userA,
-    );
+    return rows.map((r) => (r.userAId === userId ? r.userB : r.userA));
   }
 
   async listRequests(userId: string) {
@@ -134,7 +129,10 @@ export class FriendsService {
       return err({ code: 'NOT_ALLOWED', message: 'Not allowed' });
     }
 
-    const { userAId, userBId } = orderPair(request.fromUserId, request.toUserId);
+    const { userAId, userBId } = orderPair(
+      request.fromUserId,
+      request.toUserId,
+    );
 
     try {
       await this.prisma.$transaction([
