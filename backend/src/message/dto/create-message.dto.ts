@@ -8,16 +8,16 @@ export class CreateMessageDto {
     type: String,
   })
   @IsNotEmpty({
-    message: "The 'contenu' field is required.",
+    message: "The 'content' field is required.",
   })
   @IsString({
-    message: "The 'contenu' field must be a string.",
+    message: "The 'content' field must be a string.",
   })
   @MinLength(1, {
-    message: "The 'contenu' field must contain at least 1 character.",
+    message: "The 'content' field must contain at least 1 character.",
   })
   @MaxLength(4000, {
-    message: "The 'contenu' field must not exceed 4000 characters.",
+    message: "The 'content' field must not exceed 4000 characters.",
   })
-  contenu: string;
+  content: string;
 }

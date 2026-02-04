@@ -3,7 +3,7 @@
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import styles from "../styles/AuthModal.module.css";
-import { useAuthModal } from "./useAuthModal";
+import { useAuthModal } from "../store/useAuthModal";
 
 export function AuthModal() {
   const { isOpen, mode } = useAuthModal();

@@ -1,0 +1,24 @@
+.startButton {
+  margin-top: 1.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  max-width: 400px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.startButton:hover {
+  background-color: #181818;
+}
+
+.startButton:active {
+  transform: scale(0.98);
+}
