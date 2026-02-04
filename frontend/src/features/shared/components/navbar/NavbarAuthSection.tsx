@@ -93,7 +93,7 @@ export function NavbarAuthSection() {
             }}
             onMyFriends={() => {
               closeProfileMenu();
-              router.push("/people");
+              router.push("/people?tab=friends");
             }}
             onLogout={handleLogout}
           />

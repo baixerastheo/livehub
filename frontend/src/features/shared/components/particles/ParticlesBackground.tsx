@@ -1,11 +1,14 @@
- "use client";
+"use client";
 
 import React from "react";
-import styles from "../styles/ParticlesBackground.module.css";
+import styles from "../../styles/particles/ParticlesBackground.module.css";
 
 type Props = {
   className?: string;
   tone?: "black" | "blue";
+  maxParticles?: number;
+  intensity?: "full" | "subtle";
+  disablePointerRepel?: boolean;
 };
 
 type ColorKind = "blue" | "dark";
@@ -48,10 +51,17 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-export function ParticlesBackground({ className, tone = "black" }: Props) {
+export function ParticlesBackground({
+  className,
+  tone = "black",
+  maxParticles: maxParticlesProp,
+  intensity = "full",
+  disablePointerRepel = false,
+}: Props) {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const isSubtle = intensity === "subtle";
 
   const pointerRef = React.useRef<{
     x: number;
@@ -81,10 +91,16 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
       particles.length = 0;
       const { w, h } = getSize();
 
-      const targetCount = Math.min(
+      let targetCount = Math.min(
         1200,
         Math.max(400, Math.floor((w * h) / 3200)),
       );
+      if (maxParticlesProp != null) {
+        targetCount = Math.min(targetCount, maxParticlesProp);
+      }
+      if (isSubtle) {
+        targetCount = Math.min(targetCount, 50);
+      }
 
       const colorWeight = (): ColorKind => {
         const r = Math.random();
@@ -92,14 +108,18 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
         return "dark";
       };
 
+      const baseR = isSubtle ? 0.55 : 0.7;
+      const baseAlphaMin = isSubtle ? 0.18 : 0.32;
+      const baseAlphaRange = isSubtle ? 0.17 : 0.28;
+
       for (let i = 0; i < targetCount; i++) {
         particles.push({
           x: Math.random() * w,
           y: Math.random() * h,
           vx: (Math.random() - 0.5) * 0.15,
           vy: (Math.random() - 0.5) * 0.15,
-          r: 0.7 + Math.random() * 1,
-          baseAlpha: 0.32 + Math.random() * 0.28,
+          r: baseR + Math.random() * (isSubtle ? 0.55 : 1),
+          baseAlpha: baseAlphaMin + Math.random() * baseAlphaRange,
           phase: Math.random() * Math.PI * 2,
           wiggleAmp: 0.25 + Math.random() * 0.7,
           wiggleSpeed: 0.5 + Math.random() * 0.8,
@@ -108,9 +128,9 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
         });
       }
 
-      const linkMaxRadius = 85;
+      const linkMaxRadius = isSubtle ? 45 : 85;
       const linkMaxRadius2 = linkMaxRadius * linkMaxRadius;
-      const maxNeighbors = 2;
+      const maxNeighbors = isSubtle ? 1 : 2;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         const candidates: { j: number; dist2: number }[] = [];
@@ -170,8 +190,7 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
       const py = pointerRef.current.y;
       const pointerActive = pointerRef.current.active;
 
-      // Constellation alignments: faint lines between nearest stars (skip if wrapped too far)
-      const drawLinkMaxRadius = 90;
+      const drawLinkMaxRadius = isSubtle ? 50 : 90;
       const drawLinkMaxRadius2 = drawLinkMaxRadius * drawLinkMaxRadius;
       ctx.lineWidth = 1;
       for (let i = 0; i < particles.length; i++) {
@@ -192,7 +211,8 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
           const dy = qy1 - py1;
           const dist2 = dx * dx + dy * dy;
           if (dist2 > drawLinkMaxRadius2) continue;
-          const alpha = 0.06 * (1 - 0.5 * Math.random());
+          const linkAlpha = isSubtle ? 0.045 : 0.06;
+          const alpha = linkAlpha * (1 - 0.5 * Math.random());
           ctx.strokeStyle = getColorRgba(p.color, alpha);
           ctx.beginPath();
           ctx.moveTo(px1, py1);
@@ -210,11 +230,10 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
         p.vx += (Math.random() - 0.5) * drift * 0.02;
         p.vy += (Math.random() - 0.5) * drift * 0.02;
 
-        // gentle idle shimmer even without pointer
         p.vx += Math.sin(t * 0.65 + p.phase) * 0.0022;
         p.vy += Math.cos(t * 0.55 + p.phase) * 0.0022;
 
-        if (pointerActive) {
+        if (pointerActive && !disablePointerRepel) {
           const dx = p.x - px;
           const dy = p.y - py;
           const dist2 = dx * dx + dy * dy;
@@ -245,14 +264,16 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
           Math.cos(t * (p.wiggleSpeed * 0.92) + p.phase) * p.wiggleAmp;
 
         ctx.beginPath();
-        ctx.fillStyle = getColorRgba(p.color, p.baseAlpha);
+        const drawAlpha = isSubtle ? p.baseAlpha * 0.9 : p.baseAlpha;
+        ctx.fillStyle = getColorRgba(p.color, drawAlpha);
         ctx.arc(p.x + wiggleX, p.y + wiggleY, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
       if (pointerActive) {
-        const connectRadius = 110;
+        const connectRadius = isSubtle ? 50 : 110;
         const connectRadius2 = connectRadius * connectRadius;
+        const connectAlphaMax = isSubtle ? 0.16 : 0.22;
         ctx.lineWidth = 1;
         for (const p of particles) {
           const dx = p.x - px;
@@ -260,7 +281,7 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
           const dist2 = dx * dx + dy * dy;
           if (dist2 < connectRadius2) {
             const dist = Math.sqrt(dist2);
-            const a = (1 - dist / connectRadius) * 0.22;
+            const a = (1 - dist / connectRadius) * connectAlphaMax;
             if (a <= 0) continue;
             ctx.strokeStyle = getColorRgba(p.color, a);
             ctx.beginPath();
@@ -285,7 +306,7 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
       window.removeEventListener("blur", onBlur);
       window.cancelAnimationFrame(raf);
     };
-  }, [prefersReducedMotion, tone]);
+  }, [prefersReducedMotion, tone, maxParticlesProp, isSubtle, disablePointerRepel]);
 
   return (
     <div ref={wrapperRef} className={`${styles.wrapper} ${className ?? ""}`}>
@@ -293,4 +314,3 @@ export function ParticlesBackground({ className, tone = "black" }: Props) {
     </div>
   );
 }
-
