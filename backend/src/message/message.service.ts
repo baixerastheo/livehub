@@ -21,7 +21,7 @@ export class MessageService {
     return ok(messages);
   }
 
-  async createMessage(contenu: string, canalId: number, utilisateurId: number) {
+  async createMessage(contenu: string, canalId: number, userId: string) {
     const canal = await this.prisma.canal.findUnique({
       where: { id: canalId },
       include: { serveur: true },
@@ -32,8 +32,8 @@ export class MessageService {
     }
     const membreServeur = await this.prisma.membreServeur.findUnique({
       where: {
-        utilisateurId_serveurId: {
-          utilisateurId,
+        userId_serveurId: {
+          userId,
           serveurId: canal.serveur.id,
         },
       },
@@ -47,12 +47,12 @@ export class MessageService {
       data: {
         contenu,
         canalId,
-        auteurId: utilisateurId,
+        auteurId: userId,
       },
       include: {
         auteur: {
           select: {
-            nomUtilisateur: true,
+            name: true,
           },
         },
       },
@@ -60,7 +60,7 @@ export class MessageService {
     return ok(message);
   }
 
-  async deleteMessage(id: number, utilisateurId: number) {
+  async deleteMessage(id: number, userId: string) {
     const message = await this.prisma.message.findUnique({
       where: { id },
       include: { auteur: true },
@@ -68,7 +68,7 @@ export class MessageService {
     if (!message) {
       return err('No message found for ID ' + id);
     }
-    if (message.auteurId !== utilisateurId) {
+    if (message.auteurId !== userId) {
       return err('You can only delete your own messages');
     }
     const deletedMessage = await this.prisma.message.delete({

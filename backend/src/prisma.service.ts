@@ -1,14 +1,15 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    const connectionString = process.env.DATABASE_URL;
+    // Use DIRECT_URL for direct connection (not pgbouncer)
+    const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error(
-        'DATABASE_URL is missing. Check `backend/.env` or your process environment.',
+        'DATABASE_URL or DIRECT_URL is missing. Check `backend/.env` or your process environment.',
       );
     }
 
@@ -18,5 +19,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect();
+  }
+
+  async onModuleDestroy() {
+    await this.$disconnect();
   }
 }

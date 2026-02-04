@@ -1,21 +1,16 @@
- "use client";
+"use client";
 
 import { useMemo, useState } from "react";
-import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
 import styles from "../styles/ProfileSection.module.css";
 
 export function ProfileSection() {
-  const user = useAuthStore((state) => state.user);
-
-  const initialUsername = user?.username ?? "";
-  const initialEmail = user?.email ?? "";
-
-  const [username, setUsername] = useState(initialUsername);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
 
   const canSave = useMemo(() => {
-    return username.trim() !== initialUsername.trim() || bio.trim().length > 0;
-  }, [bio, initialUsername, username]);
+    return name.trim().length > 0 || bio.trim().length > 0;
+  }, [bio, name]);
 
   return (
     <div className={styles.sectionStack}>
@@ -43,15 +38,15 @@ export function ProfileSection() {
 
         <div className={styles.formGrid}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="profile-username">
-              Username
+            <label className={styles.label} htmlFor="profile-name">
+              Name
             </label>
             <input
-              id="profile-username"
+              id="profile-name"
               className={styles.input}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
             />
           </div>
 
@@ -62,8 +57,9 @@ export function ProfileSection() {
             <input
               id="profile-email"
               className={styles.input}
-              value={initialEmail}
-              readOnly
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Your email"
             />
           </div>
 

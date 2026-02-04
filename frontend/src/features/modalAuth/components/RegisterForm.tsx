@@ -6,10 +6,11 @@ import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useRegisterMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
+import { useAuthModal } from "./useAuthModal";
 
 export function RegisterForm() {
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
-  const closeAuthModal = useAppStore((state) => state.closeAuthModal);
+  const openAuthModal = useAuthModal().openLogin;
+  const closeAuthModal = useAuthModal().close;
   const registerMutation = useRegisterMutation();
 
   const {
@@ -25,7 +26,11 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     clearErrors("root");
     try {
-      await registerMutation.mutateAsync(data);
+      await registerMutation.mutateAsync({
+        name: data.username,
+        email: data.email,
+        password: data.password,
+      });
       closeAuthModal();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unauthorized";
@@ -126,7 +131,7 @@ export function RegisterForm() {
         <button
           type="button"
           className={styles.switchLink}
-          onClick={() => openAuthModal("login")}
+          onClick={() => openAuthModal()}
         >
           Already have an account? Sign in
         </button>

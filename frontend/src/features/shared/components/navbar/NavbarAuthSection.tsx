@@ -5,26 +5,26 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
-import { useAuthStore } from "@/src/core/store/auth/useAuthStore";
+import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useLogoutMutation } from "@/src/features/auth/auth.hooks";
+import { useToast } from "@/src/core/store/toast/useToastStore";
 import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
   const router = useRouter();
-  const status = useAuthStore((state) => state.status);
-  const user = useAuthStore((state) => state.user);
+  const { user, isAuthenticated, isLoading } = useAuth();
   const logoutMutation = useLogoutMutation();
+  const { toast } = useToast();
+
   const isOpen = useAppStore((state) => state.profileMenu.isOpen);
   const closeProfileMenu = useAppStore((state) => state.closeProfileMenu);
   const toggleProfileMenu = useAppStore((state) => state.toggleProfileMenu);
   const openAccountModal = useAppStore((state) => state.openAccountModal);
 
-  const isAuthenticated = status === "authenticated";
-
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const username =
-    user?.username?.trim() || user?.email?.trim() || "Logged in";
+    user?.name?.trim() || user?.email?.trim() || "Logged in";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -45,7 +45,23 @@ export function NavbarAuthSection() {
     if (!isAuthenticated) closeProfileMenu();
   }, [closeProfileMenu, isAuthenticated]);
 
-  if (!isAuthenticated) return null;
+  const handleLogout = () => {
+    closeProfileMenu();
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.info("Logged out successfully");
+        router.push("/");
+        router.refresh();
+      },
+      onError: (err) => {
+        toast.error(err.message || "Logout failed");
+      },
+    });
+  };
+
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className={styles.authArea} ref={wrapperRef}>
@@ -77,16 +93,12 @@ export function NavbarAuthSection() {
             }}
             onMyFriends={() => {
               closeProfileMenu();
-              router.push("/people?tab=friends");
+              router.push("/people");
             }}
-            onLogout={() => {
-              closeProfileMenu();
-              logoutMutation.mutate();
-            }}
+            onLogout={handleLogout}
           />
         ) : null}
       </div>
     </div>
   );
 }
-

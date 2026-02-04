@@ -25,7 +25,7 @@ export class CanalService {
     return ok(channels);
   }
 
-  async CreateChannel(ServerId: number, userId: number, data: CreateCanal) {
+  async CreateChannel(ServerId: number, userId: string, data: CreateCanal) {
     const server = await this.prisma.serveur.findUnique({
       where: { id: ServerId },
     });
@@ -35,8 +35,8 @@ export class CanalService {
 
     const member = await this.prisma.membreServeur.findUnique({
       where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
+        userId_serveurId: {
+          userId,
           serveurId: ServerId,
         },
       },

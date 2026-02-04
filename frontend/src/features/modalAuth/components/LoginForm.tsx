@@ -6,10 +6,11 @@ import { loginSchema, type LoginFormData } from "@/src/lib/schemas";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useLoginMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
+import { useAuthModal } from "./useAuthModal";
 
 export function LoginForm() {
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
-  const closeAuthModal = useAppStore((state) => state.closeAuthModal);
+  const openAuthModal = useAuthModal().openLogin;
+  const closeAuthModal = useAuthModal().close;
   const loginMutation = useLoginMutation();
 
   const {
@@ -25,7 +26,10 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     clearErrors("root");
     try {
-      await loginMutation.mutateAsync(data);
+      await loginMutation.mutateAsync({
+        email: data.login,
+        password: data.password,
+      });
       closeAuthModal();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unauthorized";
@@ -90,7 +94,7 @@ export function LoginForm() {
         <button
           type="button"
           className={styles.switchLink}
-          onClick={() => openAuthModal("register")}
+          onClick={() => openAuthModal()}
         >
           No account? Sign up
         </button>

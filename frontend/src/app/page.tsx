@@ -1,5 +1,5 @@
-import { HomeGate } from "@/src/features/home/components/HomeGate";
+import { HomeEmptyState } from "@/src/features/home/components/HomeEmptyState";
 
 export default function Home() {
-  return <HomeGate />;
+  return <HomeEmptyState />;
 }

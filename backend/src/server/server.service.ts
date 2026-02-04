@@ -23,7 +23,7 @@ export class ServerService {
     return ok(server);
   }
 
-  async createServer(data: CreateServer, creatorId: number) {
+  async createServer(data: CreateServer, creatorId: string) {
     const server = await this.prisma.serveur.create({
       data: {
         nom: data.name,
@@ -33,7 +33,7 @@ export class ServerService {
     await this.prisma.membreServeur.create({
       data: {
         serveurId: server.id,
-        utilisateurId: creatorId,
+        userId: creatorId,
         role: Role.PROPRIETAIRE,
       },
     });
@@ -69,9 +69,9 @@ export class ServerService {
     return ok(deletedServer);
   }
 
-  async getUserServers(userId: number) {
+  async getUserServers(userId: string) {
     const members = await this.prisma.membreServeur.findMany({
-      where: { utilisateurId: userId },
+      where: { userId },
       include: {
         serveur: true,
       },
@@ -79,7 +79,7 @@ export class ServerService {
     return members;
   }
 
-  async joinServer(serverId: number, userId: number) {
+  async joinServer(serverId: number, userId: string) {
     const server = await this.prisma.serveur.findUnique({
       where: { id: serverId },
     });
@@ -89,8 +89,8 @@ export class ServerService {
 
     const member = await this.prisma.membreServeur.findUnique({
       where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
+        userId_serveurId: {
+          userId,
           serveurId: serverId,
         },
       },
@@ -102,22 +102,22 @@ export class ServerService {
     const newMember = await this.prisma.membreServeur.create({
       data: {
         serveurId: serverId,
-        utilisateurId: userId,
+        userId,
         role: Role.MEMBRE,
       },
       include: {
         serveur: true,
-        utilisateur: true,
+        user: true,
       },
     });
     return ok(newMember);
   }
 
-  async leaveServer(serverId: number, userId: number) {
+  async leaveServer(serverId: number, userId: string) {
     const member = await this.prisma.membreServeur.findUnique({
       where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
+        userId_serveurId: {
+          userId,
           serveurId: serverId,
         },
       },
@@ -147,17 +147,17 @@ export class ServerService {
     const members = await this.prisma.membreServeur.findMany({
       where: { serveurId: serverId },
       include: {
-        utilisateur: true,
+        user: true,
       },
     });
     return ok(members);
   }
 
-  async updateMemberRole(serverId: number, userId: number, newRole: Role) {
+  async updateMemberRole(serverId: number, userId: string, newRole: Role) {
     const member = await this.prisma.membreServeur.findUnique({
       where: {
-        utilisateurId_serveurId: {
-          utilisateurId: userId,
+        userId_serveurId: {
+          userId,
           serveurId: serverId,
         },
       },
@@ -174,7 +174,7 @@ export class ServerService {
         role: newRole,
       },
       include: {
-        utilisateur: true,
+        user: true,
         serveur: true,
       },
     });

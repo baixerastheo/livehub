@@ -8,69 +8,11 @@ datasource db {
   provider = "postgresql"
 }
 
-model Utilisateur {
-  id              Int          @id @default(autoincrement())
-  email           String          @unique
-  motDePasse      String
-  nomUtilisateur  String         @unique
-  statut          StatutUtilisateur @default(EN_LIGNE)
-  avatarPath      String?
-  avatarUpdatedAt DateTime?
-  creeLe          DateTime        @default(now())
-  modifieLe       DateTime        @updatedAt
-  serveurs        MembreServeur[]
-  messages        Message[]
-  invitations     Invitation[]
-  messagesEnvoyes MessagePrive[] @relation("MessagesEnvoyes")
-  messagesRecus   MessagePrive[] @relation("MessagesRecus")
-  demandesAmiEnvoyees DemandeAmi[] @relation("DemandesAmiEnvoyees")
-  demandesAmiRecues   DemandeAmi[] @relation("DemandesAmiRecues")
-  amitiesA Amitie[] @relation("AmitieA")
-  amitiesB Amitie[] @relation("AmitieB")
-
-  @@index([email])
-  @@index([nomUtilisateur])
-  @@map("Utilisateur")
-}
-
 enum StatutUtilisateur {
   EN_LIGNE
   ABSENT
   INVISIBLE
   HORS_LIGNE
-}
-
-enum StatutDemandeAmi {
-  EN_ATTENTE
-  ACCEPTEE
-  REFUSEE
-}
-
-model Serveur {
-  id          Int        @id @default(autoincrement())
-  nom         String
-  membres     MembreServeur[]
-  canaux      Canal[]
-  invitations Invitation[]
-  creeLe      DateTime      @default(now())
-  modifieLe   DateTime      @updatedAt
-
-  @@index([nom])
-}
-
-model MembreServeur {
-  id          Int   @id @default(autoincrement())
-  serveurId   Int
-  serveur     Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  utilisateurId Int
-  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
-  role        Role     @default(MEMBRE)
-  rejointLe   DateTime @default(now())
-
-  @@unique([utilisateurId, serveurId])
-  @@index([serveurId])
-  @@index([utilisateurId])
-  @@index([serveurId, role])
 }
 
 enum Role {
@@ -79,8 +21,51 @@ enum Role {
   MEMBRE
 }
 
+model Amitie {
+  id        String   @id
+  userAId   String
+  userBId   String
+  userA     User     @relation("Amitie_userAIdToUser", fields: [userAId], references: [id], onDelete: Cascade)
+  userB     User     @relation("Amitie_userBIdToUser", fields: [userBId], references: [id], onDelete: Cascade)
+  creeLe    DateTime @default(now())
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+
+
+model Serveur {
+  id          Int             @id @default(autoincrement())
+  nom         String
+  membres     MembreServeur[]
+  canaux      Canal[]
+  invitations Invitation[]
+  creeLe      DateTime        @default(now())
+  modifieLe   DateTime        @updatedAt
+
+  @@index([nom])
+}
+
+model MembreServeur {
+  id        Int     @id @default(autoincrement())
+  serveurId Int
+  serveur   Serveur @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role    @default(MEMBRE)
+  rejointLe DateTime @default(now())
+
+  @@unique([userId, serveurId])
+  @@index([serveurId])
+  @@index([userId])
+  @@index([serveurId, role])
+}
+
+
 model Canal {
-  id        Int    @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   serveurId Int
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   nom       String
@@ -92,15 +77,15 @@ model Canal {
 }
 
 model Message {
-  id         Int   @id @default(autoincrement())
-  canalId    Int
-  canal      Canal    @relation(fields: [canalId], references: [id], onDelete: Cascade)
-  auteurId   Int
-  auteur     Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
-  contenu    String
-  creeLe     DateTime @default(now())
-  modifieLe  DateTime @updatedAt
-  editeLe    DateTime?
+  id        Int    @id @default(autoincrement())
+  canalId   Int
+  canal     Canal  @relation(fields: [canalId], references: [id], onDelete: Cascade)
+  auteurId  String
+  auteur    User   @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  contenu   String
+  creeLe    DateTime @default(now())
+  modifieLe DateTime @updatedAt
+  editeLe   DateTime?
 
   @@index([canalId])
   @@index([canalId, creeLe])
@@ -108,14 +93,14 @@ model Message {
 }
 
 model Invitation {
-  id              String    @id @default(uuid())
-  code            String    @unique
-  serveurId       Int
-  serveur         Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  creeParId       Int
-  creePar         Utilisateur @relation(fields: [creeParId], references: [id], onDelete: Cascade)
-  expireLe        DateTime?
-  creeLe          DateTime  @default(now())
+  id        String   @id @default(uuid())
+  code      String   @unique
+  serveurId Int
+  serveur   Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  creeParId String
+  creePar   User     @relation(fields: [creeParId], references: [id], onDelete: Cascade)
+  expireLe  DateTime?
+  creeLe    DateTime @default(now())
 
   @@index([code])
   @@index([serveurId])
@@ -123,50 +108,91 @@ model Invitation {
 }
 
 model MessagePrive {
-  id            Int    @id @default(autoincrement())
-  expediteurId  Int
-  expediteur    Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
-  destinataireId Int
-  destinataire  Utilisateur @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
-  contenu       String
-  lu            Boolean   @default(false)
-  creeLe        DateTime  @default(now())
-  modifieLe     DateTime  @updatedAt
-  editeLe       DateTime?
+  id             Int      @id @default(autoincrement())
+  expediteurId   String
+  expediteur     User     @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
+  destinataireId String
+  destinataire   User     @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
+  contenu        String
+  lu             Boolean  @default(false)
+  creeLe         DateTime @default(now())
+  modifieLe      DateTime @updatedAt
+  editeLe        DateTime?
 
   @@index([expediteurId, destinataireId])
   @@index([destinataireId])
   @@index([expediteurId])
 }
 
-model DemandeAmi {
-  id        String @id @default(uuid())
-  pairAId   Int
-  pairBId   Int
-  deId      Int
-  de        Utilisateur @relation("DemandesAmiEnvoyees", fields: [deId], references: [id], onDelete: Cascade)
-  aId       Int
-  a         Utilisateur @relation("DemandesAmiRecues", fields: [aId], references: [id], onDelete: Cascade)
-  statut    StatutDemandeAmi @default(EN_ATTENTE)
-  creeLe    DateTime @default(now())
-  modifieLe DateTime @updatedAt
+model User {
+  id               String          @id
+  name             String
+  email            String
+  emailVerified    Boolean         @default(false)
+  image            String?
+  statut           StatutUtilisateur @default(EN_LIGNE)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  membres          MembreServeur[]
+  messages         Message[]
+  invitations      Invitation[]
+  messagesEnvoyes  MessagePrive[]  @relation("MessagesEnvoyes")
+  messagesRecus    MessagePrive[]  @relation("MessagesRecus")
+  amitiesCommeA    Amitie[]        @relation("Amitie_userAIdToUser")
+  amitiesCommeB    Amitie[]        @relation("Amitie_userBIdToUser")
 
-  @@index([pairAId, pairBId])
-  @@index([deId])
-  @@index([aId])
-  @@index([statut])
-  @@unique([pairAId, pairBId])
+  @@unique([email])
+  @@index([name])
+  @@index([email])
+  @@map("user")
 }
 
-model Amitie {
-  id        String @id @default(uuid())
-  userAId   Int
-  userA     Utilisateur @relation("AmitieA", fields: [userAId], references: [id], onDelete: Cascade)
-  userBId   Int
-  userB     Utilisateur @relation("AmitieB", fields: [userBId], references: [id], onDelete: Cascade)
-  creeLe    DateTime @default(now())
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userAId])
-  @@index([userBId])
-  @@unique([userAId, userBId])
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
