@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SocialMenu, type SocialTab } from "@/src/features/friends/components/SocialMenu";
 import { UserDirectory } from "@/src/features/users/components/UserDirectory";
 import { FriendsPanel } from "@/src/features/friends/components/FriendsPanel";
@@ -20,6 +20,7 @@ function parseTab(value: string | null): SocialTab {
 }
 
 export function PeoplePageClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tab = parseTab(searchParams.get("tab"));
   const { toast } = useToast();
@@ -29,6 +30,16 @@ export function PeoplePageClient() {
     friendIds,
     outgoingRequestUserIds,
   } = useFriendRelationships();
+
+  const handleMessage = React.useCallback(
+    (user: UtilisateurDto) => {
+      const name = user.name ?? user.email ?? "";
+      const params = new URLSearchParams({ with: user.id });
+      if (name) params.set("name", name);
+      router.push(`/messages?${params.toString()}`);
+    },
+    [router],
+  );
 
   const handleAddFriend = React.useCallback(
     async (user: UtilisateurDto) => {
@@ -52,6 +63,7 @@ export function PeoplePageClient() {
             prioritizeUserIds={outgoingRequestUserIds}
             pendingAddFriendUserIds={outgoingRequestUserIds}
             onAddFriend={handleAddFriend}
+            onMessage={handleMessage}
           />
         )}
         {tab === "friends" && <FriendsPanel />}
