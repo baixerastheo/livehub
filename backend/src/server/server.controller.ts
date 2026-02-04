@@ -1,4 +1,4 @@
-import { ServerService } from './server.service.js';
+import { ServerService } from './server.service';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -16,9 +16,9 @@ import {
   Put,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateServer } from './dto/update-server.dto.js';
-import { UpdateMemberRole } from './dto/update-member-role.dto.js';
-import { CreateServer } from './dto/create-server.dto.js';
+import { UpdateServer } from './dto/update-server.dto';
+import { UpdateMemberRole } from './dto/update-member-role.dto';
+import { CreateServer } from './dto/create-server.dto';
 
 @Controller('servers')
 export class ServerController {

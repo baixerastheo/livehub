@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service.js';
-import { CreateServer } from './dto/create-server.dto.js';
-import { UpdateServer } from './dto/update-server.dto.js';
-import { Role } from '../../generated/prisma/enums.js';
-import { ok, err } from '../result.js';
+import { PrismaService } from '../prisma.service';
+import { CreateServer } from './dto/create-server.dto';
+import { UpdateServer } from './dto/update-server.dto';
+import { Role } from '../../generated/prisma/enums';
+import { ok, err } from '../result';
 
 @Injectable()
 export class ServerService {

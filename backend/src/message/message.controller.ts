@@ -16,8 +16,8 @@ import {
   ApiNotFoundResponse,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
-import { MessageService } from './message.service.js';
-import { CreateMessageDto } from './dto/create-message.dto.js';
+import { MessageService } from './message.service';
+import { CreateMessageDto } from './dto/create-message.dto';
 
 @Controller()
 export class MessageController {

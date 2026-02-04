@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { Role } from '../../../generated/prisma/enums.js';
+import { Role } from '../../../generated/prisma/enums';
 
 @ApiSchema({ description: 'Member role update schema' })
 export class UpdateMemberRole {

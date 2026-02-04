@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma.service.js';
-import { CreateUser } from './dto/create-user.dto.js';
-import { UpdateUser } from './dto/update-user.dto.js';
-import { ok, err } from '../result.js';
-
-function isBcryptHash(value: string): boolean {
-  return /^\$2[aby]\$/.test(value);
-}
+import { ok, err } from '../result';
+import { PrismaService } from 'src/prisma.service';
+import { CreateUser } from './dto/create-user.dto';
+import { UpdateUser } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -64,10 +59,6 @@ export class UserService {
     }
 
     const id = randomUUID();
-    const hashedPassword =
-      data.password && !isBcryptHash(data.password)
-        ? await bcrypt.hash(data.password, 10)
-        : data.password;
 
     await this.prisma.$transaction([
       this.prisma.user.create({
@@ -85,7 +76,6 @@ export class UserService {
           accountId: id,
           providerId: 'credential',
           userId: id,
-          password: hashedPassword,
         },
       }),
     ]);
@@ -124,21 +114,6 @@ export class UserService {
       }
     }
 
-    if (data.password !== undefined) {
-      const hashed = isBcryptHash(data.password)
-        ? data.password
-        : await bcrypt.hash(data.password, 10);
-      const account = await this.prisma.account.findFirst({
-        where: { userId: id, providerId: 'credential' },
-      });
-      if (account) {
-        await this.prisma.account.update({
-          where: { id: account.id },
-          data: { password: hashed },
-        });
-      }
-    }
-
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
@@ -150,20 +125,4 @@ export class UserService {
     return ok(updatedUser);
   }
 
-  async updatePassword(id: string, motDePasse: string) {
-    const hashed = isBcryptHash(motDePasse)
-      ? motDePasse
-      : await bcrypt.hash(motDePasse, 10);
-    const account = await this.prisma.account.findFirst({
-      where: { userId: id, providerId: 'credential' },
-    });
-    if (!account) {
-      return err('No credential account for this user');
-    }
-    await this.prisma.account.update({
-      where: { id: account.id },
-      data: { password: hashed },
-    });
-    return ok(undefined);
-  }
 }

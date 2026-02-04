@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { auth } from '../lib/auth.js';
+import { auth } from '../lib/auth';
 import { fromNodeHeaders } from 'better-auth/node';
 
 @Injectable()

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { UserModule } from './user/user.module.js';
-import { ServerModule } from './server/server.module.js';
-import { CanalModule } from './canal/canal.module.js';
-import { InvitationModule } from './invitation/invitation.module.js';
-import { MessageModule } from './message/message.module.js';
-import { AuthModule } from './auth/auth.module.js';
+import { UserModule } from './user/user.module';
+import { ServerModule } from './server/server.module';
+import { CanalModule } from './canal/canal.module';
+import { InvitationModule } from './invitation/invitation.module';
+import { MessageModule } from './message/message.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [

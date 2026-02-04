@@ -7,7 +7,7 @@ import {
   MaxLength,
   Matches,
 } from 'class-validator';
-import { StatutUtilisateur } from '../../../generated/prisma/enums.js';
+import { StatutUtilisateur } from '../../../generated/prisma/enums';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({
