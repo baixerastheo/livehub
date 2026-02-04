@@ -1,9 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../generated/prisma/client.js';
+import { PrismaClient } from '../../generated/prisma/client';
 
-// Create a dedicated Prisma instance for Better Auth
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 
 const prisma = new PrismaClient({
@@ -15,7 +14,7 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  // Base URL for callbacks
+
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:4001',
 
   // Session configuration
@@ -28,7 +27,6 @@ export const auth = betterAuth({
     },
   },
 
-  // User configuration - name is already in schema, just add statut
   user: {
     additionalFields: {
       statut: {
@@ -40,22 +38,20 @@ export const auth = betterAuth({
     },
   },
 
-  // Email and password authentication
+
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
   },
 
-  // Advanced settings
+
   advanced: {
     cookiePrefix: 'livehub',
     useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
-  // Trust frontend origin
   trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
 });
 
-// Export types for use in guards
 export type Session = typeof auth.$Infer.Session.session;
 export type User = typeof auth.$Infer.Session.user;

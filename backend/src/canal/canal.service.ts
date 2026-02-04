@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service.js';
-import { ok, err } from '../result.js';
-import { CreateCanal } from './dto/create-canal.dto.js';
-import { Role } from '../../generated/prisma/enums.js';
-import { UpdateCanal } from './dto/update-canal.dto.js';
+import { PrismaService } from '../prisma.service';
+import { ok, err } from '../result';
+import { CreateCanal } from './dto/create-canal.dto';
+import { Role } from '../../generated/prisma/enums';
+import { UpdateCanal } from './dto/update-canal.dto';
 
 @Injectable()
 export class CanalService {

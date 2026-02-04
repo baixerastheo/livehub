@@ -1,4 +1,4 @@
-import { UserService } from './user.service.js';
+import { UserService } from './user.service';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -16,8 +16,8 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { UpdateUser } from './dto/update-user.dto.js';
-import { CreateUser } from './dto/create-user.dto.js';
+import { UpdateUser } from './dto/update-user.dto';
+import { CreateUser } from './dto/create-user.dto';
 
 @Controller('users')
 export class UserController {

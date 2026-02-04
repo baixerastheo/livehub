@@ -14,9 +14,9 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { CanalService } from './canal.service.js';
-import { CreateCanal } from './dto/create-canal.dto.js';
-import { UpdateCanal } from './dto/update-canal.dto.js';
+import { CanalService } from './canal.service';
+import { CreateCanal } from './dto/create-canal.dto';
+import { UpdateCanal } from './dto/update-canal.dto';
 
 @Controller()
 export class CanalController {

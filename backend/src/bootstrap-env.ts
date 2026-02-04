@@ -1,9 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const candidateEnvPaths = [
   // When running from `backend/` or when compiled to `backend/dist/`
