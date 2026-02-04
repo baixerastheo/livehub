@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
 import { useRegisterMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
-import { useAuthModal } from "./useAuthModal";
+import { useAuthModal } from "../store/useAuthModal";
 
 export function RegisterForm() {
   const openAuthModal = useAuthModal().openLogin;

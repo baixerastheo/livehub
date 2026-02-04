@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "../styles/Home.module.css";
-import { useAuthModal } from "../../modalAuth/components/useAuthModal";
+import { useAuthModal } from "../../modalAuth/store/useAuthModal";
 
 export function HomeAuthCallToAction() {
   const { openLogin, openRegister } = useAuthModal();

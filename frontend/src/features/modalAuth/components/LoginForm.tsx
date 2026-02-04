@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/src/lib/schemas";
 import { useLoginMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
-import { useAuthModal } from "./useAuthModal";
+import { useAuthModal } from "../store/useAuthModal";
 
 export function LoginForm() {
   const openAuthModal = useAuthModal().openLogin;
