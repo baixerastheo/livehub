@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
-import { useAppStore } from "@/src/core/store/appStore";
 import { useRegisterMutation } from "@/src/features/auth/auth.hooks";
 import styles from "../styles/AuthForm.module.css";
 import { useAuthModal } from "./useAuthModal";

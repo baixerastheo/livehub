@@ -1,0 +1,48 @@
+"use client";
+
+import styles from "../styles/ConversationHeader.module.css";
+import type { ConversationHeader as ConversationHeaderType } from "@/src/features/messages/messages.mock";
+import { FiInfo, FiPhone, FiVideo } from "react-icons/fi";
+
+type Props = {
+  header: ConversationHeaderType;
+  onToggleDetails: () => void;
+};
+
+export function ConversationHeader({ header, onToggleDetails }: Props) {
+  return (
+    <div className={styles.header}>
+      <div className={styles.headerLeft}>
+        <div className={styles.titleRow}>
+          <span
+            className={styles.avatar}
+            style={{ background: header.avatarColor }}
+          >
+            {header.avatarText}
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <div className={styles.title}>{header.title}</div>
+            <div className={styles.subtitle}>{header.subtitle}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.headerActions}>
+        <button type="button" className={styles.iconButton} aria-label="Call">
+          <FiPhone />
+        </button>
+        <button type="button" className={styles.iconButton} aria-label="Video">
+          <FiVideo />
+        </button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label="Toggle details panel"
+          onClick={onToggleDetails}
+        >
+          <FiInfo />
+        </button>
+      </div>
+    </div>
+  );
+}

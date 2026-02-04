@@ -1,6 +1,5 @@
 "use client";
 
-import { useAppStore } from "@/src/core/store/appStore";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import styles from "../styles/AuthModal.module.css";

@@ -1,9 +1,8 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../generated/prisma/client";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../../generated/prisma/client';
 
-// Create a dedicated Prisma instance for Better Auth
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 
 const prisma = new PrismaClient({
@@ -12,11 +11,11 @@ const prisma = new PrismaClient({
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql",
+    provider: 'postgresql',
   }),
 
-  // Base URL for callbacks
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:4001",
+
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:4001',
 
   // Session configuration
   session: {
@@ -28,36 +27,31 @@ export const auth = betterAuth({
     },
   },
 
-  // User configuration - name is already in schema, just add statut
   user: {
     additionalFields: {
       statut: {
-        type: "string",
+        type: 'string',
         required: false,
-        defaultValue: "EN_LIGNE",
+        defaultValue: 'EN_LIGNE',
         input: false,
       },
     },
   },
 
-  // Email and password authentication
+
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
   },
 
-  // Advanced settings
+
   advanced: {
-    cookiePrefix: "livehub",
-    useSecureCookies: process.env.NODE_ENV === "production",
+    cookiePrefix: 'livehub',
+    useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
-  // Trust frontend origin
-  trustedOrigins: [
-    process.env.FRONTEND_URL || "http://localhost:3000",
-  ],
+  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
 });
 
-// Export types for use in guards
 export type Session = typeof auth.$Infer.Session.session;
 export type User = typeof auth.$Infer.Session.user;
