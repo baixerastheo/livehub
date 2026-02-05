@@ -31,6 +31,7 @@ const AVATAR_COLORS = [
 function buildHeaderFromPeer(
   displayName: string,
   userId: string,
+  peerUser?: { avatarUrl?: string | null } | null,
 ): ConversationHeaderType {
   const initial = displayName.slice(0, 2).toUpperCase() || "?";
   const colorIndex =
@@ -41,6 +42,7 @@ function buildHeaderFromPeer(
     subtitle: "Private message",
     avatarText: initial,
     avatarColor: AVATAR_COLORS[colorIndex],
+    avatarUrl: peerUser?.avatarUrl ?? undefined,
   };
 }
 
@@ -99,7 +101,11 @@ export function MessagesScreen() {
     );
   }
 
-  const conversationHeader = buildHeaderFromPeer(displayName, peerUserId);
+  const conversationHeader = buildHeaderFromPeer(
+    displayName,
+    peerUserId,
+    peerUser,
+  );
 
   return (
     <main className={styles.root}>

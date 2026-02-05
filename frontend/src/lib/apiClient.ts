@@ -48,3 +48,30 @@ export async function fetchJson<TResponse>(
   return data as TResponse;
 }
 
+/** Upload multipart/form-data (ex. avatar). Ne pas set Content-Type pour laisser le navigateur ajouter la boundary. */
+export async function fetchFormData<TResponse>(
+  path: string,
+  body: FormData,
+  method: "POST" | "PUT" | "PATCH" = "POST",
+): Promise<TResponse> {
+  const url = `${API_BASE_URL}${path}`;
+  const res = await fetch(url, {
+    method,
+    credentials: "include",
+    body,
+  });
+
+  const contentType = res.headers.get("Content-Type") ?? "";
+  const data = contentType.includes("application/json") ? await res.json() : await res.text();
+
+  if (!res.ok) {
+    const message =
+      typeof data === "string"
+        ? data || res.statusText
+        : (data as { message?: string })?.message ?? res.statusText;
+    throw new Error(message);
+  }
+
+  return data as TResponse;
+}
+

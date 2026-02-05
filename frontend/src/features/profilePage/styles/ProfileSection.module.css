@@ -29,6 +29,73 @@
   color: rgba(0, 0, 0, 0.6);
 }
 
+.avatarBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.avatarPreview {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInput {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.avatarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.secondaryButton {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+  color: #000000;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;

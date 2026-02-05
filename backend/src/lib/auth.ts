@@ -43,16 +43,15 @@ export const auth = betterAuth({
   },
 
   socialProviders: {
-    roblox: { 
-        clientId: process.env.ROBLOX_CLIENT_ID as string, 
-        clientSecret: process.env.ROBLOX_CLIENT_SECRET as string, 
-    }, 
-    google: { 
-      clientId: process.env.GOOGLE_CLIENT_ID as string, 
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
-    }, 
-},
-
+    roblox: {
+      clientId: process.env.ROBLOX_CLIENT_ID as string,
+      clientSecret: process.env.ROBLOX_CLIENT_SECRET as string,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
 
   advanced: {
     cookiePrefix: 'livehub',

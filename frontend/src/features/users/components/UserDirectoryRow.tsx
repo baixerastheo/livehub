@@ -4,6 +4,8 @@ import React from "react";
 import styles from "../styles/UserDirectory.module.css";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import { FiClock, FiMessageSquare, FiUserPlus } from "react-icons/fi";
+import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { getDisplayName } from "@/src/features/shared/lib/displayName";
 
 type UserDirectoryRowProps = {
   user: UtilisateurDto;
@@ -11,10 +13,6 @@ type UserDirectoryRowProps = {
   onMessage: (user: UtilisateurDto) => void;
   isAddFriendPending?: boolean;
 };
-
-function displayName(user: UtilisateurDto): string {
-  return user.name ?? user.email ?? "?";
-}
 
 export function UserDirectoryRow({
   user,
@@ -25,11 +23,15 @@ export function UserDirectoryRow({
   return (
     <li className={styles.row}>
       <div className={styles.userBlock}>
-        <div className={styles.avatar} aria-hidden="true">
-          {displayName(user).slice(0, 1).toUpperCase()}
-        </div>
+        <UserAvatar
+          avatarUrl={user.avatarUrl}
+          displayName={getDisplayName(user)}
+          size="md"
+          className={styles.avatar}
+          aria-hidden
+        />
         <div className={styles.userMeta}>
-          <div className={styles.username}>{displayName(user)}</div>
+          <div className={styles.username}>{getDisplayName(user)}</div>
           <div className={styles.userSubtle}>
             <span className={styles.statusDot} data-status={user.statut} />
             {user.statut?.replaceAll("_", " ")?.toLowerCase()}

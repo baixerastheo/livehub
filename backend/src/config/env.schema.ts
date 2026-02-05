@@ -15,6 +15,11 @@ export const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().optional(),
 
   JWT_REFRESH_SAMESITE: z.enum(['lax', 'strict', 'none']).optional(),
+
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().min(1).default('avatars'),
+  SUPABASE_PUBLIC_URL: z.string().url().optional(),
 });
 
 export type EnvVars = z.infer<typeof envSchema>;

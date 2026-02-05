@@ -63,6 +63,8 @@
 .profileWrapper {
   position: relative;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
 .profileButton {
@@ -76,6 +78,8 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  line-height: 0;
+  vertical-align: middle;
 }
 
 .profileButton:hover {
@@ -83,13 +87,25 @@
 }
 
 .profileAvatar {
-  width: 24px;
-  height: 24px;
+  width: 31px;
+  height: 31px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.profileAvatar > span {
+  width: 32px !important;
+  height: 32px !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .profileAvatarImage {

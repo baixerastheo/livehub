@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { ok, err } from '../result';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly supabaseStorage: SupabaseStorageService,
+  ) {}
 
   /** List private conversation peers for current user (users with at least one message), ordered by last message. */
   async listPrivateConversations(currentUserId: string) {
@@ -36,23 +40,43 @@ export class MessageService {
     }
     const users = await this.prisma.user.findMany({
       where: { id: { in: peerIds } },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, avatarPath: true },
     });
     const userById = new Map(users.map((u) => [u.id, u]));
-    const list = peerIds
-      .map((id) => {
-        const user = userById.get(id);
-        if (!user) return null;
-        return {
-          peer: user,
-          lastMessageAt: peerIdToLastAt.get(id),
-        };
-      })
-      .filter((x): x is NonNullable<typeof x> => x != null)
-      .sort(
-        (a, b) =>
-          (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
-      );
+    const list: Array<{
+      peer: {
+        id: string;
+        name: string;
+        email: string;
+        avatarUrl: string | null;
+      };
+      lastMessageAt: Date | undefined;
+    }> = [];
+    for (const id of peerIds) {
+      const user = userById.get(id);
+      if (!user) continue;
+      let avatarUrl: string | null = null;
+      if (user.avatarPath) {
+        try {
+          avatarUrl = await this.supabaseStorage.publicUrl(user.avatarPath);
+        } catch {
+          // ignore
+        }
+      }
+      list.push({
+        peer: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatarUrl,
+        },
+        lastMessageAt: peerIdToLastAt.get(id),
+      });
+    }
+    list.sort(
+      (a, b) =>
+        (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
+    );
     return ok(list);
   }
 

@@ -6,13 +6,12 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { usePrivateConversationsQuery } from "@/src/features/messages/privateMessage.hooks";
+import { useUserQuery } from "@/src/features/users/users.hooks";
 import { ParticlesBackground } from "@/src/features/shared/components/particles/ParticlesBackground";
+import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { getDisplayName } from "@/src/features/shared/lib/displayName";
 import { useSidebarContext } from "./SidebarContext";
 import { SidebarEmptyState, SidebarStartButton } from "./SidebarParts";
-
-function displayName(peer: { name: string; email: string }) {
-  return peer.name ?? peer.email ?? "?";
-}
 
 export function SidebarConversationsContent() {
   const router = useRouter();
@@ -35,13 +34,15 @@ export function SidebarConversationsContent() {
             id: activePeerId,
             name: decodedActivePeerName || "User",
             email: "",
+            avatarUrl: undefined as string | null | undefined,
           },
         }
       : null;
 
-  const { data: conversations, isLoading } = usePrivateConversationsQuery(
+  const { data: conversations } = usePrivateConversationsQuery(
     isAuthenticated,
   );
+  const { data: activePeerUser } = useUserQuery(activePeerId ?? undefined);
 
   const conversationItems = React.useMemo(() => {
     const fromApi = conversations ?? [];
@@ -61,11 +62,15 @@ export function SidebarConversationsContent() {
     return (
       <ul className={styles.list} aria-label="Conversations">
         {conversationItems.map(({ peer }) => {
-          const name = displayName(peer);
+          const name = getDisplayName(peer);
           const isActive = activePeerId === peer.id;
           const isHovered = hoveredPeerId === peer.id;
           const params = new URLSearchParams({ with: peer.id });
           if (name) params.set("name", name);
+          const avatarUrl =
+            peer.id === activePeerId
+              ? (activePeerUser?.avatarUrl ?? peer.avatarUrl)
+              : peer.avatarUrl;
           return (
             <li key={peer.id}>
               <div
@@ -89,8 +94,14 @@ export function SidebarConversationsContent() {
                   onClick={onClose}
                   aria-current={isActive ? "true" : undefined}
                 >
-                  <span className={styles.avatar} aria-hidden="true">
-                    {name.slice(0, 1).toUpperCase()}
+                  <span className={styles.avatar}>
+                    <UserAvatar
+                      avatarUrl={avatarUrl}
+                      displayName={name}
+                      size="md"
+                      className={styles.avatarInner}
+                      aria-hidden
+                    />
                   </span>
                   <span className={styles.name}>{name}</span>
                 </Link>

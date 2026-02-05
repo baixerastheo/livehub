@@ -9,6 +9,9 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  line-height: 0;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .navIconButton:hover {
