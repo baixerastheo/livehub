@@ -41,7 +41,11 @@ export class CanalController {
     @Body() data: CreateCanal,
     @Req() req: RequestWithAuth,
   ) {
-    const result = await this.canalService.createChannel(serverId, req.user.id, data);
+    const result = await this.canalService.createChannel(
+      serverId,
+      req.user.id,
+      data,
+    );
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }

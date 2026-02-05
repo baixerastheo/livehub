@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { auth } from '../lib/auth';
-import { fromNodeHeaders } from 'better-auth/node';
+import type { BetterAuthSession } from '../lib/session-from-headers.js';
+import { getSessionFromHeaders } from '../lib/session-from-headers.js';
 
-type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
+type Session = BetterAuthSession;
 type RequestWithAuth = Request & {
   user: NonNullable<Session>['user'];
   session: NonNullable<Session>['session'];
@@ -20,9 +20,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
 
     try {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(request.headers),
-      });
+      const session = await getSessionFromHeaders(request.headers);
 
       if (!session?.user) {
         throw new UnauthorizedException('Not authenticated');

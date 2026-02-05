@@ -5,7 +5,7 @@ import { privateMessageService } from "@/src/features/messages/privateMessage.se
 
 export const privateConversationsKey = ["conversations", "private"] as const;
 
-const privateConversationKey = (peerUserId: string) =>
+export const privateConversationKey = (peerUserId: string) =>
   ["conversations", "private", peerUserId] as const;
 
 export function usePrivateConversationsQuery(enabled: boolean) {

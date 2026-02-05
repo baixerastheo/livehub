@@ -10,6 +10,7 @@ import { MessageModule } from './message/message.module';
 import { AuthModule } from './auth/auth.module';
 import { FriendsModule } from './friends/friends.module';
 import { SupabaseModule } from './supabase/supabase.module';
+import { RealtimeModule } from './realtime/realtime.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SupabaseModule } from './supabase/supabase.module';
     MessageModule,
     FriendsModule,
     SupabaseModule,
+    RealtimeModule,
   ],
   controllers: [],
 })

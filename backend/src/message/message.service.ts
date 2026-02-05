@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
+import { MessageGateway } from '../realtime/message.gateway.js';
 import { ok, err } from '../result';
 
 @Injectable()
@@ -8,26 +9,10 @@ export class MessageService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
-  private async getUserAvatarUrl(avatarPath: string | null) { 
-    if (avatarPath === null) {
-      return err('Avatar path is required');
-    }
-
-    const avatarUrlResult = await this.supabaseStorage.publicUrl(avatarPath);
-    if (avatarUrlResult.isErr()) {
-      return err(avatarUrlResult.error);
-    }
-    return ok(avatarUrlResult.value);
-  }
-
-  /**
-   * Liste les conversations privées d'un utilisateur.
-   * Retourne les pairs de conversation triés par date du dernier message.
-   * @param currentUserId - Identifiant de l'utilisateur courant
-   * @returns Liste des pairs avec leur dernier message
-   */
+  /** List private conversation peers for current user (users with at least one message), ordered by last message. */
   async listPrivateConversations(currentUserId: string) {
     const messages = await this.prisma.messagePrive.findMany({
       where: {
@@ -72,13 +57,13 @@ export class MessageService {
     for (const id of peerIds) {
       const user = userById.get(id);
       if (!user) continue;
-
-      const avatarUrlResult = await this.getUserAvatarUrl(user.avatarPath);
       let avatarUrl: string | null = null;
-      if (avatarUrlResult.isOk()) {
-        avatarUrl = avatarUrlResult.value;
+      if (user.avatarPath) {
+        const result = await this.supabaseStorage.publicUrl(user.avatarPath);
+        if (result.isOk()) {
+          avatarUrl = result.value;
+        }
       }
-
       list.push({
         peer: {
           id: user.id,
@@ -96,12 +81,7 @@ export class MessageService {
     return ok(list);
   }
 
-  /**
-   * Récupère la conversation privée entre deux utilisateurs.
-   * @param peerUserId - Identifiant du pair
-   * @param currentUserId - Identifiant de l'utilisateur courant
-   * @returns Messages de la conversation ou erreur si utilisateur non trouvé
-   */
+  /** List private messages between current user and peer (both directions), ordered by date. */
   async getPrivateConversation(peerUserId: string, currentUserId: string) {
     const peer = await this.prisma.user.findUnique({
       where: { id: peerUserId },
@@ -131,15 +111,12 @@ export class MessageService {
     return ok({ peer, messages });
   }
 
-  /**
-   * Envoie un message privé à un utilisateur.
-   * Empêche l'envoi de message à soi-même.
-   * @param senderId - Identifiant de l'expéditeur
-   * @param recipientId - Identifiant du destinataire
-   * @param content - Contenu du message
-   * @returns Le message créé ou erreur
-   */
-  async createPrivateMessage(senderId: string, recipientId: string, content: string) {
+  /** Send a private message to peerUserId. */
+  async createPrivateMessage(
+    senderId: string,
+    recipientId: string,
+    content: string,
+  ) {
     if (senderId === recipientId) {
       return err('Cannot send a private message to yourself');
     }
@@ -159,14 +136,19 @@ export class MessageService {
         expediteur: { select: { id: true, name: true, email: true } },
       },
     });
+    this.messageGateway.emitPrivateMessageCreated({
+      id: String(message.id),
+      content: message.contenu,
+      authorId: message.expediteurId,
+      authorName: message.expediteur.name ?? message.expediteur.email ?? '',
+      createdAtIso: message.creeLe.toISOString(),
+      read: message.lu,
+      senderId,
+      recipientId,
+    });
     return ok(message);
   }
 
-  /**
-   * Récupère l'historique des messages d'un canal.
-   * @param id - Identifiant du canal
-   * @returns Liste des messages avec leurs auteurs ou erreur si canal non trouvé
-   */
   async getHistoryMessageByChannel(id: number) {
     const channel = await this.prisma.canal.findUnique({
       where: { id },
@@ -182,14 +164,6 @@ export class MessageService {
     return ok(messages);
   }
 
-  /**
-   * Crée un message dans un canal.
-   * Vérifie que l'utilisateur est membre du serveur.
-   * @param content - Contenu du message
-   * @param channelId - Identifiant du canal
-   * @param userId - Identifiant de l'auteur
-   * @returns Le message créé ou erreur si non autorisé
-   */
   async createMessage(content: string, channelId: number, userId: string) {
     const channel = await this.prisma.canal.findUnique({
       where: { id: channelId },
@@ -197,9 +171,8 @@ export class MessageService {
     });
 
     if (!channel) {
-      return err(`No channel found for ID ${channelId}`);
+      return err('No channel found for ID ' + channelId);
     }
-
     const serverMember = await this.prisma.membreServeur.findUnique({
       where: {
         userId_serveurId: {
@@ -210,7 +183,7 @@ export class MessageService {
     });
 
     if (!serverMember) {
-      return err('You are not a member of this server');
+      return err('No member of this server');
     }
 
     const message = await this.prisma.message.create({
@@ -221,27 +194,29 @@ export class MessageService {
       },
       include: {
         auteur: {
-          select: { name: true },
+          select: {
+            name: true,
+          },
         },
       },
+    });
+    this.messageGateway.emitChannelMessageCreated(channelId, {
+      id: String(message.id),
+      content: message.contenu,
+      authorId: message.auteurId,
+      authorName: message.auteur?.name ?? '',
+      createdAtIso: message.creeLe.toISOString(),
     });
     return ok(message);
   }
 
-  /**
-   * Supprime un message.
-   * Seul l'auteur du message peut le supprimer.
-   * @param id - Identifiant du message
-   * @param userId - Identifiant de l'utilisateur demandant la suppression
-   * @returns Le message supprimé ou erreur si non autorisé
-   */
   async deleteMessage(id: number, userId: string) {
     const message = await this.prisma.message.findUnique({
       where: { id },
       include: { auteur: true },
     });
     if (!message) {
-      return err(`No message found for ID ${id}`);
+      return err('No message found for ID ' + id);
     }
     if (message.auteurId !== userId) {
       return err('You can only delete your own messages');

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import styles from "./FriendsPanels.module.css";
 import { useFriendsQuery } from "@/src/features/friends/friends.hooks";
 import { useAuthModal } from "@/src/features/modalAuth/store/useAuthModal";
@@ -8,11 +9,24 @@ import { useAuth } from "@/src/core/store/auth/useAuth";
 import { FiMessageSquare } from "react-icons/fi";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
+import type { FriendDto } from "@/src/features/friends/friends.types";
 
 export function FriendsPanel() {
+  const router = useRouter();
   const openLogin = useAuthModal((s) => s.openLogin);
   const { isAuthenticated } = useAuth();
   const friendsQuery = useFriendsQuery();
+
+  const handleMessage = React.useCallback(
+    (user: FriendDto) => {
+      if (!isAuthenticated) return openLogin();
+      const name = user.name ?? user.email ?? "";
+      const params = new URLSearchParams({ with: user.id });
+      if (name) params.set("name", name);
+      router.push(`/messages?${params.toString()}`);
+    },
+    [isAuthenticated, openLogin, router],
+  );
 
   if (!isAuthenticated) {
     return (
@@ -74,8 +88,16 @@ export function FriendsPanel() {
             </div>
           </div>
           <div className={styles.actions}>
-            <button type="button" className={styles.iconButton} aria-label="Message">
-              <FiMessageSquare className={styles.buttonIcon} aria-hidden="true" />
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Message"
+              onClick={() => handleMessage(u)}
+            >
+              <FiMessageSquare
+                className={styles.buttonIcon}
+                aria-hidden="true"
+              />
               <span className={styles.srOnly}>Message</span>
             </button>
           </div>
