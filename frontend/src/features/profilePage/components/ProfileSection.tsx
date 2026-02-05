@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { FiCamera } from "react-icons/fi";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useProfile, useUploadAvatarMutation } from "../profile.hooks";
 import { profileService } from "../profile.service";
@@ -64,43 +65,59 @@ export function ProfileSection() {
         </div>
 
         <div className={styles.avatarBlock}>
-          <div className={styles.avatarPreview}>
-            {profileLoading ? (
-              <div className={styles.avatarPlaceholder} />
-            ) : avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className={styles.avatarImage}
-              />
-            ) : (
-              <Image
-                src={DEFAULT_AVATAR_SRC}
-                alt=""
-                width={80}
-                height={80}
-                className={styles.avatarImage}
-              />
-            )}
+          <div
+            className={`${styles.avatarHoverArea} ${
+              isUploading ? styles.avatarHoverDisabled : ""
+            }`}
+            onClick={() => {
+              if (!isUploading) {
+                fileInputRef.current?.click();
+              }
+            }}
+          >
+            <div className={styles.avatarPreview}>
+              {profileLoading ? (
+                <div className={styles.avatarPlaceholder} />
+              ) : avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className={styles.avatarImage}
+                />
+              ) : (
+                <Image
+                  src={DEFAULT_AVATAR_SRC}
+                  alt=""
+                  width={80}
+                  height={80}
+                  className={styles.avatarImage}
+                />
+              )}
+            </div>
+            <div className={styles.avatarOverlay}>
+              {!isUploading ? (
+                <>
+                  <FiCamera
+                    className={styles.avatarOverlayIcon}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.avatarOverlayText}>
+                    Change avatar
+                  </span>
+                </>
+              ) : (
+                <span className={styles.avatarOverlayText}>Uploading…</span>
+              )}
+            </div>
           </div>
-          <div className={styles.avatarActions}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={profileService.getAcceptedAvatarTypes()}
-              onChange={handleAvatarChange}
-              className={styles.avatarInput}
-              aria-label="Choisir une photo"
-            />
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              disabled={isUploading}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isUploading ? "Envoi…" : "Changer la photo"}
-            </button>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={profileService.getAcceptedAvatarTypes()}
+            onChange={handleAvatarChange}
+            className={styles.avatarInput}
+            aria-label="Choisir une photo"
+          />
         </div>
 
         <div className={styles.formGrid}>

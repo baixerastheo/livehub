@@ -11,7 +11,6 @@ export type ConversationHeader = {
   subtitle: string;
   avatarText: string;
   avatarColor: string;
-  /** URL signée de l’avatar (si présente, affichée à la place de avatarColor + avatarText). */
   avatarUrl?: string | null;
 };
 
