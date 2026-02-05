@@ -2,6 +2,7 @@ export type PrivateConversationPeerDto = {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string | null;
 };
 
 export type PrivateMessageDto = {

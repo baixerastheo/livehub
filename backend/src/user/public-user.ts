@@ -7,6 +7,8 @@ export const publicUserSelect = {
   email: true,
   image: true,
   statut: true,
+  avatarPath: true,
+  avatarUpdatedAt: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
@@ -14,3 +16,8 @@ export const publicUserSelect = {
 export type PublicUser = Prisma.UserGetPayload<{
   select: typeof publicUserSelect;
 }>;
+
+/** Public user + avatarUrl (signed URL pour affichage, bucket privé). */
+export type PublicUserWithAvatarUrl = PublicUser & {
+  avatarUrl: string | null;
+};

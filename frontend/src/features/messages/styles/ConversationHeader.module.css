@@ -30,6 +30,12 @@
   font-weight: 800;
   font-size: 0.85rem;
   flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.avatarInner {
+  width: 34px !important;
+  height: 34px !important;
 }
 
 .title {

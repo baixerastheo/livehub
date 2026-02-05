@@ -4,6 +4,8 @@ import {
   ApiOkResponse,
   ApiNotFoundResponse,
   ApiConflictResponse,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import {
   Body,
@@ -13,11 +15,24 @@ import {
   Param,
   Post,
   Put,
+  Req,
+  UseGuards,
+  UseInterceptors,
   NotFoundException,
   ConflictException,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUser } from './dto/update-user.dto';
 import { CreateUser } from './dto/create-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import type { RequestWithAuth } from '../lib/request-with-auth';
+import {
+  isAllowedAvatarMimeType,
+  ALLOWED_AVATAR_MIME_TYPES,
+} from '../supabase/supabase-storage.service';
 
 @Controller('users')
 export class UserController {
@@ -26,6 +41,7 @@ export class UserController {
   @Get('/')
   @ApiOkResponse({
     description: 'All users retrieved successfully',
+    type: [UserResponseDto],
   })
   async getAllUsers() {
     return await this.userService.getAllUsers();
@@ -34,6 +50,7 @@ export class UserController {
   @Get('/email/:email')
   @ApiOkResponse({
     description: 'Users retrieved successfully',
+    type: UserResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'User with this Email does not exist',
@@ -49,6 +66,7 @@ export class UserController {
   @Get('/name/:name')
   @ApiOkResponse({
     description: 'User retrieved successfully',
+    type: UserResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'User with this name does not exist',
@@ -61,9 +79,64 @@ export class UserController {
     return result.value;
   }
 
+  @Post('me/avatar')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'Avatar uploaded successfully' })
+  async uploadAvatar(
+    @Req()
+    req: RequestWithAuth & {
+      file?: { buffer: Buffer; mimetype: string; originalname?: string };
+    },
+  ) {
+    const file = req.file;
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    if (!isAllowedAvatarMimeType(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid file type. Allowed: ${ALLOWED_AVATAR_MIME_TYPES.join(', ')}`,
+      );
+    }
+
+    const userId = req.user.id;
+    const ext = file.originalname?.split('.').pop()?.toLowerCase() ?? 'jpg';
+    if (!['jpeg', 'jpg', 'png', 'webp'].includes(ext)) {
+      throw new BadRequestException(
+        'Invalid file extension. Use jpeg, png or webp.',
+      );
+    }
+
+    const result = await this.userService.replaceAvatar({
+      userId,
+      buffer: file.buffer,
+      contentType: file.mimetype,
+      ext: ext === 'jpeg' ? 'jpg' : ext,
+    });
+
+    if (result.isErr()) {
+      const message = String(result.error);
+      if (message.includes('not found')) {
+        throw new NotFoundException(result.error);
+      }
+      throw new InternalServerErrorException(result.error);
+    }
+    return result.value;
+  }
+
   @Get('/:id')
   @ApiOkResponse({
     description: 'User retrieved successfully',
+    type: UserResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'User with this ID does not exist',
@@ -79,6 +152,7 @@ export class UserController {
   @Delete('/:id')
   @ApiOkResponse({
     description: 'User deleted successfully',
+    type: UserResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'User with this ID does not exist',
@@ -94,7 +168,7 @@ export class UserController {
   @Post('/')
   @ApiCreatedResponse({
     description: 'User created successfully',
-    type: CreateUser,
+    type: UserResponseDto,
   })
   @ApiConflictResponse({
     description: 'Email or name already exists',
@@ -110,7 +184,7 @@ export class UserController {
   @Put('/:id')
   @ApiOkResponse({
     description: 'User updated successfully',
-    type: UpdateUser,
+    type: UserResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'User with this ID does not exist',

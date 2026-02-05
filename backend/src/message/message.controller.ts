@@ -32,8 +32,9 @@ export class MessageController {
   @UseGuards(AuthGuard)
   @ApiOkResponse({ description: 'List of private conversation peers' })
   async listPrivateConversations(@Req() req: RequestWithAuth) {
-    const result =
-      await this.messageService.listPrivateConversations(req.user.id);
+    const result = await this.messageService.listPrivateConversations(
+      req.user.id,
+    );
     if (result.isErr()) {
       throw new BadRequestException(result.error);
     }
@@ -42,6 +43,7 @@ export class MessageController {
         id: peer.id,
         name: peer.name,
         email: peer.email,
+        avatarUrl: peer.avatarUrl,
       },
       lastMessageAt: lastMessageAt?.toISOString() ?? null,
     }));

@@ -6,10 +6,8 @@ import { useFriendsQuery } from "@/src/features/friends/friends.hooks";
 import { useAuthModal } from "@/src/features/modalAuth/store/useAuthModal";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { FiMessageSquare } from "react-icons/fi";
-
-function displayName(u: { name?: string; email?: string }): string {
-  return u.name ?? u.email ?? "?";
-}
+import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { getDisplayName } from "@/src/features/shared/lib/displayName";
 
 export function FriendsPanel() {
   const openLogin = useAuthModal((s) => s.openLogin);
@@ -61,11 +59,15 @@ export function FriendsPanel() {
       {friends.map((u) => (
         <li key={u.id} className={styles.row}>
           <div className={styles.meta}>
-            <div className={styles.avatar} aria-hidden="true">
-              {displayName(u).slice(0, 1).toUpperCase()}
-            </div>
+            <UserAvatar
+              avatarUrl={u.avatarUrl}
+              displayName={getDisplayName(u)}
+              size="md"
+              className={styles.avatar}
+              aria-hidden
+            />
             <div className={styles.text}>
-              <div className={styles.username}>{displayName(u)}</div>
+              <div className={styles.username}>{getDisplayName(u)}</div>
               <div className={styles.subtleRow}>
                 {u.statut?.replaceAll("_", " ")?.toLowerCase()}
               </div>

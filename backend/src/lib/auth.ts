@@ -14,7 +14,6 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:4001',
 
   // Session configuration
@@ -38,23 +37,21 @@ export const auth = betterAuth({
     },
   },
 
-
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
   },
 
   socialProviders: {
-    roblox: { 
-        clientId: process.env.ROBLOX_CLIENT_ID as string, 
-        clientSecret: process.env.ROBLOX_CLIENT_SECRET as string, 
-    }, 
-    google: { 
-      clientId: process.env.GOOGLE_CLIENT_ID as string, 
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
-    }, 
-},
-
+    roblox: {
+      clientId: process.env.ROBLOX_CLIENT_ID as string,
+      clientSecret: process.env.ROBLOX_CLIENT_SECRET as string,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
 
   advanced: {
     cookiePrefix: 'livehub',

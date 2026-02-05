@@ -10,10 +10,8 @@ import {
 import { useAuthModal } from "@/src/features/modalAuth/store/useAuthModal";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { FiCheck, FiX } from "react-icons/fi";
-
-function displayName(u: { name?: string; email?: string }): string {
-  return u.name ?? u.email ?? "?";
-}
+import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { getDisplayName } from "@/src/features/shared/lib/displayName";
 
 export function RequestsPanel() {
   const openLogin = useAuthModal((s) => s.openLogin);
@@ -85,12 +83,16 @@ export function RequestsPanel() {
             {incoming.map((r) => (
               <li key={r.id} className={styles.row}>
                 <div className={styles.meta}>
-                  <div className={styles.avatar} aria-hidden="true">
-                    {displayName(r.fromUser).slice(0, 1).toUpperCase()}
-                  </div>
+                  <UserAvatar
+                    avatarUrl={r.fromUser.avatarUrl}
+                    displayName={getDisplayName(r.fromUser)}
+                    size="md"
+                    className={styles.avatar}
+                    aria-hidden
+                  />
                   <div className={styles.text}>
                     <div className={styles.username}>
-                      {displayName(r.fromUser)}
+                      {getDisplayName(r.fromUser)}
                     </div>
                     <div className={styles.subtleRow}>pending</div>
                   </div>
@@ -132,12 +134,16 @@ export function RequestsPanel() {
             {outgoing.map((r) => (
               <li key={r.id} className={styles.row}>
                 <div className={styles.meta}>
-                  <div className={styles.avatar} aria-hidden="true">
-                    {displayName(r.toUser).slice(0, 1).toUpperCase()}
-                  </div>
+                  <UserAvatar
+                    avatarUrl={r.toUser.avatarUrl}
+                    displayName={getDisplayName(r.toUser)}
+                    size="md"
+                    className={styles.avatar}
+                    aria-hidden
+                  />
                   <div className={styles.text}>
                     <div className={styles.username}>
-                      {displayName(r.toUser)}
+                      {getDisplayName(r.toUser)}
                     </div>
                     <div className={styles.subtleRow}>pending</div>
                   </div>

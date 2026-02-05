@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
-  IsUrl,
   MinLength,
   MaxLength,
   Matches,
@@ -14,7 +13,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({
   description:
-    'User creation schema (name, email, password, optional image and status)',
+    'User creation schema (name, email, password, optional status). Photo de profil uniquement via le modal profil (POST /users/me/avatar).',
 })
 export class CreateUser {
   @ApiProperty({
@@ -77,20 +76,6 @@ export class CreateUser {
       "The 'password' field must contain at least one uppercase letter, one lowercase letter, one number and one special character (@$!%*?&)!",
   })
   password: string;
-
-  @ApiProperty({
-    description: 'Profile image URL',
-    example: 'https://example.com/avatar.png',
-    type: String,
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  @IsUrl({}, { message: "The 'image' field must be a valid URL!" })
-  @MaxLength(500, {
-    message: "The 'image' field must not exceed 500 characters!",
-  })
-  image?: string;
 
   @ApiProperty({
     description: 'User status',
