@@ -18,9 +18,12 @@ import {
   Req,
   UseGuards,
   UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
   NotFoundException,
   ConflictException,
-  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -29,10 +32,14 @@ import { CreateUser } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
-import {
-  isAllowedAvatarMimeType,
-  ALLOWED_AVATAR_MIME_TYPES,
-} from '../supabase/supabase-storage.service';
+
+/** Type pour les fichiers uploadés via Multer */
+interface UploadedFileType {
+  buffer: Buffer;
+  mimetype: string;
+  originalname: string;
+  size: number;
+}
 
 @Controller('users')
 export class UserController {
@@ -55,8 +62,8 @@ export class UserController {
   @ApiNotFoundResponse({
     description: 'User with this Email does not exist',
   })
-  async GetUserByEmail(@Param('email') email: string) {
-    const result = await this.userService.GetUserByEmail(email);
+  async getUserByEmail(@Param('email') email: string) {
+    const result = await this.userService.getUserByEmail(email);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -71,8 +78,8 @@ export class UserController {
   @ApiNotFoundResponse({
     description: 'User with this name does not exist',
   })
-  async GetUserByName(@Param('name') name: string) {
-    const result = await this.userService.GetUserByName(name);
+  async getUserByName(@Param('name') name: string) {
+    const result = await this.userService.getUserByName(name);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -93,34 +100,26 @@ export class UserController {
   })
   @ApiOkResponse({ description: 'Avatar uploaded successfully' })
   async uploadAvatar(
-    @Req()
-    req: RequestWithAuth & {
-      file?: { buffer: Buffer; mimetype: string; originalname?: string };
-    },
+    @Req() req: RequestWithAuth,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB max
+          new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ }),
+        ],
+      }),
+    )
+    file: UploadedFileType,
   ) {
-    const file = req.file;
-    if (!file) {
-      throw new BadRequestException('No file uploaded');
-    }
-    if (!isAllowedAvatarMimeType(file.mimetype)) {
-      throw new BadRequestException(
-        `Invalid file type. Allowed: ${ALLOWED_AVATAR_MIME_TYPES.join(', ')}`,
-      );
-    }
-
     const userId = req.user.id;
     const ext = file.originalname?.split('.').pop()?.toLowerCase() ?? 'jpg';
-    if (!['jpeg', 'jpg', 'png', 'webp'].includes(ext)) {
-      throw new BadRequestException(
-        'Invalid file extension. Use jpeg, png or webp.',
-      );
-    }
+    const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
 
     const result = await this.userService.replaceAvatar({
       userId,
       buffer: file.buffer,
       contentType: file.mimetype,
-      ext: ext === 'jpeg' ? 'jpg' : ext,
+      ext: normalizedExt,
     });
 
     if (result.isErr()) {
@@ -195,7 +194,11 @@ export class UserController {
   async updateUser(@Body() data: UpdateUser, @Param('id') id: string) {
     const result = await this.userService.updateUser(id, data);
     if (result.isErr()) {
-      throw new NotFoundException(result.error);
+      const message = result.error;
+      if (message === 'Name already exists') {
+        throw new ConflictException(message);
+      }
+      throw new NotFoundException(message);
     }
     return result.value;
   }

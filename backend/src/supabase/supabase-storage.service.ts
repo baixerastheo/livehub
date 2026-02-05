@@ -2,100 +2,131 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Result, ok, err } from '../result';
 
-export const ALLOWED_AVATAR_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
-
-export type AllowedAvatarMimeType = (typeof ALLOWED_AVATAR_MIME_TYPES)[number];
-
-export function isAllowedAvatarMimeType(
-  contentType: string,
-): contentType is AllowedAvatarMimeType {
-  return (ALLOWED_AVATAR_MIME_TYPES as readonly string[]).includes(contentType);
-}
-
+/**
+ * Service de gestion du stockage Supabase.
+ * Gère l'upload, la suppression et la génération d'URLs signées pour les avatars.
+ */
 @Injectable()
 export class SupabaseStorageService {
   private client: SupabaseClient | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
-  private getClient(): SupabaseClient {
+  /**
+   * Initialise et retourne le client Supabase (lazy loading).
+   * @returns Result contenant le client Supabase ou une erreur
+   */
+  private getClient(): Result<SupabaseClient, Error> {
     if (!this.client) {
-      const url = this.config.get<string>('SUPABASE_URL');
-      const key = this.config.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+      const url = process.env.SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (!url || !key) {
-        throw new Error(
-          'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set to use Supabase Storage.',
+        return err(
+          new Error(
+            'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set to use Supabase Storage.',
+          ),
         );
       }
       this.client = createClient(url, key);
     }
-    return this.client;
+    return ok(this.client);
   }
 
+  /**
+   * Retourne le nom du bucket de stockage.
+   * @returns Nom du bucket (par défaut: 'avatars')
+   */
   private getBucket(): string {
-    return this.config.get<string>('SUPABASE_STORAGE_BUCKET') ?? 'avatars';
+    return process.env.SUPABASE_STORAGE_BUCKET ?? 'avatars';
   }
 
+  /**
+   * Génère un chemin unique pour un avatar.
+   * @param userId - Identifiant de l'utilisateur
+   * @param ext - Extension du fichier
+   * @returns Chemin au format 'user-{userId}/{uuid}.{ext}'
+   */
   buildAvatarPath(userId: string, ext: string): string {
-    return `user-${userId}/${randomUUID()}.${ext}`;
+    return 'user-' + userId + '/' + randomUUID() + '.' + ext;
   }
 
-  async uploadAvatar(params: {
-    userId: string;
-    buffer: Buffer;
-    contentType: string;
-    ext: string;
-  }): Promise<{ path: string }> {
-    const { userId, buffer, contentType, ext } = params;
-
-    if (!isAllowedAvatarMimeType(contentType)) {
-      throw new Error(
-        `Invalid avatar contentType: ${contentType}. Allowed: ${ALLOWED_AVATAR_MIME_TYPES.join(', ')}`,
-      );
-    }
-
+  /**
+   * Upload un avatar vers Supabase Storage.
+   * @param params - Paramètres d'upload (userId, buffer, contentType, ext)
+   * @returns Chemin du fichier uploadé
+   * @throws Error si le type MIME n'est pas autorisé ou si l'upload échoue
+   */
+  async uploadAvatar(userId: string, buffer: Buffer, contentType: string, ext: string){
+ 
     const path = this.buildAvatarPath(userId, ext);
     const bucket = this.getBucket();
 
-    const { data, error } = await this.getClient()
-      .storage.from(bucket)
-      .upload(path, buffer, {
-        contentType,
-        upsert: true,
-      });
+    const clientResult = this.getClient();
+    if (clientResult.isErr()) {
+      return err(clientResult.error);
+    }
+    const client = clientResult.value;
+
+    const { data, error } = await client.storage
+      .from(bucket)
+      .upload(path, buffer, { contentType, upsert: true });
 
     if (error) {
-      throw new Error(`Supabase Storage upload failed: ${error.message}`);
+      return err('Supabase Storage upload failed: ' + error.message);
     }
 
-    return { path: data.path };
+    return ok(data.path);
   }
 
-  async removeObjects(paths: string[]): Promise<void> {
+  /**
+   * Supprime des fichiers du stockage Supabase.
+   * @param paths - Liste des chemins à supprimer
+   * @throws Error si la suppression échoue
+   */
+  async removeObjects(paths: string[]){
     if (paths.length === 0) return;
 
     const bucket = this.getBucket();
-    const { error } = await this.getClient().storage.from(bucket).remove(paths);
+
+    const clientResult = this.getClient();
+    if (clientResult.isErr()) {
+      return err(clientResult.error);
+    }
+    const client = clientResult.value;
+
+    const { error } = await client.storage.from(bucket).remove(paths);
 
     if (error) {
-      throw new Error(`Supabase Storage remove failed: ${error.message}`);
+      return err('Supabase Storage remove failed: ' + error.message);
     }
+    return ok(undefined);
   }
 
-  async publicUrl(path: string, expiresIn = 3600): Promise<string> {
+  /**
+   * Génère une URL signée temporaire pour accéder à un fichier.
+   * @param path - Chemin du fichier
+   * @param expiresIn - Durée de validité en secondes (par défaut: 3600 = 1h)
+   * @returns URL signée pour accéder au fichier
+   * @throws Error si la génération échoue
+   */
+  async publicUrl(path: string, expiresIn = 3600){
     const bucket = this.getBucket();
-    const { data, error } = await this.getClient()
-      .storage.from(bucket)
+
+    const clientResult = this.getClient();
+    if (clientResult.isErr()) {
+      return err(clientResult.error);
+    }
+    const client = clientResult.value;
+
+    const { data, error } = await client.storage
+      .from(bucket)
       .createSignedUrl(path, expiresIn);
 
     if (error) {
-      throw new Error(`Supabase Storage signed URL failed: ${error.message}`);
+      return err('Supabase Storage signed URL failed: ' + error.message);
     }
-    return data.signedUrl;
+    return ok(data.signedUrl);
   }
 }

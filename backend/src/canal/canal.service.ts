@@ -9,35 +9,57 @@ import { UpdateCanal } from './dto/update-canal.dto';
 export class CanalService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async GetAllChannelsByServer(ServerId: number) {
+  /**
+   * Récupère un canal par son ID.
+   * @param id - Identifiant du canal
+   * @returns Le canal ou null si non trouvé
+   */
+  private async findChannelById(id: number) {
+    return this.prisma.canal.findUnique({ where: { id } });
+  }
+
+  /**
+   * Récupère tous les canaux d'un serveur.
+   * @param serverId - Identifiant du serveur
+   * @returns Liste des canaux ou erreur si le serveur n'existe pas
+   */
+  async getAllChannelsByServer(serverId: number) {
     const server = await this.prisma.serveur.findUnique({
-      where: { id: ServerId },
+      where: { id: serverId },
     });
     if (!server) {
-      return err('No server found for ID ' + ServerId);
+      return err(`No server found for ID ${serverId}`);
     }
     const channels = await this.prisma.canal.findMany({
-      where: { serveurId: ServerId },
+      where: { serveurId: serverId },
     });
     if (!channels || channels.length === 0) {
-      return err('No channels found for server with ID ' + ServerId);
+      return err(`No channels found for server with ID ${serverId}`);
     }
     return ok(channels);
   }
 
-  async CreateChannel(ServerId: number, userId: string, data: CreateCanal) {
+  /**
+   * Crée un nouveau canal dans un serveur.
+   * Seuls les propriétaires et administrateurs peuvent créer des canaux.
+   * @param serverId - Identifiant du serveur
+   * @param userId - Identifiant de l'utilisateur créateur
+   * @param data - Données du canal à créer
+   * @returns Le canal créé ou erreur si non autorisé
+   */
+  async createChannel(serverId: number, userId: string, data: CreateCanal) {
     const server = await this.prisma.serveur.findUnique({
-      where: { id: ServerId },
+      where: { id: serverId },
     });
     if (!server) {
-      return err('No server found for ID ' + ServerId);
+      return err(`No server found for ID ${serverId}`);
     }
 
     const member = await this.prisma.membreServeur.findUnique({
       where: {
         userId_serveurId: {
           userId,
-          serveurId: ServerId,
+          serveurId: serverId,
         },
       },
     });
@@ -56,28 +78,34 @@ export class CanalService {
     const canal = await this.prisma.canal.create({
       data: {
         nom: data.name,
-        serveurId: ServerId,
+        serveurId: serverId,
       },
     });
     return ok(canal);
   }
 
-  async GetDetailsChannel(id: number) {
-    const channel = await this.prisma.canal.findUnique({
-      where: { id },
-    });
+  /**
+   * Récupère les détails d'un canal spécifique.
+   * @param id - Identifiant du canal
+   * @returns Le canal ou erreur si non trouvé
+   */
+  async getChannelDetails(id: number) {
+    const channel = await this.findChannelById(id);
     if (!channel) {
-      return err('No channels found for ID ' + id);
+      return err(`No channel found for ID ${id}`);
     }
     return ok(channel);
   }
 
-  async DeleteChannel(id: number) {
-    const channel = await this.prisma.canal.findUnique({
-      where: { id },
-    });
+  /**
+   * Supprime un canal.
+   * @param id - Identifiant du canal à supprimer
+   * @returns Le canal supprimé ou erreur si non trouvé
+   */
+  async deleteChannel(id: number) {
+    const channel = await this.findChannelById(id);
     if (!channel) {
-      return err('No channels found for ID ' + id);
+      return err(`No channel found for ID ${id}`);
     }
     const deletedChannel = await this.prisma.canal.delete({
       where: { id },
@@ -85,12 +113,16 @@ export class CanalService {
     return ok(deletedChannel);
   }
 
-  async UpdateChannel(id: number, data: UpdateCanal) {
-    const channel = await this.prisma.canal.findUnique({
-      where: { id },
-    });
+  /**
+   * Met à jour un canal.
+   * @param id - Identifiant du canal à mettre à jour
+   * @param data - Nouvelles données du canal
+   * @returns Le canal mis à jour ou erreur si non trouvé
+   */
+  async updateChannel(id: number, data: UpdateCanal) {
+    const channel = await this.findChannelById(id);
     if (!channel) {
-      return err('No channels found for ID ' + id);
+      return err(`No channel found for ID ${id}`);
     }
 
     const updatedCanal = await this.prisma.canal.update({

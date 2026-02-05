@@ -6,7 +6,6 @@ export const authClient = createAuthClient({
   baseURL: API_URL,
 });
 
-// Export all auth methods
 export const {
   signIn,
   signUp,
