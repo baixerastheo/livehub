@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { CreateUser } from './dto/create-user.dto';
 import { UpdateUser } from './dto/update-user.dto';
-import { ok, err, Result } from '../result';
+import { ok, err } from '../result';
 
 @Injectable()
 export class UserService {
