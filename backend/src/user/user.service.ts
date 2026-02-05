@@ -42,9 +42,9 @@ export class UserService {
    * @param users - Liste d'utilisateurs à enrichir
    * @returns Liste d'utilisateurs avec avatarUrl ajouté
    */
-  private async enrichUsersWithAvatarUrl<T extends { avatarPath: string | null }>(
-    users: T[],
-  ): Promise<Array<T & { avatarUrl: string | null }>> {
+  private async enrichUsersWithAvatarUrl<
+    T extends { avatarPath: string | null },
+  >(users: T[]): Promise<Array<T & { avatarUrl: string | null }>> {
     return Promise.all(users.map((u) => this.enrichWithAvatarUrl(u)));
   }
 
@@ -62,7 +62,7 @@ export class UserService {
    * @param id - Identifiant de l'utilisateur
    * @returns L'utilisateur ou erreur si non trouvé
    */
-  async getUserById(id: string){
+  async getUserById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -77,7 +77,7 @@ export class UserService {
    * @param email - Email de l'utilisateur
    * @returns L'utilisateur ou erreur si non trouvé
    */
-  async getUserByEmail(email: string){
+  async getUserByEmail(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -92,7 +92,7 @@ export class UserService {
    * @param name - Nom de l'utilisateur
    * @returns L'utilisateur ou erreur si non trouvé
    */
-  async getUserByName(name: string){
+  async getUserByName(name: string) {
     const user = await this.prisma.user.findFirst({
       where: { name },
     });
@@ -107,7 +107,7 @@ export class UserService {
    * @param data - Données de l'utilisateur à créer
    * @returns L'utilisateur créé ou erreur si email/nom existe déjà
    */
-  async createUser(data: CreateUser){
+  async createUser(data: CreateUser) {
     const emailExist = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -155,7 +155,7 @@ export class UserService {
    * @param id - Identifiant de l'utilisateur à supprimer
    * @returns L'utilisateur supprimé ou erreur si non trouvé
    */
-  async deleteUser(id: string){
+  async deleteUser(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -208,7 +208,7 @@ export class UserService {
    * @param avatarPath - Nouveau chemin de l'avatar
    * @returns L'utilisateur mis à jour ou erreur si non trouvé
    */
-  async updateAvatar(userId: string, avatarPath: string){
+  async updateAvatar(userId: string, avatarPath: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -232,7 +232,12 @@ export class UserService {
    * @param params - Paramètres contenant userId, buffer, contentType et extension
    * @returns Le chemin et l'URL du nouvel avatar ou erreur
    */
-  async replaceAvatar(params: { userId: string; buffer: Buffer; contentType: string; ext: string }) {
+  async replaceAvatar(params: {
+    userId: string;
+    buffer: Buffer;
+    contentType: string;
+    ext: string;
+  }) {
     const { userId, buffer, contentType, ext } = params;
 
     const user = await this.prisma.user.findUnique({

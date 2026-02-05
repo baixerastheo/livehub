@@ -10,7 +10,7 @@ export class MessageService {
     private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
-  private async getUserAvatarUrl(avatarPath: string | null) { 
+  private async getUserAvatarUrl(avatarPath: string | null) {
     if (avatarPath === null) {
       return err('Avatar path is required');
     }
@@ -139,7 +139,11 @@ export class MessageService {
    * @param content - Contenu du message
    * @returns Le message créé ou erreur
    */
-  async createPrivateMessage(senderId: string, recipientId: string, content: string) {
+  async createPrivateMessage(
+    senderId: string,
+    recipientId: string,
+    content: string,
+  ) {
     if (senderId === recipientId) {
       return err('Cannot send a private message to yourself');
     }

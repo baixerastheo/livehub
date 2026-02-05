@@ -58,8 +58,12 @@ export class SupabaseStorageService {
    * @returns Chemin du fichier uploadé
    * @throws Error si le type MIME n'est pas autorisé ou si l'upload échoue
    */
-  async uploadAvatar(userId: string, buffer: Buffer, contentType: string, ext: string){
- 
+  async uploadAvatar(
+    userId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
     const path = this.buildAvatarPath(userId, ext);
     const bucket = this.getBucket();
 
@@ -85,7 +89,7 @@ export class SupabaseStorageService {
    * @param paths - Liste des chemins à supprimer
    * @throws Error si la suppression échoue
    */
-  async removeObjects(paths: string[]){
+  async removeObjects(paths: string[]) {
     if (paths.length === 0) return;
 
     const bucket = this.getBucket();
@@ -111,7 +115,7 @@ export class SupabaseStorageService {
    * @returns URL signée pour accéder au fichier
    * @throws Error si la génération échoue
    */
-  async publicUrl(path: string, expiresIn = 3600){
+  async publicUrl(path: string, expiresIn = 3600) {
     const bucket = this.getBucket();
 
     const clientResult = this.getClient();
