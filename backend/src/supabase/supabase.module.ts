@@ -1,10 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import { AvatarMimetypeGuard } from './avatar-mimetype.guard';
 import { SupabaseStorageService } from './supabase-storage.service';
 
 @Global()
 @Module({
-  providers: [SupabaseStorageService, AvatarMimetypeGuard],
-  exports: [SupabaseStorageService, AvatarMimetypeGuard],
+  providers: [SupabaseStorageService],
+  exports: [SupabaseStorageService],
 })
 export class SupabaseModule {}

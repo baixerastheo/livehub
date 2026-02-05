@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   ParseIntPipe,
-  Query,
   Req,
   UseGuards,
   NotFoundException,
@@ -137,22 +136,22 @@ export class MessageController {
   }
 
   @Post('channels/:id/messages')
+  @UseGuards(AuthGuard)
   @ApiCreatedResponse({
     description: 'Message sent successfully',
   })
   @ApiNotFoundResponse({
     description: 'Channel not found or you are not a member of the server',
   })
-  async SendMessage(
+  async sendMessage(
     @Param('id', ParseIntPipe) canalId: number,
     @Body() dto: CreateMessageDto,
+    @Req() req: RequestWithAuth,
   ) {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
     const result = await this.messageService.createMessage(
       dto.content,
       canalId,
-      userId,
+      req.user.id,
     );
     if (result.isErr()) {
       throw new NotFoundException(result.error);
@@ -161,6 +160,7 @@ export class MessageController {
   }
 
   @Delete('messages/:id')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'Message deleted successfully',
   })
@@ -172,9 +172,9 @@ export class MessageController {
   })
   async deleteMessage(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId') userId: string,
+    @Req() req: RequestWithAuth,
   ) {
-    const result = await this.messageService.deleteMessage(id, userId);
+    const result = await this.messageService.deleteMessage(id, req.user.id);
     if (result.isErr()) {
       const msg = result.error;
       if (msg.startsWith('No message')) {
