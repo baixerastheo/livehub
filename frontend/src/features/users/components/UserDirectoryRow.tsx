@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import styles from "../styles/UserDirectory.module.css";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import { FiClock, FiMessageSquare, FiUserPlus } from "react-icons/fi";

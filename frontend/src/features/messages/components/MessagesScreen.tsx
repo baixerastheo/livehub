@@ -18,6 +18,7 @@ import {
   usePrivateConversationQuery,
   useSendPrivateMessageMutation,
 } from "@/src/features/messages/privateMessage.hooks";
+import { usePrivateMessagesRealtime } from "@/src/features/messages/privateMessageRealtime.hooks";
 
 const AVATAR_COLORS = [
   "#7c3aed",
@@ -57,6 +58,8 @@ export function MessagesScreen() {
   const { data: peerUser } = useUserQuery(peerUserId ?? undefined);
   const { data: conversationData } = usePrivateConversationQuery(peerUserId);
   const sendMessageMutation = useSendPrivateMessageMutation();
+
+  usePrivateMessagesRealtime(peerUserId);
 
   const displayName =
     peerUser?.name ?? peerUser?.email ?? decodedPeerName ?? "User";
