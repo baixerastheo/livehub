@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { ok, err } from '../result';
 import { PrismaService } from 'src/prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { CreateUser } from './dto/create-user.dto';
 import { UpdateUser } from './dto/update-user.dto';
+import { ok, err, Result } from '../result';
 
 @Injectable()
 export class UserService {
@@ -13,32 +13,56 @@ export class UserService {
     private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
+  /**
+   * Enrichit un utilisateur avec l'URL publique de son avatar.
+   * @param user - Utilisateur à enrichir
+   * @returns Utilisateur avec avatarUrl ajouté (sans wrapper Result)
+   */
   private async enrichWithAvatarUrl<T extends { avatarPath: string | null }>(
     user: T,
   ): Promise<T & { avatarUrl: string | null }> {
     if (!user.avatarPath) {
       return { ...user, avatarUrl: null };
     }
-    try {
-      const avatarUrl = await this.supabaseStorage.publicUrl(user.avatarPath);
-      return { ...user, avatarUrl };
-    } catch {
+
+    const avatarUrlResult = await this.supabaseStorage.publicUrl(
+      user.avatarPath,
+    );
+    if (avatarUrlResult.isErr()) {
+      // En cas d'erreur de génération d'URL, on renvoie quand même l'utilisateur
+      // avec avatarUrl à null pour ne pas casser les endpoints utilisateurs.
       return { ...user, avatarUrl: null };
     }
+
+    return { ...user, avatarUrl: avatarUrlResult.value };
   }
 
-  private async enrichUsersWithAvatarUrl<
-    T extends { avatarPath: string | null },
-  >(users: T[]): Promise<(T & { avatarUrl: string | null })[]> {
+  /**
+   * Enrichit une liste d'utilisateurs avec les URLs de leurs avatars.
+   * @param users - Liste d'utilisateurs à enrichir
+   * @returns Liste d'utilisateurs avec avatarUrl ajouté
+   */
+  private async enrichUsersWithAvatarUrl<T extends { avatarPath: string | null }>(
+    users: T[],
+  ): Promise<Array<T & { avatarUrl: string | null }>> {
     return Promise.all(users.map((u) => this.enrichWithAvatarUrl(u)));
   }
 
+  /**
+   * Récupère tous les utilisateurs avec leurs URLs d'avatar.
+   * @returns Liste de tous les utilisateurs
+   */
   async getAllUsers() {
     const users = await this.prisma.user.findMany();
     return this.enrichUsersWithAvatarUrl(users);
   }
 
-  async getUserById(id: string) {
+  /**
+   * Récupère un utilisateur par son ID.
+   * @param id - Identifiant de l'utilisateur
+   * @returns L'utilisateur ou erreur si non trouvé
+   */
+  async getUserById(id: string){
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -48,17 +72,27 @@ export class UserService {
     return ok(await this.enrichWithAvatarUrl(user));
   }
 
-  async GetUserByEmail(email: string) {
+  /**
+   * Récupère un utilisateur par son email.
+   * @param email - Email de l'utilisateur
+   * @returns L'utilisateur ou erreur si non trouvé
+   */
+  async getUserByEmail(email: string){
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
     if (!user) {
-      return err('User with Email ' + email + ' not found');
+      return err('User with email ' + email + ' not found');
     }
     return ok(await this.enrichWithAvatarUrl(user));
   }
 
-  async GetUserByName(name: string) {
+  /**
+   * Récupère un utilisateur par son nom.
+   * @param name - Nom de l'utilisateur
+   * @returns L'utilisateur ou erreur si non trouvé
+   */
+  async getUserByName(name: string){
     const user = await this.prisma.user.findFirst({
       where: { name },
     });
@@ -68,7 +102,12 @@ export class UserService {
     return ok(await this.enrichWithAvatarUrl(user));
   }
 
-  async createUser(data: CreateUser) {
+  /**
+   * Crée un nouvel utilisateur avec son compte associé.
+   * @param data - Données de l'utilisateur à créer
+   * @returns L'utilisateur créé ou erreur si email/nom existe déjà
+   */
+  async createUser(data: CreateUser){
     const emailExist = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -105,10 +144,18 @@ export class UserService {
     ]);
 
     const user = await this.prisma.user.findUnique({ where: { id } });
-    return ok(await this.enrichWithAvatarUrl(user!));
+    if (!user) {
+      return err('User creation failed');
+    }
+    return ok(await this.enrichWithAvatarUrl(user));
   }
 
-  async deleteUser(id: string) {
+  /**
+   * Supprime un utilisateur.
+   * @param id - Identifiant de l'utilisateur à supprimer
+   * @returns L'utilisateur supprimé ou erreur si non trouvé
+   */
+  async deleteUser(id: string){
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -121,6 +168,12 @@ export class UserService {
     return ok(await this.enrichWithAvatarUrl(deletedUser));
   }
 
+  /**
+   * Met à jour les informations d'un utilisateur.
+   * @param id - Identifiant de l'utilisateur
+   * @param data - Nouvelles données de l'utilisateur
+   * @returns L'utilisateur mis à jour ou erreur si non trouvé/nom existant
+   */
   async updateUser(id: string, data: UpdateUser) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -149,7 +202,13 @@ export class UserService {
     return ok(await this.enrichWithAvatarUrl(updatedUser));
   }
 
-  async updateAvatar(userId: string, avatarPath: string) {
+  /**
+   * Met à jour le chemin de l'avatar d'un utilisateur.
+   * @param userId - Identifiant de l'utilisateur
+   * @param avatarPath - Nouveau chemin de l'avatar
+   * @returns L'utilisateur mis à jour ou erreur si non trouvé
+   */
+  async updateAvatar(userId: string, avatarPath: string){
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -168,22 +227,12 @@ export class UserService {
   }
 
   /**
-   * Remplace l’avatar utilisateur de façon robuste avec compensation :
-   * Lit oldAvatarPath depuis la BDD
-   * Upload du nouveau fichier vers Supabase → newPath
-   * Update BDD : avatarPath = newPath
-   * Si oldAvatarPath existe : suppression dans le storage, en cas d’échec :
-   * revert BDD vers oldAvatarPath, suppression de newPath, retourne err.
+   * Remplace l'avatar d'un utilisateur.
+   * Upload le nouveau fichier, supprime l'ancien et met à jour la base.
+   * @param params - Paramètres contenant userId, buffer, contentType et extension
+   * @returns Le chemin et l'URL du nouvel avatar ou erreur
    */
-  async replaceAvatar(params: {
-    userId: string;
-    buffer: Buffer;
-    contentType: string;
-    ext: string;
-  }): Promise<
-    | ReturnType<typeof ok<{ path: string; avatarUrl: string }>>
-    | ReturnType<typeof err<string>>
-  > {
+  async replaceAvatar(params: { userId: string; buffer: Buffer; contentType: string; ext: string }) {
     const { userId, buffer, contentType, ext } = params;
 
     const user = await this.prisma.user.findUnique({
@@ -195,12 +244,16 @@ export class UserService {
 
     const oldAvatarPath = user.avatarPath ?? null;
 
-    const { path: newPath } = await this.supabaseStorage.uploadAvatar({
+    const uploadResult = await this.supabaseStorage.uploadAvatar(
       userId,
       buffer,
       contentType,
       ext,
-    });
+    );
+    if (uploadResult.isErr()) {
+      return err(uploadResult.error);
+    }
+    const newPath = uploadResult.value;
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -224,14 +277,17 @@ export class UserService {
         try {
           await this.supabaseStorage.removeObjects([newPath]);
         } catch {
-          // Best-effort cleanup, the DB has already been reverted,
-          // so we intentionally ignore failures when deleting the new avatar.
+          // Ignore cleanup error
         }
         return err('Failed to remove old avatar from storage');
       }
     }
 
-    const avatarUrl = await this.supabaseStorage.publicUrl(newPath);
-    return ok({ path: newPath, avatarUrl });
+    const avatarUrlResult = await this.supabaseStorage.publicUrl(newPath);
+    if (avatarUrlResult.isErr()) {
+      return err(avatarUrlResult.error);
+    }
+
+    return ok({ path: newPath, avatarUrl: avatarUrlResult.value });
   }
 }

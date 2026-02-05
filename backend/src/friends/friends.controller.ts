@@ -17,6 +17,12 @@ import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { FriendsService } from './friends.service.js';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto.js';
 
+const FRIEND_REQUEST_STATUS_MAP: Record<string, 'pending' | 'accepted' | 'declined'> = {
+  EN_ATTENTE: 'pending',
+  ACCEPTEE: 'accepted',
+  REFUSEE: 'declined',
+};
+
 @ApiTags('friends')
 @Controller('friends')
 @UseGuards(AuthGuard)
@@ -37,12 +43,7 @@ export class FriendsController {
       id: r.id,
       fromUser: r.fromUser,
       toUser: r.toUser,
-      status:
-        r.statut === 'EN_ATTENTE'
-          ? 'pending'
-          : r.statut === 'ACCEPTEE'
-            ? 'accepted'
-            : 'declined',
+      status: FRIEND_REQUEST_STATUS_MAP[r.statut] ?? 'pending',
       createdAt: r.creeLe.toISOString(),
     }));
   }
@@ -62,7 +63,6 @@ export class FriendsController {
       if (e.code === 'ALREADY_FRIENDS' || e.code === 'REQUEST_PENDING') {
         throw new ConflictException(e.message);
       }
-      if (e.code === 'SELF') throw new BadRequestException(e.message);
       throw new BadRequestException(e.message);
     }
     return { ok: true };
@@ -76,8 +76,6 @@ export class FriendsController {
       if (e.code === 'REQUEST_NOT_FOUND')
         throw new NotFoundException(e.message);
       if (e.code === 'NOT_ALLOWED') throw new ForbiddenException(e.message);
-      if (e.code === 'REQUEST_NOT_PENDING')
-        throw new BadRequestException(e.message);
       throw new BadRequestException(e.message);
     }
     return { ok: true };
@@ -91,8 +89,6 @@ export class FriendsController {
       if (e.code === 'REQUEST_NOT_FOUND')
         throw new NotFoundException(e.message);
       if (e.code === 'NOT_ALLOWED') throw new ForbiddenException(e.message);
-      if (e.code === 'REQUEST_NOT_PENDING')
-        throw new BadRequestException(e.message);
       throw new BadRequestException(e.message);
     }
     return { ok: true };

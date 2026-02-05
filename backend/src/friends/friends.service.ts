@@ -4,6 +4,13 @@ import { PrismaService } from '../prisma.service.js';
 import { err, ok, Result } from '../result.js';
 import { publicUserSelect } from '../user/public-user.js';
 
+/**
+ * Ordonne une paire d'IDs utilisateurs de manière déterministe.
+ * Utilisé pour garantir l'unicité des relations d'amitié bidirectionnelles.
+ * @param a - Premier ID utilisateur
+ * @param b - Second ID utilisateur
+ * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
+ */
 function orderPair(a: string, b: string): { userAId: string; userBId: string } {
   return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
 }
@@ -24,6 +31,11 @@ export type FriendsError = { code: FriendsErrorCode; message: string };
 export class FriendsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Récupère la liste des amis d'un utilisateur.
+   * @param userId - Identifiant de l'utilisateur
+   * @returns Liste des amis avec leurs informations publiques
+   */
   async listFriends(userId: string) {
     const rows = await this.prisma.amitie.findMany({
       where: {
@@ -38,6 +50,11 @@ export class FriendsService {
     return rows.map((r) => (r.userAId === userId ? r.userB : r.userA));
   }
 
+  /**
+   * Récupère les demandes d'amitié en attente (envoyées et reçues).
+   * @param userId - Identifiant de l'utilisateur
+   * @returns Liste des demandes avec les infos des utilisateurs concernés
+   */
   async listRequests(userId: string) {
     return this.prisma.demandeAmitie.findMany({
       where: {
@@ -52,6 +69,13 @@ export class FriendsService {
     });
   }
 
+  /**
+   * Envoie une demande d'amitié à un utilisateur.
+   * Vérifie que la demande est valide (pas soi-même, utilisateur existe, pas déjà amis).
+   * @param fromUserId - Identifiant de l'expéditeur
+   * @param toUserId - Identifiant du destinataire
+   * @returns Succès ou erreur avec code explicite
+   */
   async sendRequest(
     fromUserId: string,
     toUserId: string,
@@ -67,8 +91,9 @@ export class FriendsService {
       where: { id: toUserId },
       select: { id: true },
     });
-    if (!toUser)
+    if (!toUser) {
       return err({ code: 'USER_NOT_FOUND', message: 'User not found' });
+    }
 
     const { userAId, userBId } = orderPair(fromUserId, toUserId);
     const existingFriendship = await this.prisma.amitie.findUnique({
@@ -110,6 +135,13 @@ export class FriendsService {
     return ok(undefined);
   }
 
+  /**
+   * Accepte une demande d'amitié.
+   * Crée la relation d'amitié et met à jour le statut de la demande.
+   * @param requestId - Identifiant de la demande
+   * @param currentUserId - Identifiant de l'utilisateur acceptant (doit être le destinataire)
+   * @returns Succès ou erreur avec code explicite
+   */
   async acceptRequest(
     requestId: string,
     currentUserId: string,
@@ -117,8 +149,9 @@ export class FriendsService {
     const request = await this.prisma.demandeAmitie.findUnique({
       where: { id: requestId },
     });
-    if (!request)
+    if (!request) {
       return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
+    }
     if (request.statut !== 'EN_ATTENTE') {
       return err({
         code: 'REQUEST_NOT_PENDING',
@@ -155,6 +188,12 @@ export class FriendsService {
     return ok(undefined);
   }
 
+  /**
+   * Refuse une demande d'amitié.
+   * @param requestId - Identifiant de la demande
+   * @param currentUserId - Identifiant de l'utilisateur refusant (doit être le destinataire)
+   * @returns Succès ou erreur avec code explicite
+   */
   async declineRequest(
     requestId: string,
     currentUserId: string,
@@ -162,8 +201,9 @@ export class FriendsService {
     const request = await this.prisma.demandeAmitie.findUnique({
       where: { id: requestId },
     });
-    if (!request)
+    if (!request) {
       return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
+    }
     if (request.statut !== 'EN_ATTENTE') {
       return err({
         code: 'REQUEST_NOT_PENDING',

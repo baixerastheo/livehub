@@ -14,25 +14,28 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
+  UseGuards,
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateServer } from './dto/update-server.dto';
 import { UpdateMemberRole } from './dto/update-member-role.dto';
 import { CreateServer } from './dto/create-server.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import type { RequestWithAuth } from '../lib/request-with-auth';
 
 @Controller('servers')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @Post('/')
+  @UseGuards(AuthGuard)
   @ApiCreatedResponse({
     description: 'Server created successfully',
     type: CreateServer,
   })
-  async createServer(@Body() data: CreateServer) {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
-    const result = await this.serverService.createServer(data, userId);
+  async createServer(@Body() data: CreateServer, @Req() req: RequestWithAuth) {
+    const result = await this.serverService.createServer(data, req.user.id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -40,13 +43,12 @@ export class ServerController {
   }
 
   @Get('/')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: "User's servers retrieved successfully",
   })
-  async getUserServers() {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
-    return await this.serverService.getUserServers(userId);
+  async getUserServers(@Req() req: RequestWithAuth) {
+    return this.serverService.getUserServers(req.user.id);
   }
 
   @Get('/:id')
@@ -99,6 +101,7 @@ export class ServerController {
   }
 
   @Post('/:id/join')
+  @UseGuards(AuthGuard)
   @ApiCreatedResponse({
     description: 'You have successfully joined the server',
   })
@@ -108,10 +111,11 @@ export class ServerController {
   @ApiConflictResponse({
     description: 'You are already a member of this server',
   })
-  async joinServer(@Param('id', ParseIntPipe) serverId: number) {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
-    const result = await this.serverService.joinServer(serverId, userId);
+  async joinServer(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
+    const result = await this.serverService.joinServer(serverId, req.user.id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -119,16 +123,18 @@ export class ServerController {
   }
 
   @Delete('/:id/leave')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'You have successfully left the server',
   })
   @ApiNotFoundResponse({
     description: 'You are not a member of this server',
   })
-  async leaveServer(@Param('id', ParseIntPipe) serverId: number) {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
-    const result = await this.serverService.leaveServer(serverId, userId);
+  async leaveServer(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
+    const result = await this.serverService.leaveServer(serverId, req.user.id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }

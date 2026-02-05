@@ -7,6 +7,8 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Req,
+  UseGuards,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -17,12 +19,15 @@ import {
 import { CanalService } from './canal.service';
 import { CreateCanal } from './dto/create-canal.dto';
 import { UpdateCanal } from './dto/update-canal.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import type { RequestWithAuth } from '../lib/request-with-auth';
 
 @Controller()
 export class CanalController {
   constructor(private readonly canalService: CanalService) {}
 
   @Post('/servers/:serverId/channels')
+  @UseGuards(AuthGuard)
   @ApiCreatedResponse({
     description: 'Channel created successfully',
     type: CreateCanal,
@@ -34,14 +39,9 @@ export class CanalController {
   async createChannel(
     @Param('serverId', ParseIntPipe) serverId: number,
     @Body() data: CreateCanal,
+    @Req() req: RequestWithAuth,
   ) {
-    //récupérer userId depuis la session Better Auth
-    const userId = '';
-    const result = await this.canalService.CreateChannel(
-      serverId,
-      userId,
-      data,
-    );
+    const result = await this.canalService.createChannel(serverId, req.user.id, data);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -58,7 +58,7 @@ export class CanalController {
   async getAllChannelsByServer(
     @Param('serverId', ParseIntPipe) serverId: number,
   ) {
-    const result = await this.canalService.GetAllChannelsByServer(serverId);
+    const result = await this.canalService.getAllChannelsByServer(serverId);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -73,7 +73,7 @@ export class CanalController {
     description: 'Channel with this ID does not exist',
   })
   async getChannelById(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.canalService.GetDetailsChannel(id);
+    const result = await this.canalService.getChannelDetails(id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -92,7 +92,7 @@ export class CanalController {
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateCanal,
   ) {
-    const result = await this.canalService.UpdateChannel(id, data);
+    const result = await this.canalService.updateChannel(id, data);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -107,7 +107,7 @@ export class CanalController {
     description: 'Channel with this ID does not exist',
   })
   async deleteChannel(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.canalService.DeleteChannel(id);
+    const result = await this.canalService.deleteChannel(id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
