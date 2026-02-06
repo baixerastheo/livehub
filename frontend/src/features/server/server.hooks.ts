@@ -1,14 +1,25 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   addServerMember,
+  createServer,
   getServerMembers,
+  getServerChannels,
   getUserServers,
+  updateServer,
+  serverService,
 } from "./server.service";
 import type { ServerMemberDto, UserServerDto } from "./server.types";
+import { serverKeys } from "./server.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
+import { channelsKeys } from "@/src/features/channel/channel.hooks";
 
+/* Clés utilisées par nos hooks (liste user, members, etc.) */
 export const serversKeys = {
   all: ["servers"] as const,
   user: () => [...serversKeys.all, "user"] as const,
@@ -54,3 +65,67 @@ export function useAddServerMemberMutation(serverId: number | null) {
   });
 }
 
+/* Refacto CRUD : mutations create / update server, create channel */
+export function useCreateServerMutation() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { name: string }) => createServer(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      if (userId != null) {
+        queryClient.invalidateQueries({
+          queryKey: serverKeys.list({ userId }),
+        });
+      }
+    },
+  });
+}
+
+export function useUpdateServerMutation() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ serverId, name }: { serverId: number; name: string }) =>
+      updateServer(serverId, { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      if (userId != null) {
+        queryClient.invalidateQueries({
+          queryKey: serverKeys.list({ userId }),
+        });
+      }
+    },
+  });
+}
+
+export function useCreateChannelMutation() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      serverId,
+      name,
+    }: {
+      serverId: number;
+      name: string;
+    }) => serverService.createChannel(serverId, { name }),
+    onSuccess: (_, { serverId }) => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      if (userId != null) {
+        queryClient.invalidateQueries({
+          queryKey: serverKeys.list({ userId }),
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: channelsKeys.byServer(serverId),
+      });
+    },
+  });
+}

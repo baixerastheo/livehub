@@ -10,6 +10,13 @@ import type {
   UserServerBackendDto,
   ServerMemberBackendDto,
   ServerId,
+  ListUserServersResponseDto,
+  CreateServerPayload,
+  CreateServerResponseDto,
+  UpdateServerPayload,
+  CreateChannelPayload,
+  ListServerChannelsResponseDto,
+  ChannelDto,
 } from "./server.types";
 
 function mapServer(dto: ServerBackendDto): ServerDto {
@@ -46,7 +53,14 @@ function mapServerMember(dto: ServerMemberBackendDto): ServerMemberDto {
   };
 }
 
-export async function createServer(body: CreateServerBody): Promise<ServerDto> {
+/* CRUD refacto : liste brute pour compatibilité */
+export async function listUserServers(): Promise<ListUserServersResponseDto> {
+  return fetchJson<ListUserServersResponseDto>("/servers", { method: "GET" });
+}
+
+export async function createServer(
+  body: CreateServerBody | CreateServerPayload,
+): Promise<ServerDto> {
   const server = await fetchJson<ServerBackendDto>("/servers", {
     method: "POST",
     body,
@@ -56,7 +70,7 @@ export async function createServer(body: CreateServerBody): Promise<ServerDto> {
 
 export async function updateServer(
   id: ServerId,
-  body: UpdateServerBody,
+  body: UpdateServerBody | UpdateServerPayload,
 ): Promise<ServerDto> {
   const server = await fetchJson<ServerBackendDto>(`/servers/${id}`, {
     method: "PUT",
@@ -90,9 +104,7 @@ export async function getServerMembers(
 ): Promise<ServerMemberDto[]> {
   const data = await fetchJson<ServerMemberBackendDto[]>(
     `/servers/${id}/members`,
-    {
-      method: "GET",
-    },
+    { method: "GET" },
   );
   return data.map(mapServerMember);
 }
@@ -104,10 +116,7 @@ export async function updateMemberRole(
 ): Promise<ServerMemberDto> {
   const data = await fetchJson<ServerMemberBackendDto>(
     `/servers/${id}/members/${userId}`,
-    {
-      method: "PUT",
-      body,
-    },
+    { method: "PUT", body },
   );
   return mapServerMember(data);
 }
@@ -122,3 +131,31 @@ export async function addServerMember(
   });
   return mapServerMember(data);
 }
+
+/* Refacto : canaux côté serveur */
+export async function getServerChannels(
+  serverId: number,
+): Promise<ListServerChannelsResponseDto> {
+  return fetchJson<ListServerChannelsResponseDto>(
+    `/servers/${serverId}/channels`,
+    { method: "GET" },
+  );
+}
+
+export async function createChannel(
+  serverId: number,
+  payload: CreateChannelPayload,
+): Promise<ChannelDto> {
+  return fetchJson<ChannelDto>(`/servers/${serverId}/channels`, {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export const serverService = {
+  listUserServers,
+  createServer,
+  updateServer,
+  getServerChannels,
+  createChannel,
+};

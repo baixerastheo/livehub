@@ -5,6 +5,11 @@ import { CreateCanal } from './dto/create-canal.dto';
 import { Role } from '../../generated/prisma/enums';
 import { UpdateCanal } from './dto/update-canal.dto';
 
+
+/**
+ * Service de gestion des canaux.
+ * Gère la création, la suppression et la mise à jour des canaux.
+ */
 @Injectable()
 export class CanalService {
   constructor(private readonly prisma: PrismaService) {}
@@ -15,7 +20,8 @@ export class CanalService {
    * @returns Le canal ou null si non trouvé
    */
   private async findChannelById(id: number) {
-    return this.prisma.canal.findUnique({ where: { id } });
+    return this.prisma.canal.findUnique({ 
+      where: { id } });
   }
 
   /**
@@ -28,7 +34,7 @@ export class CanalService {
       where: { id: serverId },
     });
     if (!server) {
-      return err(`No server found for ID ${serverId}`);
+      return err('No server found for ID ' + serverId);
     }
     const channels = await this.prisma.canal.findMany({
       where: { serveurId: serverId },
@@ -49,7 +55,7 @@ export class CanalService {
       where: { id: serverId },
     });
     if (!server) {
-      return err(`No server found for ID ${serverId}`);
+      return err('No server found for ID ' + serverId);
     }
 
     const member = await this.prisma.membreServeur.findUnique({
@@ -65,10 +71,7 @@ export class CanalService {
       return err('You are not a member of this server');
     }
 
-    if (
-      member.role !== Role.PROPRIETAIRE &&
-      member.role !== Role.ADMINISTRATEUR
-    ) {
+    if (member.role !== Role.PROPRIETAIRE && member.role !== Role.ADMINISTRATEUR) {
       return err('Only owners and administrators can create channels');
     }
 
@@ -89,7 +92,7 @@ export class CanalService {
   async getChannelDetails(id: number) {
     const channel = await this.findChannelById(id);
     if (!channel) {
-      return err(`No channel found for ID ${id}`);
+      return err('No channel found for ID ' + id);
     }
     return ok(channel);
   }
@@ -102,7 +105,7 @@ export class CanalService {
   async deleteChannel(id: number) {
     const channel = await this.findChannelById(id);
     if (!channel) {
-      return err(`No channel found for ID ${id}`);
+      return err('No channel found for ID ' + id);
     }
     const deletedChannel = await this.prisma.canal.delete({
       where: { id },
@@ -119,7 +122,7 @@ export class CanalService {
   async updateChannel(id: number, data: UpdateCanal) {
     const channel = await this.findChannelById(id);
     if (!channel) {
-      return err(`No channel found for ID ${id}`);
+      return err('No channel found for ID ' + id);
     }
 
     const updatedCanal = await this.prisma.canal.update({
