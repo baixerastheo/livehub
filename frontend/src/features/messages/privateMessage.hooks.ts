@@ -38,7 +38,8 @@ export function useSendPrivateMessageMutation() {
       content: string;
     }) => privateMessageService.sendPrivateMessage(peerUserId, content),
     onSuccess: (_data, { peerUserId }) => {
-      queryClient.invalidateQueries({ queryKey: privateConversationsKey });
+      // Refetch immédiat pour que la nouvelle conv apparaisse dans la sidebar sans refresh
+      void queryClient.refetchQueries({ queryKey: privateConversationsKey });
       queryClient.invalidateQueries({
         queryKey: privateConversationKey(peerUserId),
       });

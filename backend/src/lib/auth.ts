@@ -58,7 +58,14 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
-  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+  // Origines autorisées pour login/logout/register. Toujours inclure localhost pour éviter "Invalid origin".
+  trustedOrigins: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    ...(process.env.FRONTEND_URL?.trim()
+      ? [process.env.FRONTEND_URL.trim().replace(/\/$/, '')]
+      : []),
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session.session;

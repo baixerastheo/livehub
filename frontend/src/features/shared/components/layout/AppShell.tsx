@@ -10,6 +10,7 @@ import { SidebarRail } from "@/src/features/shared/components/sidebar/SidebarRai
 import { ProfileDefaultPage } from "@/src/features/profilePage/components/ProfileDefaultPage";
 import { ToastHost } from "@/src/features/shared/components/toast/ToastHost";
 import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
+import { PrivateConversationsRealtimeSync } from "@/src/features/messages/components/PrivateConversationsRealtimeSync";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   return (
     <>
+      <PrivateConversationsRealtimeSync />
       <Navbar>
         <NavbarSearch />
         <NavbarPeopleButton />
