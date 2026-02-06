@@ -21,6 +21,7 @@ import {
 import { UpdateServer } from './dto/update-server.dto';
 import { UpdateMemberRole } from './dto/update-member-role.dto';
 import { CreateServer } from './dto/create-server.dto';
+import { AddMember } from './dto/add-member.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
 
@@ -116,6 +117,35 @@ export class ServerController {
     @Req() req: RequestWithAuth,
   ) {
     const result = await this.serverService.joinServer(serverId, req.user.id);
+    if (result.isErr()) {
+      throw new NotFoundException(result.error);
+    }
+    return result.value;
+  }
+
+  @Post('/:id/members')
+  @UseGuards(AuthGuard)
+  @ApiCreatedResponse({
+    description: 'Member added to server successfully',
+    type: AddMember,
+  })
+  @ApiConflictResponse({
+    description: 'User is already a member of the server',
+  })
+  @ApiNotFoundResponse({
+    description:
+      'Server with this ID does not exist, acting user is not a member, or user not found',
+  })
+  async addMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Body() data: AddMember,
+    @Req() req: RequestWithAuth,
+  ) {
+    const result = await this.serverService.addMember(
+      serverId,
+      req.user.id,
+      data,
+    );
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }

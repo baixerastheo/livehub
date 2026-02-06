@@ -11,28 +11,31 @@ type Props = {
 };
 
 export function ConversationHeader({ header, onToggleDetails }: Props) {
+  const showAvatar = header.showAvatar !== false;
+
   return (
     <div className={styles.header}>
       <div className={styles.headerLeft}>
         <div className={styles.titleRow}>
-          {header.avatarUrl ? (
-            <span className={styles.avatar}>
-              <UserAvatar
-                avatarUrl={header.avatarUrl}
-                displayName={header.title}
-                size="md"
-                className={styles.avatarInner}
-                aria-hidden
-              />
-            </span>
-          ) : (
-            <span
-              className={styles.avatar}
-              style={{ background: header.avatarColor }}
-            >
-              {header.avatarText}
-            </span>
-          )}
+          {showAvatar &&
+            (header.avatarUrl ? (
+              <span className={styles.avatar}>
+                <UserAvatar
+                  avatarUrl={header.avatarUrl}
+                  displayName={header.title}
+                  size="md"
+                  className={styles.avatarInner}
+                  aria-hidden
+                />
+              </span>
+            ) : (
+              <span
+                className={styles.avatar}
+                style={{ background: header.avatarColor }}
+              >
+                {header.avatarText}
+              </span>
+            ))}
           <div style={{ minWidth: 0 }}>
             <div className={styles.title}>{header.title}</div>
             <div className={styles.subtitle}>{header.subtitle}</div>

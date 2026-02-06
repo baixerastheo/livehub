@@ -33,10 +33,7 @@ export class CanalService {
     const channels = await this.prisma.canal.findMany({
       where: { serveurId: serverId },
     });
-    if (!channels || channels.length === 0) {
-      return err(`No channels found for server with ID ${serverId}`);
-    }
-    return ok(channels);
+    return ok(channels ?? []);
   }
 
   /**

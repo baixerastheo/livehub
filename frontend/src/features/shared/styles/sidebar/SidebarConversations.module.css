@@ -60,6 +60,18 @@
   overflow: hidden;
 }
 
+.avatarChannel {
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.rowChannel {
+  gap: 0.375rem;
+  align-items: center;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 .avatarInner {
   width: 100% !important;
   height: 100% !important;

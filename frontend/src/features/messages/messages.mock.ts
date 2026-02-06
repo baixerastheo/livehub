@@ -12,6 +12,7 @@ export type ConversationHeader = {
   avatarText: string;
   avatarColor: string;
   avatarUrl?: string | null;
+  showAvatar?: boolean;
 };
 
 export const MOCK_CONVERSATION: ConversationHeader = {

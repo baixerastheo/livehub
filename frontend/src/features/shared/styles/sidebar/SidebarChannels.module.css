@@ -1,0 +1,42 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0 0;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.72);
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.actionIcon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.actionButton:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.9);
+}

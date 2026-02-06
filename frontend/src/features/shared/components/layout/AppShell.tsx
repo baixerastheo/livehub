@@ -29,10 +29,21 @@ export function AppShell({ children }: AppShellProps) {
         style={{
           display: "flex",
           height: "100vh",
-          overflow: "hidden",
+          overflow: "visible",
+          position: "relative",
         }}
       >
-        <SidebarRail />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 20,
+            flexShrink: 0,
+            alignSelf: "stretch",
+            display: "flex",
+          }}
+        >
+          <SidebarRail />
+        </div>
         <Sidebar />
         <div
           style={{

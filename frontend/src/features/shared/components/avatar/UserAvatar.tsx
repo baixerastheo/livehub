@@ -5,7 +5,7 @@ import styles from "../../styles/avatar/UserAvatar.module.css";
 
 const DEFAULT_AVATAR_SRC = "/icons/avatar-default.svg";
 
-export type UserAvatarSize = "sm" | "md" | "lg";
+export type UserAvatarSize = "sm" | "smMd" | "md" | "lg";
 
 type UserAvatarProps = {
   avatarUrl?: string | null;

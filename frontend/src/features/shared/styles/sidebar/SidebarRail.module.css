@@ -1,6 +1,8 @@
 .rail {
   width: 110px;
   min-width: 84px;
+  height: 100%;
+  min-height: 0;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   background: #f3f4f6;
   padding: 10px 8px;
@@ -73,6 +75,133 @@
   line-height: 1.1;
   font-weight: 600;
   text-align: center;
+}
+
+/* Sur desktop : titres cachés, remplacés par tooltip au survol */
+@media (min-width: 769px) {
+  .railLabel {
+    display: none !important;
+  }
+}
+
+.railTooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+}
+
+.railItem:hover .railTooltip,
+.serverAvatarButton:hover .railTooltip {
+  opacity: 1;
+}
+
+.railLabelRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.serverSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.serverSectionOpen {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 4px 0;
+}
+
+/* Pas de contour gris interne sur le bouton Server quand le bloc est ouvert */
+.serverSectionOpen .serverSectionTrigger.railItemActive {
+  background: transparent;
+}
+
+.serverSectionOpen .serverSectionTrigger.railItemActive::before {
+  display: none;
+}
+
+.serverMenu {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 0.18s ease-out,
+    opacity 0.18s ease-out,
+    transform 0.18s ease-out;
+}
+
+.serverMenuOpen {
+  max-height: 280px; /* assez pour plusieurs serveurs + bouton */
+  opacity: 1;
+  transform: translateY(0);
+  overflow: visible; /* permet au tooltip (nom du serveur) de dépasser */
+}
+
+.serverList {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.serverAvatarButton {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.serverAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+.serverArrow {
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.serverArrowIcon {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.serverArrowOpen {
+  transform: rotate(180deg);
 }
 
 @media (max-width: 768px) {
