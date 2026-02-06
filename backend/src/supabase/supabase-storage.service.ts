@@ -10,7 +10,7 @@ import { Result, ok, err } from '../result';
  */
 @Injectable()
 export class SupabaseStorageService {
-  private client: SupabaseClient | null = null;
+  private client: SupabaseClient
 
   constructor(private readonly config: ConfigService) {}
 
@@ -46,7 +46,7 @@ export class SupabaseStorageService {
    * Génère un chemin unique pour un avatar.
    * @param userId - Identifiant de l'utilisateur
    * @param ext - Extension du fichier
-   * @returns Chemin au format 'user-{userId}/{uuid}.{ext}'
+   * @returns Chemin au format 'user/userId/uuid.ext'
    */
   buildAvatarPath(userId: string, ext: string): string {
     return 'user-' + userId + '/' + randomUUID() + '.' + ext;
@@ -58,12 +58,7 @@ export class SupabaseStorageService {
    * @returns Chemin du fichier uploadé
    * @throws Error si le type MIME n'est pas autorisé ou si l'upload échoue
    */
-  async uploadAvatar(
-    userId: string,
-    buffer: Buffer,
-    contentType: string,
-    ext: string,
-  ) {
+  async uploadAvatar(userId: string, buffer: Buffer, contentType: string, ext: string) {
     const path = this.buildAvatarPath(userId, ext);
     const bucket = this.getBucket();
 
@@ -73,9 +68,7 @@ export class SupabaseStorageService {
     }
     const client = clientResult.value;
 
-    const { data, error } = await client.storage
-      .from(bucket)
-      .upload(path, buffer, { contentType, upsert: true });
+    const { data, error } = await client.storage.from(bucket).upload(path, buffer, { contentType, upsert: true });
 
     if (error) {
       return err('Supabase Storage upload failed: ' + error.message);
@@ -111,7 +104,7 @@ export class SupabaseStorageService {
   /**
    * Génère une URL signée temporaire pour accéder à un fichier.
    * @param path - Chemin du fichier
-   * @param expiresIn - Durée de validité en secondes (par défaut: 3600 = 1h)
+   * @param expiresIn - Durée de validité en secondes
    * @returns URL signée pour accéder au fichier
    * @throws Error si la génération échoue
    */
