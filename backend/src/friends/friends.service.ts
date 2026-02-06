@@ -2,7 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { err, ok, Result } from '../result.js';
-import { publicUserSelect } from '../user/public-user.js';
+
+const publicUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+  statut: true,
+  avatarPath: true,
+  avatarUpdatedAt: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 /**
  * Ordonne une paire d'IDs utilisateurs de manière déterministe.

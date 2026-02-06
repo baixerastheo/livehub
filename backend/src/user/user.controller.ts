@@ -1,31 +1,6 @@
 import { UserService } from './user.service';
-import {
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiNotFoundResponse,
-  ApiConflictResponse,
-  ApiBody,
-  ApiConsumes,
-} from '@nestjs/swagger';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-  NotFoundException,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import {ApiCreatedResponse,ApiOkResponse,ApiNotFoundResponse,ApiConflictResponse,ApiBody,ApiConsumes} from '@nestjs/swagger';
+import {Body,Controller,Delete,Get,Param,Post,Put,Req,UseGuards,UseInterceptors,UploadedFile,ParseFilePipe,FileTypeValidator,MaxFileSizeValidator,Logger,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUser } from './dto/update-user.dto';
 import { CreateUser } from './dto/create-user.dto';
@@ -33,18 +8,24 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
 
-/** Type pour les fichiers uploadés via Multer */
-interface UploadedFileType {
-  buffer: Buffer;
-  mimetype: string;
-  originalname: string;
-  size: number;
-}
 
+
+
+/**
+ * Contrôleur de gestion des utilisateurs.
+ * Gère les requêtes liées aux utilisateurs.
+ */
 @Controller('users')
 export class UserController {
+  private readonly logger = new Logger(UserController.name);
+
   constructor(private readonly userService: UserService) {}
 
+
+  /**
+   * Récupère tous les utilisateurs.
+   * @returns Tous les utilisateurs.
+   */
   @Get('/')
   @ApiOkResponse({
     description: 'All users retrieved successfully',
@@ -54,6 +35,12 @@ export class UserController {
     return await this.userService.getAllUsers();
   }
 
+
+  /**
+   * Récupère un utilisateur par email.
+   * @param email - L'email de l'utilisateur à rechercher.
+   * @returns L'utilisateur.
+   */
   @Get('/email/:email')
   @ApiOkResponse({
     description: 'Users retrieved successfully',
@@ -70,6 +57,12 @@ export class UserController {
     return result.value;
   }
 
+
+  /**
+   * Récupère un utilisateur par nom.
+   * @param name - Le nom de l'utilisateur à rechercher.
+   * @returns L'utilisateur.
+   */
   @Get('/name/:name')
   @ApiOkResponse({
     description: 'User retrieved successfully',
@@ -86,6 +79,13 @@ export class UserController {
     return result.value;
   }
 
+
+  /**
+   * Upload un avatar pour l'utilisateur connecté.
+   * @param req - La requête avec l'utilisateur connecté.
+   * @param file - Le fichier uploadé.
+   * @returns Le chemin et l'URL de l'avatar.
+   */
   @Post('me/avatar')
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
@@ -109,29 +109,40 @@ export class UserController {
         ],
       }),
     )
-    file: UploadedFileType,
+    file: {
+      buffer: Buffer;
+      mimetype: string;
+      originalname: string;
+      size: number;
+    },
   ) {
     const userId = req.user.id;
-    const ext = file.originalname?.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const ext =
+      file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
     const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
 
-    const result = await this.userService.replaceAvatar({
+    const result = await this.userService.replaceAvatar(
       userId,
-      buffer: file.buffer,
-      contentType: file.mimetype,
-      ext: normalizedExt,
-    });
+      file.buffer,
+      file.mimetype,
+      normalizedExt,
+    );
 
     if (result.isErr()) {
       const message = String(result.error);
-      if (message.includes('not found')) {
-        throw new NotFoundException(result.error);
-      }
-      throw new InternalServerErrorException(result.error);
+      this.logger.error('Avatar upload failed', message);
+      throw new InternalServerErrorException(message);
     }
     return result.value;
   }
 
+
+
+  /**
+   * Récupère un utilisateur par ID.
+   * @param id - L'ID de l'utilisateur à rechercher.
+   * @returns L'utilisateur.
+   */
   @Get('/:id')
   @ApiOkResponse({
     description: 'User retrieved successfully',
@@ -148,6 +159,13 @@ export class UserController {
     return result.value;
   }
 
+
+
+  /**
+   * Supprime un utilisateur par ID.
+   * @param id - L'ID de l'utilisateur à supprimer.
+   * @returns L'utilisateur supprimé.
+   */
   @Delete('/:id')
   @ApiOkResponse({
     description: 'User deleted successfully',
@@ -164,6 +182,12 @@ export class UserController {
     return result.value;
   }
 
+
+  /**
+   * Crée un nouvel utilisateur.
+   * @param data - Les données de l'utilisateur à créer.
+   * @returns L'utilisateur créé.
+   */
   @Post('/')
   @ApiCreatedResponse({
     description: 'User created successfully',
@@ -180,6 +204,14 @@ export class UserController {
     return result.value;
   }
 
+
+
+  /**
+   * Met à jour un utilisateur par ID.
+   * @param data - Les données de l'utilisateur à mettre à jour.
+   * @param id - L'ID de l'utilisateur à mettre à jour.
+   * @returns L'utilisateur mis à jour.
+   */
   @Put('/:id')
   @ApiOkResponse({
     description: 'User updated successfully',
@@ -194,11 +226,7 @@ export class UserController {
   async updateUser(@Body() data: UpdateUser, @Param('id') id: string) {
     const result = await this.userService.updateUser(id, data);
     if (result.isErr()) {
-      const message = result.error;
-      if (message === 'Name already exists') {
-        throw new ConflictException(message);
-      }
-      throw new NotFoundException(message);
+      throw new NotFoundException(result.error);
     }
     return result.value;
   }
