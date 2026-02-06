@@ -6,7 +6,6 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { usePrivateConversationsQuery } from "@/src/features/messages/privateMessage.hooks";
-import { usePrivateConversationListRealtime } from "@/src/features/messages/privateMessageRealtime.hooks";
 import { useUserQuery } from "@/src/features/users/users.hooks";
 import { ParticlesBackground } from "@/src/features/shared/components/particles/ParticlesBackground";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
@@ -44,7 +43,6 @@ export function SidebarConversationsContent() {
     isAuthenticated,
   );
   const { data: activePeerUser } = useUserQuery(activePeerId ?? undefined);
-  usePrivateConversationListRealtime();
 
   const conversationItems = React.useMemo(() => {
     const fromApi = conversations ?? [];

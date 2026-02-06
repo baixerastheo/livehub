@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { flushSync } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSocket } from "@/src/lib/realtime/socketClient";
 import {
@@ -50,9 +51,14 @@ export function usePrivateMessagesRealtime(peerUserId: string | null) {
         read: event.read,
       };
 
-      queryClient.setQueryData<GetPrivateConversationResponseDto>(
-        privateConversationKey(peerUserId),
-        (old) => {
+      const key = privateConversationKey(peerUserId);
+      const existing = queryClient.getQueryData<GetPrivateConversationResponseDto>(key);
+
+      if (!existing) {
+        void queryClient.refetchQueries({ queryKey: key });
+        void queryClient.refetchQueries({ queryKey: privateConversationsKey });
+      } else {
+        queryClient.setQueryData<GetPrivateConversationResponseDto>(key, (old) => {
           if (!old) return old;
           if (old.messages.some((m) => m.id === newMessage.id)) {
             return old;
@@ -61,10 +67,10 @@ export function usePrivateMessagesRealtime(peerUserId: string | null) {
             ...old,
             messages: [...old.messages, newMessage],
           };
-        },
-      );
+        });
+      }
 
-      queryClient.invalidateQueries({ queryKey: privateConversationsKey });
+      void queryClient.refetchQueries({ queryKey: privateConversationsKey });
     };
 
     socket.on("private-message:created", handler);
@@ -85,29 +91,48 @@ export function usePrivateConversationListRealtime() {
 
     const socket = getSocket();
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void queryClient.refetchQueries({ queryKey: privateConversationsKey });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const handler = (event: PrivateMessageCreatedEvent) => {
-      // Ignore events that don't involve the current user (defensive)
-      if (
-        event.authorId !== currentUserId &&
-        event.peerUserId !== currentUserId
-      ) {
+
+      const peerId = event.peerUserId;
+
+      const peerName =
+        event.authorId === currentUserId ? undefined : event.authorName;
+
+      const key = privateConversationsKey;
+      const old = queryClient.getQueryData<ListPrivateConversationsResponseDto>(key);
+      const idx = old?.findIndex((item) => item.peer.id === peerId) ?? -1;
+
+      if (idx === -1) {
+        const newItem: ListPrivateConversationsResponseDto[number] = {
+          peer: {
+            id: peerId,
+            name: peerName ?? "User",
+            email: "",
+            avatarUrl: null,
+          },
+          lastMessageAt: event.createdAtIso,
+        };
+        flushSync(() => {
+          queryClient.setQueryData<ListPrivateConversationsResponseDto>(key, (prev) => [
+            newItem,
+            ...(prev ?? []),
+          ]);
+        });
+        void queryClient.refetchQueries({ queryKey: key });
         return;
       }
 
-      queryClient.setQueryData<ListPrivateConversationsResponseDto>(
-        privateConversationsKey,
-        (old) => {
-          if (!old) return old;
-
-          const idx = old.findIndex(
-            (item) => item.peer.id === event.peerUserId,
-          );
-          if (idx === -1) {
-
-            return old;
-          }
-
-          const updated = [...old];
+      flushSync(() => {
+        queryClient.setQueryData<ListPrivateConversationsResponseDto>(key, (prev) => {
+          if (!prev) return prev;
+          const updated = [...prev];
           const item = updated[idx];
           updated.splice(idx, 1);
           updated.unshift({
@@ -115,15 +140,16 @@ export function usePrivateConversationListRealtime() {
             lastMessageAt: event.createdAtIso,
           });
           return updated;
-        },
-      );
+        });
+      });
+      void queryClient.refetchQueries({ queryKey: key });
     };
 
     socket.on("private-message:created", handler);
 
     return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       socket.off("private-message:created", handler);
     };
   }, [currentUserId, queryClient]);
 }
-
