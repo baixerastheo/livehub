@@ -3,6 +3,7 @@ import type {
   ListUserServersResponseDto,
   CreateServerPayload,
   CreateServerResponseDto,
+  ServerDto,
   UpdateServerPayload,
   CreateChannelPayload,
   ListServerChannelsResponseDto,
