@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
+import { MessageGateway } from '../realtime/message.gateway.js';
 import { CreateServer } from './dto/create-server.dto';
 import { UpdateServer } from './dto/update-server.dto';
 import { AddMember } from './dto/add-member.dto';
@@ -12,6 +13,7 @@ export class ServerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
   /**
@@ -210,6 +212,26 @@ export class ServerService {
       include: {
         user: true,
         serveur: true,
+      },
+    });
+
+    let avatarUrl: string | null = null;
+    if (newMember.user.avatarPath) {
+      const result = await this.supabaseStorage.publicUrl(newMember.user.avatarPath);
+      if (result.isOk()) avatarUrl = result.value;
+    }
+    const { avatarPath: _avatarPath, ...userRest } = newMember.user;
+    this.messageGateway.emitServerMemberJoined(serverId, {
+      id: newMember.id,
+      serveurId: newMember.serveurId,
+      userId: newMember.userId,
+      role: newMember.role,
+      rejointLe: newMember.rejointLe.toISOString(),
+      user: {
+        id: userRest.id,
+        name: userRest.name ?? '',
+        email: userRest.email,
+        avatarUrl,
       },
     });
 

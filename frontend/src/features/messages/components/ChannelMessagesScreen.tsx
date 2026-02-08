@@ -16,6 +16,7 @@ import {
   useChannelMessagesQuery,
   useSendChannelMessageMutation,
 } from "@/src/features/channel/channel.hooks";
+import { useChannelMessagesRealtime } from "@/src/features/channel/channelRealtime.hooks";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
@@ -43,6 +44,8 @@ export function ChannelMessagesScreen() {
   const { data: messagesData, isLoading: messagesLoading } =
     useChannelMessagesQuery(channelId);
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
+
+  useChannelMessagesRealtime(channelId);
 
   React.useEffect(() => {
     if (channel) {

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { MessageGateway } from '../realtime/message.gateway.js';
 import { ok, err } from '../result';
 import { CreateCanal } from './dto/create-canal.dto';
 import { Role } from '../../generated/prisma/enums';
 import { UpdateCanal } from './dto/update-canal.dto';
-
 
 /**
  * Service de gestion des canaux.
@@ -12,7 +12,10 @@ import { UpdateCanal } from './dto/update-canal.dto';
  */
 @Injectable()
 export class CanalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageGateway: MessageGateway,
+  ) {}
 
   /**
    * Récupère un canal par son ID.
@@ -38,6 +41,7 @@ export class CanalService {
     }
     const channels = await this.prisma.canal.findMany({
       where: { serveurId: serverId },
+      orderBy: { id: 'asc' },
     });
     return ok(channels ?? []);
   }
@@ -80,6 +84,13 @@ export class CanalService {
         nom: data.name,
         serveurId: serverId,
       },
+    });
+    this.messageGateway.emitServerChannelCreated(serverId, {
+      id: canal.id,
+      serverId: canal.serveurId,
+      name: canal.nom,
+      createdAtIso: canal.creeLe.toISOString(),
+      updatedAtIso: canal.modifieLe.toISOString(),
     });
     return ok(canal);
   }

@@ -7,12 +7,14 @@ import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
 import { ModalAddMembers } from "@/src/features/server/components/modalAddMembers";
+import { ModalAddChannel } from "@/src/features/server/components/modalAddChannel";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarChannelsContent } from "./SidebarChannelsContent";
 
 export function SidebarTeamsSection() {
   const selectedServerId = useAppStore((state) => state.selectedServerId);
   const [isAddMembersOpen, setIsAddMembersOpen] = React.useState(false);
+  const [isAddChannelOpen, setIsAddChannelOpen] = React.useState(false);
   const { data: userServers } = useUserServersQuery();
 
   const headerTitle =
@@ -39,6 +41,7 @@ export function SidebarTeamsSection() {
             type="button"
             className={channelStyles.actionButton}
             aria-label="Add a channel"
+            onClick={() => setIsAddChannelOpen(true)}
           >
             <FiPlus size={14} aria-hidden className={channelStyles.actionIcon} />
             Add a channel
@@ -55,6 +58,11 @@ export function SidebarTeamsSection() {
       <ModalAddMembers
         isOpen={isAddMembersOpen}
         onClose={() => setIsAddMembersOpen(false)}
+        serverId={selectedServerId}
+      />
+      <ModalAddChannel
+        isOpen={isAddChannelOpen}
+        onClose={() => setIsAddChannelOpen(false)}
         serverId={selectedServerId}
       />
     </>
