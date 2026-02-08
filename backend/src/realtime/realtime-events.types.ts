@@ -38,6 +38,14 @@ export type ServerChannelCreatedEvent = {
 };
 
 /**
+ * Payload for event server-channel:deleted - a channel was deleted in a server.
+ */
+export type ServerChannelDeletedEvent = {
+  serverId: number;
+  channelId: number;
+};
+
+/**
  * Payload for event server-member:joined - a user joined a server.
  */
 export type ServerMemberJoinedEvent = {

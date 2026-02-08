@@ -14,6 +14,7 @@ import type {
   PrivateMessageCreatedEvent,
   ChannelMessageCreatedEvent,
   ServerChannelCreatedEvent,
+  ServerChannelDeletedEvent,
   ServerMemberJoinedEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
@@ -79,8 +80,12 @@ export class MessageGateway
    * Broadcast presence change to all server rooms the user belongs to
    * AND to the user rooms of all their friends.
    */
-  private async broadcastPresence(userId: string, status: 'online' | 'offline') {
-    const event = status === 'online' ? 'server-member:online' : 'server-member:offline';
+  private async broadcastPresence(
+    userId: string,
+    status: 'online' | 'offline',
+  ) {
+    const event =
+      status === 'online' ? 'server-member:online' : 'server-member:offline';
 
     const memberships = await this.prisma.membreServeur.findMany({
       where: { userId },
@@ -102,7 +107,9 @@ export class MessageGateway
   }
 
   handleDisconnect(client: Socket) {
-    const userId = (client as AuthenticatedSocket).data?.userId;
+    const authClient = client as AuthenticatedSocket;
+    const data = authClient.data as { userId?: string } | undefined;
+    const userId = typeof data?.userId === 'string' ? data.userId : undefined;
     if (!userId) return;
     const justWentOffline = this.presence.decrement(userId);
     if (justWentOffline) {
@@ -192,6 +199,61 @@ export class MessageGateway
     }
   }
 
+  @SubscribeMessage('channel:typing')
+  handleChannelTyping(
+    @MessageBody() payload: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
+    void this.handleChannelTypingAsync(
+      payload as { channelId?: number; userName?: string },
+      client,
+    ).catch(() => undefined);
+  }
+
+  private async handleChannelTypingAsync(
+    payload: { channelId?: number; userName?: string },
+    client: Socket,
+  ) {
+    const userId = this.getAuthenticatedUserId(client);
+    const channelId =
+      typeof payload?.channelId === 'number' ? payload.channelId : null;
+    const userName =
+      typeof payload?.userName === 'string' ? payload.userName : 'Someone';
+    if (userId == null || channelId == null) return;
+    const channel = await this.prisma.canal.findUnique({
+      where: { id: channelId },
+      select: { serveurId: true },
+    });
+    if (!channel) return;
+    const member = await this.prisma.membreServeur.findUnique({
+      where: {
+        userId_serveurId: { userId, serveurId: channel.serveurId },
+      },
+    });
+    if (!member) return;
+    this.server.to('channel:' + channelId).emit('channel:typing', {
+      channelId,
+      userId,
+      userName,
+    });
+  }
+
+  @SubscribeMessage('channel:stop-typing')
+  handleChannelStopTyping(
+    @MessageBody() payload: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const body = payload as { channelId?: number };
+    const userId = this.getAuthenticatedUserId(client);
+    const channelId =
+      typeof body?.channelId === 'number' ? body.channelId : null;
+    if (userId == null || channelId == null) return;
+    this.server.to('channel:' + channelId).emit('channel:stop-typing', {
+      channelId,
+      userId,
+    });
+  }
+
   @SubscribeMessage('server:subscribe')
   handleServerSubscribe(
     @MessageBody() payload: unknown,
@@ -255,6 +317,13 @@ export class MessageGateway
     this.server
       .to('server:' + serverId)
       .emit('server-channel:created', eventPayload);
+  }
+
+  emitServerChannelDeleted(serverId: number, channelId: number) {
+    const eventPayload: ServerChannelDeletedEvent = { serverId, channelId };
+    this.server
+      .to('server:' + serverId)
+      .emit('server-channel:deleted', eventPayload);
   }
 
   emitServerMemberJoined(

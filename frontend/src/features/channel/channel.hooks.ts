@@ -6,6 +6,8 @@ import {
   getChannelById,
   getChannelMessages,
   sendChannelMessage,
+  deleteChannel,
+  deleteChannelMessage,
 } from "./channel.service";
 import type { ChannelDto } from "./channel.types";
 
@@ -48,6 +50,34 @@ export function useSendChannelMessageMutation(channelId: number) {
   return useMutation({
     mutationFn: (content: string) => sendChannelMessage(channelId, content),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: channelsKeys.messages(channelId) });
+    },
+  });
+}
+
+export function useDeleteChannelMessageMutation(channelId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (messageId: number) => deleteChannelMessage(messageId),
+    onSuccess: () => {
+      if (channelId != null) {
+        queryClient.invalidateQueries({
+          queryKey: channelsKeys.messages(channelId),
+        });
+      }
+    },
+  });
+}
+
+export function useDeleteChannelMutation(serverId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (channelId: number) => deleteChannel(channelId),
+    onSuccess: (_, channelId) => {
+      if (serverId != null) {
+        queryClient.invalidateQueries({ queryKey: channelsKeys.byServer(serverId) });
+      }
+      queryClient.invalidateQueries({ queryKey: channelsKeys.detail(channelId) });
       queryClient.invalidateQueries({ queryKey: channelsKeys.messages(channelId) });
     },
   });

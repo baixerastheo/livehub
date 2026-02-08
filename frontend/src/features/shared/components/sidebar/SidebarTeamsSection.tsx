@@ -4,10 +4,12 @@ import React from "react";
 import { FiUsers, FiPlus } from "react-icons/fi";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
+import headerStyles from "../../styles/sidebar/SidebarHeader.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
 import { ModalAddMembers } from "@/src/features/server/components/modalAddMembers";
 import { ModalAddChannel } from "@/src/features/server/components/modalAddChannel";
+import { ServerHeaderMenu } from "@/src/features/server/components/ServerHeaderMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarChannelsContent } from "./SidebarChannelsContent";
 
@@ -17,15 +19,27 @@ export function SidebarTeamsSection() {
   const [isAddChannelOpen, setIsAddChannelOpen] = React.useState(false);
   const { data: userServers } = useUserServersQuery();
 
-  const headerTitle =
+  const selectedMembership =
     selectedServerId !== null
-      ? userServers?.find((u) => u.server.id === selectedServerId)?.server
-          .name ?? "Servers"
-      : "Servers";
+      ? userServers?.find((u) => u.server.id === selectedServerId)
+      : undefined;
+  const headerTitle =
+    selectedMembership?.server.name ?? "Servers";
 
   return (
     <>
-      <SidebarHeader>{headerTitle}</SidebarHeader>
+      <SidebarHeader>
+        <div className={headerStyles.headerRow}>
+          <span className={headerStyles.headerTitle}>{headerTitle}</span>
+          {selectedServerId !== null && selectedMembership && (
+            <ServerHeaderMenu
+              serverId={selectedServerId}
+              serverName={selectedMembership.server.name}
+              currentUserRole={selectedMembership.role}
+            />
+          )}
+        </div>
+      </SidebarHeader>
       {selectedServerId !== null && (
         <div className={channelStyles.footer}>
           <button

@@ -25,6 +25,33 @@
   color: rgba(0, 0, 0, 0.55);
 }
 
+.deleteButton {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08);
+  color: #dc2626;
+}
+
+.deleteButton:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.deletingLabel {
+  font-size: 0.75rem;
+}
+
 .bubble {
   max-width: 72ch;
   border-radius: 14px;

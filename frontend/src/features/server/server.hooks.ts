@@ -8,15 +8,22 @@ import {
 import {
   addServerMember,
   createServer,
+  deleteServer,
   getServerMembers,
-  getServerChannels,
   getUserServers,
+  leaveServer,
   updateServer,
+  updateMemberRole,
   serverService,
 } from "./server.service";
-import type { ServerMemberDto, UserServerDto } from "./server.types";
+import type {
+  ServerMemberDto,
+  UserServerDto,
+  ServerRole,
+} from "./server.types";
 import { serverKeys } from "./server.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
+import { useAppStore } from "@/src/core/store/appStore";
 import { channelsKeys } from "@/src/features/channel/channel.hooks";
 
 /* Clés utilisées par nos hooks (liste user, members, etc.) */
@@ -60,6 +67,27 @@ export function useAddServerMemberMutation(serverId: number | null) {
     onSuccess: async () => {
       if (serverId != null) {
         await qc.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+      }
+    },
+  });
+}
+
+export function useUpdateMemberRoleMutation(serverId: number | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      role,
+    }: {
+      userId: string;
+      role: ServerRole;
+    }) => {
+      if (serverId == null) throw new Error("No server selected");
+      return updateMemberRole(serverId, userId, { role });
+    },
+    onSuccess: () => {
+      if (serverId != null) {
+        qc.invalidateQueries({ queryKey: serversKeys.members(serverId) });
       }
     },
   });
@@ -126,6 +154,36 @@ export function useCreateChannelMutation() {
       queryClient.invalidateQueries({
         queryKey: channelsKeys.byServer(serverId),
       });
+    },
+  });
+}
+
+export function useDeleteServerMutation() {
+  const queryClient = useQueryClient();
+  const setSelectedServerId = useAppStore((s) => s.setSelectedServerId);
+
+  return useMutation({
+    mutationFn: (serverId: number) => deleteServer(serverId),
+    onSuccess: (_, serverId) => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      queryClient.invalidateQueries({ queryKey: channelsKeys.all });
+      setSelectedServerId(null);
+    },
+  });
+}
+
+export function useLeaveServerMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (serverId: number) => leaveServer(serverId),
+    onSuccess: (_, serverId) => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      queryClient.invalidateQueries({ queryKey: channelsKeys.all });
+      const current = useAppStore.getState().selectedServerId;
+      if (current === serverId) {
+        useAppStore.getState().setSelectedServerId(null);
+      }
     },
   });
 }

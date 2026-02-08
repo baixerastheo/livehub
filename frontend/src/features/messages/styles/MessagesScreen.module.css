@@ -60,6 +60,16 @@
   background: #ffffff;
 }
 
+.typingIndicator {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 4px 18px 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  min-height: 1.25rem;
+}
+
 @media (max-width: 700px) {
   .root {
     height: auto;

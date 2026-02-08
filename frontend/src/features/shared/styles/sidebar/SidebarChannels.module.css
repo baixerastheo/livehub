@@ -40,3 +40,32 @@
   background: rgba(0, 0, 0, 0.06);
   color: rgba(0, 0, 0, 0.9);
 }
+
+.channelLink {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.deleteChannelButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.deleteChannelButton:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #dc2626;
+}

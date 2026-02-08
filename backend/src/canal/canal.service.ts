@@ -114,17 +114,41 @@ export class CanalService {
 
   /**
    * Supprime un canal.
+   * Seuls le propriétaire et les administrateurs du serveur peuvent supprimer un canal.
    * @param id - Identifiant du canal à supprimer
-   * @returns Le canal supprimé ou erreur si non trouvé
+   * @param userId - Identifiant de l'utilisateur qui demande la suppression
+   * @returns Le canal supprimé ou erreur si non trouvé / non autorisé
    */
-  async deleteChannel(id: number) {
+  async deleteChannel(id: number, userId: string) {
     const channel = await this.findChannelById(id);
     if (!channel) {
       return err('No channel found for ID ' + id);
     }
+
+    const member = await this.prisma.membreServeur.findUnique({
+      where: {
+        userId_serveurId: {
+          userId,
+          serveurId: channel.serveurId,
+        },
+      },
+    });
+
+    if (!member) {
+      return err('You are not a member of this server');
+    }
+
+    if (
+      member.role !== Role.PROPRIETAIRE &&
+      member.role !== Role.ADMINISTRATEUR
+    ) {
+      return err('Only owners and administrators can delete channels');
+    }
+
     const deletedChannel = await this.prisma.canal.delete({
       where: { id },
     });
+    this.messageGateway.emitServerChannelDeleted(channel.serveurId, id);
     return ok(deletedChannel);
   }
 

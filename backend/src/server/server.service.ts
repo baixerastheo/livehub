@@ -301,19 +301,37 @@ export class ServerService {
 
   /**
    * Met à jour le rôle d'un membre dans un serveur.
+   * Seul le propriétaire du serveur peut modifier les rôles (passer un membre en admin ou retirer).
    * @param serverId - Identifiant du serveur
-   * @param userId - Identifiant de l'utilisateur
+   * @param targetUserId - Identifiant du membre dont on change le rôle
    * @param newRole - Nouveau rôle à attribuer
-   * @returns Le membre mis à jour ou erreur si non membre
+   * @param actingUserId - Identifiant de l'utilisateur qui demande le changement
+   * @returns Le membre mis à jour ou erreur
    */
-  async updateMemberRole(serverId: number, userId: string, newRole: Role) {
-    const member = await this.findServerMember(userId, serverId);
-    if (!member) {
+  async updateMemberRole(
+    serverId: number,
+    targetUserId: string,
+    newRole: Role,
+    actingUserId: string,
+  ) {
+    const actingMember = await this.findServerMember(actingUserId, serverId);
+    if (!actingMember) {
+      return err('You are not a member of this server');
+    }
+    if (actingMember.role !== Role.PROPRIETAIRE) {
+      return err('Only the server owner can change member roles');
+    }
+
+    const targetMember = await this.findServerMember(targetUserId, serverId);
+    if (!targetMember) {
       return err('This user is not a member of this server');
+    }
+    if (targetMember.role === Role.PROPRIETAIRE) {
+      return err('Cannot change the owner role');
     }
 
     const updatedMember = await this.prisma.membreServeur.update({
-      where: { id: member.id },
+      where: { id: targetMember.id },
       data: { role: newRole },
       include: {
         user: true,

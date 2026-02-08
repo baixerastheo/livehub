@@ -15,8 +15,15 @@ import {
   useChannelQuery,
   useChannelMessagesQuery,
   useSendChannelMessageMutation,
+  useDeleteChannelMessageMutation,
 } from "@/src/features/channel/channel.hooks";
-import { useChannelMessagesRealtime } from "@/src/features/channel/channelRealtime.hooks";
+import {
+  useChannelMessagesRealtime,
+  useChannelTyping,
+  useChannelTypingEmitter,
+} from "@/src/features/channel/channelRealtime.hooks";
+import { useUserServersQuery } from "@/src/features/server/server.hooks";
+import type { ServerRole } from "@/src/features/server/server.types";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
@@ -43,9 +50,29 @@ export function ChannelMessagesScreen() {
   const { data: channel, isLoading: channelLoading } = useChannelQuery(channelId);
   const { data: messagesData, isLoading: messagesLoading } =
     useChannelMessagesQuery(channelId);
+  const { data: userServers } = useUserServersQuery();
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
+  const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(true);
+  const [composerValue, setComposerValue] = React.useState("");
 
   useChannelMessagesRealtime(channelId);
+
+  const typingUsers = useChannelTyping(channelId, user?.id ?? null);
+  useChannelTypingEmitter(
+    channelId,
+    composerValue,
+    user?.name ?? user?.email ?? "Someone",
+  );
+
+  const canDeleteMessages = React.useMemo(() => {
+    if (!channel || !userServers) return false;
+    const membership = userServers.find(
+      (u) => u.server.id === channel.serverId,
+    );
+    const role = membership?.role as ServerRole | undefined;
+    return role === "PROPRIETAIRE" || role === "ADMINISTRATEUR";
+  }, [channel, userServers]);
 
   React.useEffect(() => {
     if (channel) {
@@ -64,9 +91,6 @@ export function ChannelMessagesScreen() {
       isMe: m.auteurId === user.id,
     }));
   }, [messagesData, user]);
-
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(true);
-  const [composerValue, setComposerValue] = React.useState("");
 
   const send = async () => {
     const trimmed = composerValue.trim();
@@ -120,7 +144,48 @@ export function ChannelMessagesScreen() {
             </div>
           ) : (
             <>
-              <MessageList messages={messages} />
+              <MessageList
+                messages={messages}
+                canDeleteMessages={canDeleteMessages}
+                onDeleteMessage={(messageId) =>
+                  deleteMessageMutation.mutate(messageId)
+                }
+                isDeletingMessageId={
+                  deleteMessageMutation.isPending &&
+                  deleteMessageMutation.variables !== undefined
+                    ? deleteMessageMutation.variables
+                    : null
+                }
+              />
+              {typingUsers.length > 0 && (
+                <p className={styles.typingIndicator} aria-live="polite">
+                  {typingUsers.length === 1
+                    ? (
+                        <>
+                          <strong>{typingUsers[0].userName}</strong> is typing…
+                        </>
+                      )
+                    : typingUsers.length === 2
+                      ? (
+                          <>
+                            <strong>{typingUsers[0].userName}</strong> and{" "}
+                            <strong>{typingUsers[1].userName}</strong> are
+                            typing…
+                          </>
+                        )
+                      : (
+                          <>
+                            {typingUsers.map((u, i) => (
+                              <span key={u.userId}>
+                                {i > 0 && ", "}
+                                <strong>{u.userName}</strong>
+                              </span>
+                            ))}{" "}
+                            are typing…
+                          </>
+                        )}
+                </p>
+              )}
               <MessageComposer
                 value={composerValue}
                 onChange={setComposerValue}

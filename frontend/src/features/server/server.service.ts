@@ -86,6 +86,12 @@ export async function deleteServer(id: ServerId): Promise<void> {
   });
 }
 
+export async function leaveServer(serverId: ServerId): Promise<void> {
+  await fetchJson<void>(`/servers/${serverId}/leave`, {
+    method: "DELETE",
+  });
+}
+
 export async function getServerById(id: ServerId): Promise<ServerDto> {
   const server = await fetchJson<ServerBackendDto>(`/servers/${id}`, {
     method: "GET",

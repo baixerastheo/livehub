@@ -9,9 +9,17 @@ const EMPTY_LABEL = "Start the conversation";
 
 type Props = {
   messages: ChatMessage[];
+  canDeleteMessages?: boolean;
+  onDeleteMessage?: (messageId: number) => void;
+  isDeletingMessageId?: number | null;
 };
 
-export function MessageList({ messages }: Props) {
+export function MessageList({
+  messages,
+  canDeleteMessages = false,
+  onDeleteMessage,
+  isDeletingMessageId = null,
+}: Props) {
   return (
     <div className={styles.messages} role="list" aria-label="Message list">
       {messages.length === 0 ? (
@@ -20,7 +28,19 @@ export function MessageList({ messages }: Props) {
           <FiChevronDown className={styles.threadEmptyArrow} aria-hidden />
         </div>
       ) : (
-        messages.map((m) => <MessageBubble key={m.id} message={m} />)
+        messages.map((m) => (
+          <MessageBubble
+            key={m.id}
+            message={m}
+            canDelete={canDeleteMessages}
+            onDelete={
+              onDeleteMessage
+                ? () => onDeleteMessage(Number(m.id))
+                : undefined
+            }
+            isDeleting={isDeletingMessageId === Number(m.id)}
+          />
+        ))
       )}
     </div>
   );

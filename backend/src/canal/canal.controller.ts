@@ -133,18 +133,25 @@ export class CanalController {
 
   /**
    * Supprime un canal.
+   * Réservé au propriétaire et aux administrateurs du serveur.
    * @param id - Identifiant du canal
+   * @param req - Requête authentifiée
    * @returns Canal supprimé
    */
   @Delete('/channels/:id')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'Channel deleted successfully',
   })
   @ApiNotFoundResponse({
-    description: 'Channel with this ID does not exist',
+    description:
+      'Channel with this ID does not exist or you do not have permission',
   })
-  async deleteChannel(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.canalService.deleteChannel(id);
+  async deleteChannel(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: RequestWithAuth,
+  ) {
+    const result = await this.canalService.deleteChannel(id, req.user.id);
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }

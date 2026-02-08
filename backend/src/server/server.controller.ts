@@ -187,22 +187,26 @@ export class ServerController {
   }
 
   @Put('/:id/members/:userId')
+  @UseGuards(AuthGuard)
   @ApiOkResponse({
     description: 'Member role updated successfully',
     type: UpdateMemberRole,
   })
   @ApiNotFoundResponse({
-    description: 'This user is not a member of this server',
+    description:
+      'This user is not a member of this server or only the owner can change roles',
   })
   async updateMemberRole(
     @Param('id', ParseIntPipe) serverId: number,
     @Param('userId') userId: string,
     @Body() data: UpdateMemberRole,
+    @Req() req: RequestWithAuth,
   ) {
     const result = await this.serverService.updateMemberRole(
       serverId,
       userId,
       data.role,
+      req.user.id,
     );
     if (result.isErr()) {
       throw new NotFoundException(result.error);

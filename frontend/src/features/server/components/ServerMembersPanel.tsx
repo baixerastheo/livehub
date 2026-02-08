@@ -3,7 +3,12 @@
 import React from "react";
 import panelStyles from "@/src/features/messages/styles/ConversationDetailsPanel.module.css";
 import styles from "../styles/ServerMembersPanel.module.css";
-import { useServerMembersQuery } from "../server.hooks";
+import {
+  useServerMembersQuery,
+  useUpdateMemberRoleMutation,
+  useUserServersQuery,
+} from "../server.hooks";
+import { useAppStore } from "@/src/core/store/appStore";
 import type {
   ServerRole,
   ServerMemberDto,
@@ -11,6 +16,10 @@ import type {
 } from "../server.types";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+
+const ROLE_PROPRIETAIRE: ServerRole = "PROPRIETAIRE";
+const ROLE_ADMINISTRATEUR: ServerRole = "ADMINISTRATEUR";
+const ROLE_MEMBRE: ServerRole = "MEMBRE";
 
 function isOnline(statut: UserStatus | undefined): boolean {
   return statut === "EN_LIGNE";
@@ -41,7 +50,19 @@ type Props = {
 };
 
 export function ServerMembersPanel({ serverId }: Props) {
+  const selectedServerId = useAppStore((s) => s.selectedServerId);
+  const { data: userServers } = useUserServersQuery();
   const { data: members, isLoading, error } = useServerMembersQuery(serverId);
+  const updateRoleMutation = useUpdateMemberRoleMutation(serverId);
+
+  const currentUserRole = React.useMemo(
+    () =>
+      selectedServerId === serverId
+        ? userServers?.find((u) => u.server.id === serverId)?.role
+        : undefined,
+    [selectedServerId, serverId, userServers],
+  );
+  const canChangeRoles = currentUserRole === ROLE_PROPRIETAIRE;
 
   const membersByRole = React.useMemo(
     () => (members ? groupMembersByRole(members) : new Map()),
@@ -112,6 +133,32 @@ export function ServerMembersPanel({ serverId }: Props) {
                         <span className={styles.memberName}>
                           {getDisplayName(member.user)}
                         </span>
+                        {canChangeRoles && member.role !== ROLE_PROPRIETAIRE && (
+                          <button
+                            type="button"
+                            className={styles.roleAction}
+                            onClick={() => {
+                              const newRole =
+                                member.role === ROLE_ADMINISTRATEUR
+                                  ? ROLE_MEMBRE
+                                  : ROLE_ADMINISTRATEUR;
+                              updateRoleMutation.mutate({
+                                userId: member.userId,
+                                role: newRole,
+                              });
+                            }}
+                            disabled={updateRoleMutation.isPending}
+                            title={
+                              member.role === ROLE_ADMINISTRATEUR
+                                ? "Retirer le rôle admin"
+                                : "Passer admin"
+                            }
+                          >
+                            {member.role === ROLE_ADMINISTRATEUR
+                              ? "Retirer admin"
+                              : "Passer admin"}
+                          </button>
+                        )}
                       </div>
                     </li>
                   ))}

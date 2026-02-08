@@ -5,3 +5,19 @@
   letter-spacing: 0.06em;
   color: rgba(0, 0, 0, 0.6);
 }
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.headerTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

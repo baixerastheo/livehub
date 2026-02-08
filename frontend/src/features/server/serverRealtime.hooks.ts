@@ -78,6 +78,11 @@ export function useServerRealtime(serverId: number | null) {
       });
     };
 
+    const onChannelDeleted = (event: { serverId: number; channelId: number }) => {
+      if (event.serverId !== serverId) return;
+      queryClient.invalidateQueries({ queryKey: channelsKeys.byServer(serverId) });
+    };
+
     const onMemberJoined = (event: ServerMemberJoinedEvent) => {
       if (event.serverId !== serverId) return;
       const member = mapRealtimeMemberToDto(event.member);
@@ -114,12 +119,14 @@ export function useServerRealtime(serverId: number | null) {
     };
 
     socket.on("server-channel:created", onChannelCreated);
+    socket.on("server-channel:deleted", onChannelDeleted);
     socket.on("server-member:joined", onMemberJoined);
     socket.on("server-member:online", onMemberOnline);
     socket.on("server-member:offline", onMemberOffline);
 
     return () => {
       socket.off("server-channel:created", onChannelCreated);
+      socket.off("server-channel:deleted", onChannelDeleted);
       socket.off("server-member:joined", onMemberJoined);
       socket.off("server-member:online", onMemberOnline);
       socket.off("server-member:offline", onMemberOffline);

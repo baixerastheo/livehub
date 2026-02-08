@@ -168,7 +168,8 @@ export class MessageController {
     description: 'Message not found',
   })
   @ApiForbiddenResponse({
-    description: 'You can only delete your own messages',
+    description:
+      'Only the server owner and administrators can delete channel messages',
   })
   async deleteMessage(
     @Param('id', ParseIntPipe) id: number,

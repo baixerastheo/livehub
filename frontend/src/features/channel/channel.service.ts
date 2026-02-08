@@ -28,6 +28,12 @@ export async function getChannelById(channelId: number): Promise<ChannelDto> {
   return mapChannel(dto);
 }
 
+export async function deleteChannel(channelId: number): Promise<void> {
+  await fetchJson<void>(`/channels/${channelId}`, {
+    method: "DELETE",
+  });
+}
+
 export type ChannelMessageBackendDto = {
   id: number;
   contenu: string;
@@ -53,4 +59,10 @@ export async function sendChannelMessage(
     `/channels/${channelId}/messages`,
     { method: "POST", body: { content } },
   );
+}
+
+export async function deleteChannelMessage(messageId: number): Promise<void> {
+  await fetchJson<void>(`/messages/${messageId}`, {
+    method: "DELETE",
+  });
 }

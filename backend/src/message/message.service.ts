@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
-import { MessageGateway } from '../realtime/message.gateway.js';
 import { ok, err } from '../result';
+
+const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
+
+function canDeleteChannelMessage(role: string): boolean {
+  return ROLES_CAN_DELETE_MESSAGE.includes(
+    role as (typeof ROLES_CAN_DELETE_MESSAGE)[number],
+  );
+}
 
 @Injectable()
 export class MessageService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
-    private readonly messageGateway: MessageGateway,
   ) {}
 
-  /** List private conversation peers for current user (users with at least one message), ordered by last message. */
   async listPrivateConversations(currentUserId: string) {
     const messages = await this.prisma.messagePrive.findMany({
       where: {
@@ -45,36 +50,35 @@ export class MessageService {
       select: { id: true, name: true, email: true, avatarPath: true },
     });
     const userById = new Map(users.map((u) => [u.id, u]));
-    const list: Array<{
-      peer: {
-        id: string;
-        name: string;
-        email: string;
-        avatarUrl: string | null;
-      };
-      lastMessageAt: Date | undefined;
-    }> = [];
-    for (const id of peerIds) {
-      const user = userById.get(id);
-      if (!user) continue;
-      let avatarUrl: string | null = null;
-      if (user.avatarPath) {
-        const result = await this.supabaseStorage.publicUrl(user.avatarPath);
-        if (result.isOk()) {
-          avatarUrl = result.value;
-        }
-      }
-      list.push({
-        peer: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatarUrl,
-        },
-        lastMessageAt: peerIdToLastAt.get(id),
-      });
-    }
-    list.sort(
+    const listWithAvatars = await Promise.all(
+      peerIds
+        .map((id) => ({
+          id,
+          user: userById.get(id),
+          lastMessageAt: peerIdToLastAt.get(id),
+        }))
+        .filter(
+          (
+            x,
+          ): x is {
+            id: string;
+            user: (typeof users)[number];
+            lastMessageAt: Date | undefined;
+          } => x.user != null,
+        )
+        .map(async ({ user, lastMessageAt }) => {
+          let avatarUrl: string | null = null;
+          if (user.avatarPath) {
+            const result = await this.supabaseStorage.publicUrl(
+              user.avatarPath,
+            );
+            if (result.isOk()) avatarUrl = result.value;
+          }
+          const { avatarPath: _avatarPath, ...peer } = user;
+          return { peer: { ...peer, avatarUrl }, lastMessageAt };
+        }),
+    );
+    const list = listWithAvatars.sort(
       (a, b) =>
         (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
     );
@@ -136,16 +140,6 @@ export class MessageService {
         expediteur: { select: { id: true, name: true, email: true } },
       },
     });
-    this.messageGateway.emitPrivateMessageCreated({
-      id: String(message.id),
-      content: message.contenu,
-      authorId: message.expediteurId,
-      authorName: message.expediteur.name ?? message.expediteur.email ?? '',
-      createdAtIso: message.creeLe.toISOString(),
-      read: message.lu,
-      senderId,
-      recipientId,
-    });
     return ok(message);
   }
 
@@ -200,27 +194,37 @@ export class MessageService {
         },
       },
     });
-    this.messageGateway.emitChannelMessageCreated(channelId, {
-      id: String(message.id),
-      content: message.contenu,
-      authorId: message.auteurId,
-      authorName: message.auteur?.name ?? '',
-      createdAtIso: message.creeLe.toISOString(),
-    });
     return ok(message);
   }
 
   async deleteMessage(id: number, userId: string) {
     const message = await this.prisma.message.findUnique({
       where: { id },
-      include: { auteur: true },
+      include: { auteur: true, canal: true },
     });
     if (!message) {
       return err('No message found for ID ' + id);
     }
-    if (message.auteurId !== userId) {
-      return err('You can only delete your own messages');
+    if (!message.canal) {
+      return err('Message is not a channel message');
     }
+
+    const serverId = message.canal.serveurId;
+    const member = await this.prisma.membreServeur.findUnique({
+      where: {
+        userId_serveurId: { userId, serveurId: serverId },
+      },
+    });
+    if (!member) {
+      return err('You are not a member of this server');
+    }
+    const role = String(member.role);
+    if (!canDeleteChannelMessage(role)) {
+      return err(
+        'Only the server owner and administrators can delete messages',
+      );
+    }
+
     const deletedMessage = await this.prisma.message.delete({
       where: { id },
     });
