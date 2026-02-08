@@ -2,17 +2,20 @@
 
 import React from "react";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
-import headerStyles from "../../styles/sidebar/SidebarHeader.module.css";
 import {
   SidebarContext,
   useSidebarContext,
 } from "@/src/features/shared/components/sidebar/SidebarContext";
 import { useAppStore } from "@/src/core/store/appStore";
-import { SidebarConversationsContent } from "@/src/features/shared/components/sidebar/SidebarConversationsContent";
+import { SidebarHeader } from "./SidebarHeader";
+import { SidebarConversationSection } from "@/src/features/shared/components/sidebar/SidebarConversationSection";
+import { SidebarActivitySection } from "@/src/features/shared/components/sidebar/SidebarActivitySection";
+import { SidebarTeamsSection } from "@/src/features/shared/components/sidebar/SidebarTeamsSection";
 import {
   SidebarEmptyState as SidebarEmptyStatePart,
   SidebarStartButton as SidebarStartButtonPart,
 } from "@/src/features/shared/components/sidebar/SidebarParts";
+import { SidebarConversationsContent } from "@/src/features/shared/components/sidebar/SidebarConversationsContent";
 
 type SidebarRootProps = {
   children: React.ReactNode;
@@ -54,49 +57,17 @@ function SidebarCloseButton() {
   );
 }
 
-function SidebarHeader({ children }: { children: React.ReactNode }) {
-  return <div className={headerStyles.header}>{children}</div>;
-}
-
-function getSectionHeader(section: "activity" | "conversation" | "teams") {
-  switch (section) {
-    case "activity":
-      return "Notifications";
-    case "teams":
-      return "Servers";
-    default:
-      return "Conversations";
-  }
-}
-
 export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
   const section = useAppStore((state) => state.sidebarSection);
   const closeMobileSidebars = useAppStore((state) => state.closeMobileSidebars);
 
-  const header = getSectionHeader(section);
-
   return (
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>
       <SidebarCloseButton />
-      <SidebarHeader>{header}</SidebarHeader>
-      {section === "conversation" && (
-        <React.Suspense fallback={null}>
-          <SidebarConversationsContent />
-        </React.Suspense>
-      )}
-      {section === "activity" && (
-        <SidebarEmptyStatePart
-          title="No notification"
-          subtitle="Your recent activity will appear here."
-        />
-      )}
-      {section === "teams" && (
-        <SidebarEmptyStatePart
-          title="No server"
-          subtitle="Join or create a server to see it here."
-        />
-      )}
+      {section === "conversation" && <SidebarConversationSection />}
+      {section === "activity" && <SidebarActivitySection />}
+      {section === "teams" && <SidebarTeamsSection />}
     </SidebarRoot>
   );
 }

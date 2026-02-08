@@ -7,6 +7,7 @@ type AppState = {
   isSidebarOpen: boolean;
   isSidebarRailOpen: boolean;
   sidebarSection: SidebarSection;
+  selectedServerId: number | null;
   accountModal: {
     isOpen: boolean;
     section: AccountModalSection;
@@ -21,6 +22,7 @@ type AppState = {
   openSidebarRail: () => void;
   closeSidebarRail: () => void;
   setSidebarSection: (section: SidebarSection) => void;
+  setSelectedServerId: (serverId: number | null) => void;
   toggleMobileSidebars: () => void;
   closeMobileSidebars: () => void;
   openAccountModal: (section?: AccountModalSection) => void;
@@ -35,6 +37,7 @@ export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
   isSidebarRailOpen: false,
   sidebarSection: "conversation",
+  selectedServerId: null,
   accountModal: {
     isOpen: false,
     section: "profile",
@@ -69,6 +72,10 @@ export const useAppStore = create<AppState>((set) => ({
   setSidebarSection: (section) =>
     set({
       sidebarSection: section,
+    }),
+  setSelectedServerId: (serverId) =>
+    set({
+      selectedServerId: serverId,
     }),
   toggleMobileSidebars: () =>
     set((state) => {

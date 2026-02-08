@@ -14,7 +14,6 @@ export class UserService {
     private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
-  
   /**
    * Enrichit un utilisateur avec l'URL publique de son avatar.
    * @param user - Utilisateur à enrichir
@@ -117,23 +116,23 @@ export class UserService {
     if (nameExist) {
       return err('Name already exists');
     }
-      const createdUser = await this.prisma.user.create({
-        data: {
-          id: randomUUID(),
-          name: data.name,
-          email: data.email,
-          statut: data.statut ?? 'EN_LIGNE',
-        },
-      });
+    const createdUser = await this.prisma.user.create({
+      data: {
+        id: randomUUID(),
+        name: data.name,
+        email: data.email,
+        statut: data.statut ?? 'EN_LIGNE',
+      },
+    });
 
-      await this.prisma.account.create({
-        data: {
-          id: randomUUID(),
-          accountId: createdUser.id,
-          providerId: 'credential',
-          userId: createdUser.id,
-        },
-      });
+    await this.prisma.account.create({
+      data: {
+        id: randomUUID(),
+        accountId: createdUser.id,
+        providerId: 'credential',
+        userId: createdUser.id,
+      },
+    });
     return ok(createdUser);
   }
 
@@ -194,7 +193,12 @@ export class UserService {
    * @param params - Paramètres contenant userId, buffer, contentType et extension
    * @returns Le chemin et l'URL du nouvel avatar ou erreur
    */
-  async replaceAvatar(userId: string, buffer: Buffer, contentType: string, ext: string) {
+  async replaceAvatar(
+    userId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -203,7 +207,12 @@ export class UserService {
     }
     const oldAvatarPath = user.avatarPath ?? null;
 
-    const uploadResult = await this.supabaseStorage.uploadAvatar(userId, buffer, contentType, ext);
+    const uploadResult = await this.supabaseStorage.uploadAvatar(
+      userId,
+      buffer,
+      contentType,
+      ext,
+    );
     if (uploadResult.isErr()) {
       return err(uploadResult.error);
     }
@@ -218,7 +227,9 @@ export class UserService {
     });
 
     if (oldAvatarPath) {
-      const removeResult = await this.supabaseStorage.removeObjects([oldAvatarPath]);
+      const removeResult = await this.supabaseStorage.removeObjects([
+        oldAvatarPath,
+      ]);
       if (removeResult?.isErr?.()) {
         await this.prisma.user.update({
           where: { id: userId },

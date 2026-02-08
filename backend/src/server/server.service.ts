@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { SupabaseStorageService } from '../supabase/supabase-storage.service';
+import { MessageGateway } from '../realtime/message.gateway.js';
 import { CreateServer } from './dto/create-server.dto';
 import { UpdateServer } from './dto/update-server.dto';
+import { AddMember } from './dto/add-member.dto';
 import { Role } from '../../generated/prisma/enums';
 import { ok, err } from '../result';
 
 @Injectable()
 export class ServerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly supabaseStorage: SupabaseStorageService,
+    private readonly messageGateway: MessageGateway,
+  ) {}
 
   /**
    * Récupère un serveur par son ID.
@@ -56,6 +63,7 @@ export class ServerService {
    * @param data - Données du serveur à créer
    * @param creatorId - Identifiant du créateur
    * @returns Le serveur créé
+   * create a default channel "general"
    */
   async createServer(data: CreateServer, creatorId: string) {
     const server = await this.prisma.serveur.create({
@@ -69,6 +77,14 @@ export class ServerService {
         role: Role.PROPRIETAIRE,
       },
     });
+
+    await this.prisma.canal.create({
+      data: {
+        serveurId: server.id,
+        nom: 'general',
+      },
+    });
+
     return ok(server);
   }
 
@@ -150,6 +166,77 @@ export class ServerService {
   }
 
   /**
+   * Ajoute un utilisateur à un serveur (action d'un admin/proprio).
+   * @param serverId - Identifiant du serveur
+   * @param currentUserId - Utilisateur qui effectue l'action
+   * @param payload - Données avec l'identifiant de l'utilisateur à ajouter
+   * @returns Le nouveau membre ou erreur si non autorisé / déjà membre
+   */
+  async addMember(serverId: number, currentUserId: string, payload: AddMember) {
+    const server = await this.findServerById(serverId);
+    if (!server) {
+      return err(`Server with ID ${serverId} not found`);
+    }
+
+    const actingMember = await this.findServerMember(currentUserId, serverId);
+    if (!actingMember) {
+      return err('You are not a member of this server');
+    }
+    if (
+      actingMember.role !== Role.PROPRIETAIRE &&
+      actingMember.role !== Role.ADMINISTRATEUR
+    ) {
+      return err('Only owners and administrators can add members');
+    }
+
+    const targetUserId = payload.userId;
+    if (currentUserId === targetUserId) {
+      return err('You are already a member of this server');
+    }
+
+    const existingMember = await this.findServerMember(targetUserId, serverId);
+    if (existingMember) {
+      return err('This user is already a member of the server');
+    }
+
+    const newMember = await this.prisma.membreServeur.create({
+      data: {
+        serveurId: serverId,
+        userId: targetUserId,
+        role: Role.MEMBRE,
+      },
+      include: {
+        user: true,
+        serveur: true,
+      },
+    });
+
+    let avatarUrl: string | null = null;
+    if (newMember.user.avatarPath) {
+      const result = await this.supabaseStorage.publicUrl(
+        newMember.user.avatarPath,
+      );
+      if (result.isOk()) avatarUrl = result.value;
+    }
+    const { avatarPath: _avatarPath, ...userRest } = newMember.user;
+    this.messageGateway.emitServerMemberJoined(serverId, {
+      id: newMember.id,
+      serveurId: newMember.serveurId,
+      userId: newMember.userId,
+      role: newMember.role,
+      rejointLe: newMember.rejointLe.toISOString(),
+      user: {
+        id: userRest.id,
+        name: userRest.name ?? '',
+        email: userRest.email,
+        avatarUrl,
+      },
+    });
+
+    return ok(newMember);
+  }
+
+  /**
    * Permet à un utilisateur de quitter un serveur.
    * @param serverId - Identifiant du serveur
    * @param userId - Identifiant de l'utilisateur
@@ -184,7 +271,27 @@ export class ServerService {
       where: { serveurId: serverId },
       include: { user: true },
     });
-    return ok(members);
+
+    const membersWithAvatarUrl = await Promise.all(
+      members.map(async (m) => {
+        let avatarUrl: string | null = null;
+        if (m.user.avatarPath) {
+          const result = await this.supabaseStorage.publicUrl(
+            m.user.avatarPath,
+          );
+          if (result.isOk()) {
+            avatarUrl = result.value;
+          }
+        }
+        const { avatarPath: _avatarPath, ...userRest } = m.user;
+        return {
+          ...m,
+          user: { ...userRest, avatarUrl },
+        };
+      }),
+    );
+
+    return ok(membersWithAvatarUrl);
   }
 
   /**

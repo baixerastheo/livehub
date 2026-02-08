@@ -11,7 +11,8 @@ import { StatutUtilisateur } from '../../../generated/prisma/enums';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({
-  description: 'Profile update schema for authenticated user (name, email, password, statut)',
+  description:
+    'Profile update schema for authenticated user (name, email, password, statut)',
 })
 export class UpdateProfileDto {
   @ApiProperty({

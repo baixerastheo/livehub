@@ -1,15 +1,38 @@
 import { UserService } from './user.service';
-import {ApiCreatedResponse,ApiOkResponse,ApiNotFoundResponse,ApiConflictResponse,ApiBody,ApiConsumes} from '@nestjs/swagger';
-import {Body,Controller,Delete,Get,Param,Post,Put,Req,UseGuards,UseInterceptors,UploadedFile,ParseFilePipe,FileTypeValidator,MaxFileSizeValidator,Logger,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiNotFoundResponse,
+  ApiConflictResponse,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+  Logger,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUser } from './dto/update-user.dto';
 import { CreateUser } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
-
-
-
 
 /**
  * Contrôleur de gestion des utilisateurs.
@@ -20,7 +43,6 @@ export class UserController {
   private readonly logger = new Logger(UserController.name);
 
   constructor(private readonly userService: UserService) {}
-
 
   /**
    * Récupère tous les utilisateurs.
@@ -34,7 +56,6 @@ export class UserController {
   async getAllUsers() {
     return await this.userService.getAllUsers();
   }
-
 
   /**
    * Récupère un utilisateur par email.
@@ -57,7 +78,6 @@ export class UserController {
     return result.value;
   }
 
-
   /**
    * Récupère un utilisateur par nom.
    * @param name - Le nom de l'utilisateur à rechercher.
@@ -78,7 +98,6 @@ export class UserController {
     }
     return result.value;
   }
-
 
   /**
    * Upload un avatar pour l'utilisateur connecté.
@@ -117,8 +136,7 @@ export class UserController {
     },
   ) {
     const userId = req.user.id;
-    const ext =
-      file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const ext = file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
     const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
 
     const result = await this.userService.replaceAvatar(
@@ -135,8 +153,6 @@ export class UserController {
     }
     return result.value;
   }
-
-
 
   /**
    * Récupère un utilisateur par ID.
@@ -159,8 +175,6 @@ export class UserController {
     return result.value;
   }
 
-
-
   /**
    * Supprime un utilisateur par ID.
    * @param id - L'ID de l'utilisateur à supprimer.
@@ -182,7 +196,6 @@ export class UserController {
     return result.value;
   }
 
-
   /**
    * Crée un nouvel utilisateur.
    * @param data - Les données de l'utilisateur à créer.
@@ -203,8 +216,6 @@ export class UserController {
     }
     return result.value;
   }
-
-
 
   /**
    * Met à jour un utilisateur par ID.

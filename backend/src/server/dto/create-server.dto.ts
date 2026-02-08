@@ -17,8 +17,8 @@ export class CreateServer {
   @MinLength(1, {
     message: "The 'name' field must contain at least 1 character!",
   })
-  @MaxLength(100, {
-    message: "The 'name' field must not exceed 100 characters!",
+  @MaxLength(30, {
+    message: "The 'name' field must not exceed 30 characters!",
   })
   name: string;
 }

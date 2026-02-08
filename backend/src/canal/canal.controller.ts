@@ -1,12 +1,27 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, Req, UseGuards, NotFoundException } from '@nestjs/common';  
-import { ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  Req,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { CanalService } from './canal.service';
 import { CreateCanal } from './dto/create-canal.dto';
 import { UpdateCanal } from './dto/update-canal.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
 import { Canal } from 'generated/prisma/client';
-
 
 /**
  * Contrôleur de gestion des canaux.
@@ -36,8 +51,13 @@ export class CanalController {
   async createChannel(
     @Param('serverId', ParseIntPipe) serverId: number,
     @Body() data: CreateCanal,
-    @Req() req: RequestWithAuth): Promise<Canal> {
-    const result = await this.canalService.createChannel(serverId, req.user.id, data);
+    @Req() req: RequestWithAuth,
+  ): Promise<Canal> {
+    const result = await this.canalService.createChannel(
+      serverId,
+      req.user.id,
+      data,
+    );
     if (result.isErr()) {
       throw new NotFoundException(result.error);
     }
@@ -66,7 +86,6 @@ export class CanalController {
     return result.value;
   }
 
-
   /**
    * Récupère les détails d'un canal spécifique.
    * @param id - Identifiant du canal
@@ -86,7 +105,6 @@ export class CanalController {
     }
     return result.value;
   }
-
 
   /**
    * Met à jour un canal.
@@ -112,7 +130,6 @@ export class CanalController {
     }
     return result.value;
   }
-
 
   /**
    * Supprime un canal.

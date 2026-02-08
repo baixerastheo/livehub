@@ -15,6 +15,11 @@
   height: 24px;
 }
 
+.smMd {
+  width: 31px;
+  height: 31px;
+}
+
 .md {
   width: 38px;
   height: 38px;
@@ -40,6 +45,10 @@
 
 .sm .initial {
   font-size: 0.75rem;
+}
+
+.smMd .initial {
+  font-size: 0.85rem;
 }
 
 .md .initial {

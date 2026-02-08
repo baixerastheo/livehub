@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { MessageGateway } from '../realtime/message.gateway.js';
 import { ok, err } from '../result';
 import { CreateCanal } from './dto/create-canal.dto';
 import { Role } from '../../generated/prisma/enums';
 import { UpdateCanal } from './dto/update-canal.dto';
-
 
 /**
  * Service de gestion des canaux.
@@ -12,7 +12,10 @@ import { UpdateCanal } from './dto/update-canal.dto';
  */
 @Injectable()
 export class CanalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageGateway: MessageGateway,
+  ) {}
 
   /**
    * Récupère un canal par son ID.
@@ -20,8 +23,9 @@ export class CanalService {
    * @returns Le canal ou null si non trouvé
    */
   private async findChannelById(id: number) {
-    return this.prisma.canal.findUnique({ 
-      where: { id } });
+    return this.prisma.canal.findUnique({
+      where: { id },
+    });
   }
 
   /**
@@ -38,11 +42,9 @@ export class CanalService {
     }
     const channels = await this.prisma.canal.findMany({
       where: { serveurId: serverId },
+      orderBy: { id: 'asc' },
     });
-    if (!channels || channels.length === 0) {
-      return err('No channels found for server with ID ' + serverId);
-    }
-    return ok(channels);
+    return ok(channels ?? []);
   }
 
   /**
@@ -74,7 +76,10 @@ export class CanalService {
       return err('You are not a member of this server');
     }
 
-    if (member.role !== Role.PROPRIETAIRE && member.role !== Role.ADMINISTRATEUR) {
+    if (
+      member.role !== Role.PROPRIETAIRE &&
+      member.role !== Role.ADMINISTRATEUR
+    ) {
       return err('Only owners and administrators can create channels');
     }
 
@@ -83,6 +88,13 @@ export class CanalService {
         nom: data.name,
         serveurId: serverId,
       },
+    });
+    this.messageGateway.emitServerChannelCreated(serverId, {
+      id: canal.id,
+      serverId: canal.serveurId,
+      name: canal.nom,
+      createdAtIso: canal.creeLe.toISOString(),
+      updatedAtIso: canal.modifieLe.toISOString(),
     });
     return ok(canal);
   }
