@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
+import { PresenceService } from '../realtime/presence.service.js';
 import { CreateServer } from './dto/create-server.dto';
 import { UpdateServer } from './dto/update-server.dto';
 import { AddMember } from './dto/add-member.dto';
-import { Role } from '../../generated/prisma/enums';
+import { Role, StatutUtilisateur } from '../../generated/prisma/enums';
 import { ok, err } from '../result';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class ServerService {
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
     private readonly messageGateway: MessageGateway,
+    private readonly presence: PresenceService,
   ) {}
 
   /**
@@ -53,7 +55,7 @@ export class ServerService {
   async getServerById(id: number) {
     const server = await this.findServerById(id);
     if (!server) {
-      return err(`Server with ID ${id} not found`);
+      return err('Server with ID ' + id + ' not found');
     }
     return ok(server);
   }
@@ -97,7 +99,7 @@ export class ServerService {
   async updateServer(id: number, data: UpdateServer) {
     const server = await this.findServerById(id);
     if (!server) {
-      return err(`Server with ID ${id} not found`);
+      return err('Server with ID ' + id + ' not found');
     }
     const updatedServer = await this.prisma.serveur.update({
       where: { id },
@@ -114,7 +116,7 @@ export class ServerService {
   async deleteServer(id: number) {
     const server = await this.findServerById(id);
     if (!server) {
-      return err(`Server with ID ${id} not found`);
+      return err('Server with ID ' + id + ' not found');
     }
     const deletedServer = await this.prisma.serveur.delete({
       where: { id },
@@ -143,7 +145,7 @@ export class ServerService {
   async joinServer(serverId: number, userId: string) {
     const server = await this.findServerById(serverId);
     if (!server) {
-      return err(`Server with ID ${serverId} not found`);
+      return err('Server with ID ' + serverId + ' not found');
     }
 
     const existingMember = await this.findServerMember(userId, serverId);
@@ -175,7 +177,7 @@ export class ServerService {
   async addMember(serverId: number, currentUserId: string, payload: AddMember) {
     const server = await this.findServerById(serverId);
     if (!server) {
-      return err(`Server with ID ${serverId} not found`);
+      return err('Server with ID ' + serverId + ' not found');
     }
 
     const actingMember = await this.findServerMember(currentUserId, serverId);
@@ -284,9 +286,12 @@ export class ServerService {
           }
         }
         const { avatarPath: _avatarPath, ...userRest } = m.user;
+        const statut = this.presence.isOnline(m.userId)
+          ? StatutUtilisateur.EN_LIGNE
+          : StatutUtilisateur.HORS_LIGNE;
         return {
           ...m,
-          user: { ...userRest, avatarUrl },
+          user: { ...userRest, avatarUrl, statut },
         };
       }),
     );

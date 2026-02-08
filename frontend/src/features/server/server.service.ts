@@ -49,6 +49,7 @@ function mapServerMember(dto: ServerMemberBackendDto): ServerMemberDto {
       name: dto.user.name,
       email: dto.user.email,
       avatarUrl: dto.user.avatarUrl ?? null,
+      statut: dto.user.statut ?? undefined,
     },
   };
 }

@@ -114,7 +114,7 @@ export function SidebarConversationsContent() {
   }
 
   return (
-    <>
+    <div className={styles.emptySection}>
       <SidebarEmptyState
         title="No conversation"
         subtitle="Start a new conversation to see it here."
@@ -129,6 +129,6 @@ export function SidebarConversationsContent() {
       >
         Start conversation
       </SidebarStartButton>
-    </>
+    </div>
   );
 }

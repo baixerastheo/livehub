@@ -17,11 +17,9 @@ import type {
   ServerMemberJoinedEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
+import { PresenceService } from './presence.service.js';
 
-const FRONTEND_ORIGIN =
-  process.env.FRONTEND_ORIGIN ??
-  process.env.FRONTEND_URL ??
-  'http://localhost:3000';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000';
 
 /** Socket with authenticated user id attached by handleConnection. */
 export type AuthenticatedSocket = Socket & { data: { userId: string } };
@@ -44,7 +42,10 @@ export class MessageGateway
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+  ) {}
 
   handleConnection(client: Socket) {
     void this.handleConnectionAsync(client).catch(() => {
@@ -64,13 +65,49 @@ export class MessageGateway
       const userId = session.user.id;
       (client as AuthenticatedSocket).data = { userId };
       void client.join('user:' + userId);
+
+      const justWentOnline = this.presence.increment(userId);
+      if (justWentOnline) {
+        void this.broadcastPresence(userId, 'online');
+      }
     } catch {
       client.disconnect(true);
     }
   }
 
-  handleDisconnect(_client: Socket) {
-    // Optional
+  /**
+   * Broadcast presence change to all server rooms the user belongs to
+   * AND to the user rooms of all their friends.
+   */
+  private async broadcastPresence(userId: string, status: 'online' | 'offline') {
+    const event = status === 'online' ? 'server-member:online' : 'server-member:offline';
+
+    const memberships = await this.prisma.membreServeur.findMany({
+      where: { userId },
+      select: { serveurId: true },
+    });
+    for (const { serveurId } of memberships) {
+      this.server.to('server:' + serveurId).emit(event, { userId });
+    }
+
+    const friendships = await this.prisma.amitie.findMany({
+      where: { OR: [{ userAId: userId }, { userBId: userId }] },
+      select: { userAId: true, userBId: true },
+    });
+    const globalEvent = status === 'online' ? 'user:online' : 'user:offline';
+    for (const f of friendships) {
+      const friendId = f.userAId === userId ? f.userBId : f.userAId;
+      this.server.to('user:' + friendId).emit(globalEvent, { userId });
+    }
+  }
+
+  handleDisconnect(client: Socket) {
+    const userId = (client as AuthenticatedSocket).data?.userId;
+    if (!userId) return;
+    const justWentOffline = this.presence.decrement(userId);
+    if (justWentOffline) {
+      void this.broadcastPresence(userId, 'offline');
+    }
   }
 
   emitPrivateMessageCreated(payload: {

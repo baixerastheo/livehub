@@ -1,19 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
+import { PresenceService } from '../realtime/presence.service.js';
 import { err, ok, Result } from '../result.js';
-
-const publicUserSelect = {
-  id: true,
-  name: true,
-  email: true,
-  image: true,
-  statut: true,
-  avatarPath: true,
-  avatarUpdatedAt: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
 
 /**
  * Ordonne une paire d'IDs utilisateurs de manière déterministe.
@@ -40,7 +29,10 @@ export type FriendsError = { code: FriendsErrorCode; message: string };
 
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+  ) {}
 
   /**
    * Récupère la liste des amis d'un utilisateur.
@@ -53,12 +45,18 @@ export class FriendsService {
         OR: [{ userAId: userId }, { userBId: userId }],
       },
       include: {
-        userA: { select: publicUserSelect },
-        userB: { select: publicUserSelect },
+        userA: true,
+        userB: true,
       },
     });
 
-    return rows.map((r) => (r.userAId === userId ? r.userB : r.userA));
+    return rows.map((r) => {
+      const friend = r.userAId === userId ? r.userB : r.userA;
+      return {
+        ...friend,
+        statut: this.presence.isOnline(friend.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
+      };
+    });
   }
 
   /**
@@ -73,8 +71,8 @@ export class FriendsService {
         OR: [{ fromUserId: userId }, { toUserId: userId }],
       },
       include: {
-        fromUser: { select: publicUserSelect },
-        toUser: { select: publicUserSelect },
+        fromUser: true,
+        toUser: true,
       },
       orderBy: { creeLe: 'desc' },
     });

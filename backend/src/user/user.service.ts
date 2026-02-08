@@ -2,16 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from 'src/prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
+import { PresenceService } from '../realtime/presence.service.js';
 import { CreateUser } from './dto/create-user.dto';
 import { UpdateUser } from './dto/update-user.dto';
 import { ok, err } from '../result';
 import { User } from '../../generated/prisma/client';
+import { StatutUtilisateur } from '../../generated/prisma/enums';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
+    private readonly presence: PresenceService,
   ) {}
 
   /**
@@ -45,11 +48,17 @@ export class UserService {
 
   /**
    * Récupère tous les utilisateurs avec leurs URLs d'avatar.
-   * @returns Liste de tous les utilisateurs
+   * Le statut (en ligne / hors ligne) est dérivé de la présence WebSocket, pas de la base.
    */
   async getAllUsers() {
     const users = await this.prisma.user.findMany();
-    return this.enrichUsersWithAvatarUrl(users);
+    const enriched = await this.enrichUsersWithAvatarUrl(users);
+    return enriched.map((u) => ({
+      ...u,
+      statut: this.presence.isOnline(u.id)
+        ? StatutUtilisateur.EN_LIGNE
+        : StatutUtilisateur.HORS_LIGNE,
+    }));
   }
 
   /**
@@ -64,7 +73,11 @@ export class UserService {
     if (!user) {
       return err('User with ID ' + id + ' not found');
     }
-    return ok(await this.addAvatarUrl(user));
+    const withAvatar = await this.addAvatarUrl(user);
+    const statut = this.presence.isOnline(id)
+      ? StatutUtilisateur.EN_LIGNE
+      : StatutUtilisateur.HORS_LIGNE;
+    return ok({ ...withAvatar, statut });
   }
 
   /**

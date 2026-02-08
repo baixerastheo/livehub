@@ -4,9 +4,17 @@ import React from "react";
 import panelStyles from "@/src/features/messages/styles/ConversationDetailsPanel.module.css";
 import styles from "../styles/ServerMembersPanel.module.css";
 import { useServerMembersQuery } from "../server.hooks";
-import type { ServerRole, ServerMemberDto } from "../server.types";
+import type {
+  ServerRole,
+  ServerMemberDto,
+  UserStatus,
+} from "../server.types";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+
+function isOnline(statut: UserStatus | undefined): boolean {
+  return statut === "EN_LIGNE";
+}
 
 const ROLE_ORDER: ServerRole[] = ["PROPRIETAIRE", "ADMINISTRATEUR", "MEMBRE"];
 const ROLE_SECTION_LABELS: Record<ServerRole, string> = {
@@ -74,13 +82,32 @@ export function ServerMembersPanel({ serverId }: Props) {
                 <ul className={styles.list} role="list">
                   {roleMembers.map((member: ServerMemberDto) => (
                     <li key={member.userId} className={styles.memberRow}>
-                      <UserAvatar
-                        avatarUrl={member.user.avatarUrl}
-                        displayName={getDisplayName(member.user)}
-                        size="smMd"
-                        className={styles.avatar}
-                        aria-hidden
-                      />
+                      <div className={styles.avatarWrapper}>
+                        <UserAvatar
+                          avatarUrl={member.user.avatarUrl}
+                          displayName={getDisplayName(member.user)}
+                          size="smMd"
+                          className={styles.avatar}
+                          aria-hidden
+                        />
+                        <span
+                          className={
+                            isOnline(member.user.statut)
+                              ? styles.statusOnline
+                              : styles.statusOffline
+                          }
+                          aria-label={
+                            isOnline(member.user.statut)
+                              ? "En ligne"
+                              : "Hors ligne"
+                          }
+                          title={
+                            isOnline(member.user.statut)
+                              ? "En ligne"
+                              : "Hors ligne"
+                          }
+                        />
+                      </div>
                       <div className={styles.memberInfo}>
                         <span className={styles.memberName}>
                           {getDisplayName(member.user)}

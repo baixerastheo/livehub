@@ -12,6 +12,7 @@ import { ToastHost } from "@/src/features/shared/components/toast/ToastHost";
 import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
 import { PrivateConversationsRealtimeSync } from "@/src/features/messages/components/PrivateConversationsRealtimeSync";
 import { ServerRealtimeSync } from "@/src/features/server/components/ServerRealtimeSync";
+import { PresenceRealtimeSync } from "@/src/lib/realtime/PresenceRealtimeSync";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export function AppShell({ children }: AppShellProps) {
     <>
       <PrivateConversationsRealtimeSync />
       <ServerRealtimeSync />
+      <PresenceRealtimeSync />
       <Navbar>
         <NavbarSearch />
         <NavbarPeopleButton />

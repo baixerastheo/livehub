@@ -30,6 +30,8 @@ export type UserServerBackendDto = {
   serveur: ServerBackendDto;
 };
 
+export type UserStatus = "EN_LIGNE" | "HORS_LIGNE" | "ABSENT" | "INVISIBLE";
+
 export type ServerMemberBackendDto = {
   id: number;
   serveurId: ServerId;
@@ -41,6 +43,7 @@ export type ServerMemberBackendDto = {
     name: string;
     email: string;
     avatarUrl?: string | null;
+    statut?: UserStatus;
   };
 };
 
@@ -63,6 +66,7 @@ export type ServerMemberUserDto = {
   name: string;
   email: string;
   avatarUrl?: string | null;
+  statut?: UserStatus;
 };
 
 export type ServerMemberDto = {

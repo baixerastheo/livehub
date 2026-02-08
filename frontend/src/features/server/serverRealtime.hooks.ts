@@ -89,12 +89,40 @@ export function useServerRealtime(serverId: number | null) {
       });
     };
 
+    const onMemberOnline = (payload: { userId: string }) => {
+      const key = serversKeys.members(serverId);
+      queryClient.setQueryData<ServerMemberDto[]>(key, (old) => {
+        if (!old) return old;
+        return old.map((m) =>
+          m.userId === payload.userId
+            ? { ...m, user: { ...m.user, statut: "EN_LIGNE" as const } }
+            : m,
+        );
+      });
+    };
+
+    const onMemberOffline = (payload: { userId: string }) => {
+      const key = serversKeys.members(serverId);
+      queryClient.setQueryData<ServerMemberDto[]>(key, (old) => {
+        if (!old) return old;
+        return old.map((m) =>
+          m.userId === payload.userId
+            ? { ...m, user: { ...m.user, statut: "HORS_LIGNE" as const } }
+            : m,
+        );
+      });
+    };
+
     socket.on("server-channel:created", onChannelCreated);
     socket.on("server-member:joined", onMemberJoined);
+    socket.on("server-member:online", onMemberOnline);
+    socket.on("server-member:offline", onMemberOffline);
 
     return () => {
       socket.off("server-channel:created", onChannelCreated);
       socket.off("server-member:joined", onMemberJoined);
+      socket.off("server-member:online", onMemberOnline);
+      socket.off("server-member:offline", onMemberOffline);
       socket.emit("server:unsubscribe", { serverId });
     };
   }, [serverId, queryClient]);

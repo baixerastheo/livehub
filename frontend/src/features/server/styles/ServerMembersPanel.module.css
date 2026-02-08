@@ -49,8 +49,33 @@
   background: rgba(0, 0, 0, 0.03);
 }
 
-.avatar {
+.avatarWrapper {
+  position: relative;
   flex-shrink: 0;
+}
+
+.avatar {
+  display: block;
+}
+
+.statusOnline,
+.statusOffline {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+}
+
+.statusOnline {
+  background-color: #22c55e;
+}
+
+.statusOffline {
+  background-color: #ef4444;
 }
 
 .memberInfo {
