@@ -45,7 +45,12 @@ describe('UserService', () => {
     it('doit retourner tous les utilisateurs', async () => {
       const mockUsers = [
         { id: 1, email: 'user1@test.com', name: 'User 1', avatarPath: null },
-        { id: 2, email: 'user2@test.com', name: 'User 2', avatarPath: 'avatar.jpg' },
+        {
+          id: 2,
+          email: 'user2@test.com',
+          name: 'User 2',
+          avatarPath: 'avatar.jpg',
+        },
       ];
 
       prismaMock.user.findMany.mockResolvedValue(mockUsers);
@@ -119,7 +124,7 @@ describe('UserService', () => {
         data: expect.objectContaining({
           email: createUserDto.email,
           name: createUserDto.name,
-        }),
+        }) as Record<string, unknown>,
       });
       expect(result).toEqual(mockCreatedUser);
     });

@@ -10,7 +10,7 @@ import { Result, ok, err } from '../result';
  */
 @Injectable()
 export class SupabaseStorageService {
-  private client: SupabaseClient
+  private client: SupabaseClient;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -29,7 +29,7 @@ export class SupabaseStorageService {
           ),
         );
       }
-      this.client = createClient(url, key);
+      this.client = createClient(url, key) as SupabaseClient;
     }
     return ok(this.client);
   }
@@ -58,7 +58,12 @@ export class SupabaseStorageService {
    * @returns Chemin du fichier uploadé
    * @throws Error si le type MIME n'est pas autorisé ou si l'upload échoue
    */
-  async uploadAvatar(userId: string, buffer: Buffer, contentType: string, ext: string) {
+  async uploadAvatar(
+    userId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
     const path = this.buildAvatarPath(userId, ext);
     const bucket = this.getBucket();
 
@@ -68,7 +73,9 @@ export class SupabaseStorageService {
     }
     const client = clientResult.value;
 
-    const { data, error } = await client.storage.from(bucket).upload(path, buffer, { contentType, upsert: true });
+    const { data, error } = await client.storage
+      .from(bucket)
+      .upload(path, buffer, { contentType, upsert: true });
 
     if (error) {
       return err('Supabase Storage upload failed: ' + error.message);

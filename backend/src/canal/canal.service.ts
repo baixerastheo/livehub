@@ -23,8 +23,9 @@ export class CanalService {
    * @returns Le canal ou null si non trouvé
    */
   private async findChannelById(id: number) {
-    return this.prisma.canal.findUnique({ 
-      where: { id } });
+    return this.prisma.canal.findUnique({
+      where: { id },
+    });
   }
 
   /**
@@ -75,7 +76,10 @@ export class CanalService {
       return err('You are not a member of this server');
     }
 
-    if (member.role !== Role.PROPRIETAIRE && member.role !== Role.ADMINISTRATEUR) {
+    if (
+      member.role !== Role.PROPRIETAIRE &&
+      member.role !== Role.ADMINISTRATEUR
+    ) {
       return err('Only owners and administrators can create channels');
     }
 

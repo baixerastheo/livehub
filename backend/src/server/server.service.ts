@@ -172,11 +172,7 @@ export class ServerService {
    * @param payload - Données avec l'identifiant de l'utilisateur à ajouter
    * @returns Le nouveau membre ou erreur si non autorisé / déjà membre
    */
-  async addMember(
-    serverId: number,
-    currentUserId: string,
-    payload: AddMember,
-  ) {
+  async addMember(serverId: number, currentUserId: string, payload: AddMember) {
     const server = await this.findServerById(serverId);
     if (!server) {
       return err(`Server with ID ${serverId} not found`);
@@ -217,7 +213,9 @@ export class ServerService {
 
     let avatarUrl: string | null = null;
     if (newMember.user.avatarPath) {
-      const result = await this.supabaseStorage.publicUrl(newMember.user.avatarPath);
+      const result = await this.supabaseStorage.publicUrl(
+        newMember.user.avatarPath,
+      );
       if (result.isOk()) avatarUrl = result.value;
     }
     const { avatarPath: _avatarPath, ...userRest } = newMember.user;
@@ -278,7 +276,9 @@ export class ServerService {
       members.map(async (m) => {
         let avatarUrl: string | null = null;
         if (m.user.avatarPath) {
-          const result = await this.supabaseStorage.publicUrl(m.user.avatarPath);
+          const result = await this.supabaseStorage.publicUrl(
+            m.user.avatarPath,
+          );
           if (result.isOk()) {
             avatarUrl = result.value;
           }

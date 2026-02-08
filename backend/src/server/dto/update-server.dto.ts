@@ -17,7 +17,7 @@ export class UpdateServer {
     message: "The 'name' field must contain at least 1 character!",
   })
   @MaxLength(30, {
-      message: "The 'name' field must not exceed 30 characters!",
+    message: "The 'name' field must not exceed 30 characters!",
   })
   name?: string;
 }

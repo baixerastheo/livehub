@@ -16,4 +16,3 @@ export class AddMember {
   })
   userId: string;
 }
-
