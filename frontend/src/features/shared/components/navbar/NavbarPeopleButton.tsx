@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { FiUsers } from "react-icons/fi";
+import { useAuth } from "@/src/core/store/auth/useAuth";
 import styles from "../../styles/navbar/NavbarPeopleButton.module.css";
 
 export function NavbarPeopleButton() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) return null;
+
   return (
     <Link
       href="/people?tab=users"

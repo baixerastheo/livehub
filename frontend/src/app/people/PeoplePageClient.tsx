@@ -9,6 +9,7 @@ import { RequestsPanel } from "@/src/features/friends/components/RequestsPanel";
 import { useFriendRelationships } from "@/src/features/friends/hooks/useFriendRelationships";
 import { useSendFriendRequestMutation } from "@/src/features/friends/friends.hooks";
 import { useToast } from "@/src/core/store/toast/useToastStore";
+import { useAuth } from "@/src/core/store/auth/useAuth";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import styles from "./people.module.css";
 
@@ -24,7 +25,14 @@ export function PeoplePageClient() {
   const searchParams = useSearchParams();
   const tab = parseTab(searchParams.get("tab"));
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
   const sendRequest = useSendFriendRequestMutation();
+
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   const {
     friendIds,
@@ -52,6 +60,8 @@ export function PeoplePageClient() {
     },
     [sendRequest, toast],
   );
+
+  if (isLoading || !isAuthenticated) return null;
 
   return (
     <main className={styles.page}>
