@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
+import { MessageGateway } from 'src/realtime/message.gateway';
 import { ok, err } from '../result';
 
 const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
@@ -16,6 +17,7 @@ export class MessageService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
   async listPrivateConversations(currentUserId: string) {
@@ -140,6 +142,18 @@ export class MessageService {
         expediteur: { select: { id: true, name: true, email: true } },
       },
     });
+
+    this.messageGateway.emitPrivateMessageCreated({
+      id: String(message.id),
+      content: message.contenu,
+      authorId: message.expediteurId,
+      authorName: message.expediteur.name ?? message.expediteur.email,
+      createdAtIso: message.creeLe.toISOString(),
+      read: message.lu,
+      senderId,
+      recipientId,
+    });
+
     return ok(message);
   }
 
@@ -194,6 +208,15 @@ export class MessageService {
         },
       },
     });
+
+    this.messageGateway.emitChannelMessageCreated(channelId, {
+      id: String(message.id),
+      content: message.contenu,
+      authorId: message.auteurId,
+      authorName: message.auteur.name ?? '',
+      createdAtIso: message.creeLe.toISOString(),
+    });
+
     return ok(message);
   }
 
