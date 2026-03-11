@@ -31,6 +31,7 @@ type AppState = {
   openProfileMenu: () => void;
   closeProfileMenu: () => void;
   toggleProfileMenu: () => void;
+  resetOnLogout: () => void;
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -130,5 +131,14 @@ export const useAppStore = create<AppState>((set) => ({
         isOpen: !state.profileMenu.isOpen,
       },
     })),
+  resetOnLogout: () =>
+    set({
+      selectedServerId: null,
+      isSidebarOpen: false,
+      isSidebarRailOpen: false,
+      sidebarSection: "conversation",
+      profileMenu: { isOpen: false },
+      accountModal: { isOpen: false, section: "profile" },
+    }),
 }));
 

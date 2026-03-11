@@ -32,12 +32,23 @@ const FRIEND_REQUEST_STATUS_MAP: Record<
 export class FriendsController {
   constructor(private readonly friendsService: FriendsService) {}
 
+  /**
+   * Récupère la liste des amis de l'utilisateur connecté.
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Liste des amis
+   */
   @Get()
   @ApiOkResponse({ description: 'List friends' })
   async listFriends(@Req() req: RequestWithAuth) {
     return this.friendsService.listFriends(req.user.id);
   }
 
+  /**
+   * Récupère les demandes d'amis entrantes et sortantes de l'utilisateur connecté.
+   * Les statuts sont normalisés en anglais (pending, accepted, declined).
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Liste des demandes d'amis avec statut normalisé
+   */
   @Get('requests')
   @ApiOkResponse({ description: 'List friend requests (incoming/outgoing)' })
   async listRequests(@Req() req: RequestWithAuth) {
@@ -51,6 +62,12 @@ export class FriendsController {
     }));
   }
 
+  /**
+   * Envoie une demande d'ami à un autre utilisateur.
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @param dto - Corps de la requête avec l'identifiant du destinataire
+   * @returns Confirmation d'envoi ou erreur métier
+   */
   @Post('requests')
   async sendRequest(
     @Req() req: RequestWithAuth,
@@ -71,6 +88,12 @@ export class FriendsController {
     return { ok: true };
   }
 
+  /**
+   * Accepte une demande d'ami.
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @param id - Identifiant de la demande d'ami à accepter
+   * @returns Confirmation d'acceptation ou erreur si non autorisé / introuvable
+   */
   @Post('requests/:id/accept')
   async accept(@Req() req: RequestWithAuth, @Param('id') id: string) {
     const result = await this.friendsService.acceptRequest(id, req.user.id);
@@ -84,6 +107,12 @@ export class FriendsController {
     return { ok: true };
   }
 
+  /**
+   * Refuse une demande d'ami.
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @param id - Identifiant de la demande d'ami à refuser
+   * @returns Confirmation de refus ou erreur si non autorisé / introuvable
+   */
   @Post('requests/:id/decline')
   async decline(@Req() req: RequestWithAuth, @Param('id') id: string) {
     const result = await this.friendsService.declineRequest(id, req.user.id);

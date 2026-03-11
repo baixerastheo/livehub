@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { validateEnv } from './config/env.schema';
 import { UserModule } from './user/user.module';
 import { ServerModule } from './server/server.module';
 import { CanalModule } from './canal/canal.module';
@@ -15,7 +14,6 @@ import { RealtimeModule } from './realtime/realtime.module.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate: (config) => validateEnv(config),
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
     AuthModule,

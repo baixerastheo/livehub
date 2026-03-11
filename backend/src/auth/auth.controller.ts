@@ -7,6 +7,12 @@ import { toNodeHandler } from 'better-auth/node';
 export class AuthController {
   private handler = toNodeHandler(auth);
 
+  /**
+   * Délègue toutes les requêtes d'authentification au handler better-auth.
+   * Couvre les routes : login, logout, register, session, OAuth callbacks, etc.
+   * @param req - Requête HTTP entrante
+   * @param res - Réponse HTTP sortante
+   */
   @All('*path')
   async handleAuth(
     @Req() req: IncomingMessage,

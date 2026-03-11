@@ -6,6 +6,7 @@ import styles from "../styles/ServerMembersPanel.module.css";
 import {
   useServerMembersQuery,
   useUpdateMemberRoleMutation,
+  useTransferOwnershipMutation,
   useUserServersQuery,
 } from "../server.hooks";
 import { useAppStore } from "@/src/core/store/appStore";
@@ -54,6 +55,7 @@ export function ServerMembersPanel({ serverId }: Props) {
   const { data: userServers } = useUserServersQuery();
   const { data: members, isLoading, error } = useServerMembersQuery(serverId);
   const updateRoleMutation = useUpdateMemberRoleMutation(serverId);
+  const transferOwnershipMutation = useTransferOwnershipMutation(serverId);
 
   const currentUserRole = React.useMemo(
     () =>
@@ -134,30 +136,55 @@ export function ServerMembersPanel({ serverId }: Props) {
                           {getDisplayName(member.user)}
                         </span>
                         {canChangeRoles && member.role !== ROLE_PROPRIETAIRE && (
-                          <button
-                            type="button"
-                            className={styles.roleAction}
-                            onClick={() => {
-                              const newRole =
+                          <>
+                            <button
+                              type="button"
+                              className={styles.roleAction}
+                              onClick={() => {
+                                const newRole =
+                                  member.role === ROLE_ADMINISTRATEUR
+                                    ? ROLE_MEMBRE
+                                    : ROLE_ADMINISTRATEUR;
+                                updateRoleMutation.mutate({
+                                  userId: member.userId,
+                                  role: newRole,
+                                });
+                              }}
+                              disabled={
+                                updateRoleMutation.isPending ||
+                                transferOwnershipMutation.isPending
+                              }
+                              title={
                                 member.role === ROLE_ADMINISTRATEUR
-                                  ? ROLE_MEMBRE
-                                  : ROLE_ADMINISTRATEUR;
-                              updateRoleMutation.mutate({
-                                userId: member.userId,
-                                role: newRole,
-                              });
-                            }}
-                            disabled={updateRoleMutation.isPending}
-                            title={
-                              member.role === ROLE_ADMINISTRATEUR
-                                ? "Retirer le rôle admin"
-                                : "Passer admin"
-                            }
-                          >
-                            {member.role === ROLE_ADMINISTRATEUR
-                              ? "Retirer admin"
-                              : "Passer admin"}
-                          </button>
+                                  ? "Retirer le rôle admin"
+                                  : "Passer admin"
+                              }
+                            >
+                              {member.role === ROLE_ADMINISTRATEUR
+                                ? "Retirer admin"
+                                : "Passer admin"}
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.roleAction}
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `Transférer la propriété du serveur à ${getDisplayName(member.user)} ? Vous deviendrez administrateur.`,
+                                  )
+                                ) {
+                                  transferOwnershipMutation.mutate(member.userId);
+                                }
+                              }}
+                              disabled={
+                                updateRoleMutation.isPending ||
+                                transferOwnershipMutation.isPending
+                              }
+                              title="Transférer la propriété"
+                            >
+                              Céder propriété
+                            </button>
+                          </>
                         )}
                       </div>
                     </li>

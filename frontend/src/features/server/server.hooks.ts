@@ -14,6 +14,7 @@ import {
   leaveServer,
   updateServer,
   updateMemberRole,
+  transferOwnership,
   serverService,
 } from "./server.service";
 import type {
@@ -183,6 +184,23 @@ export function useLeaveServerMutation() {
       const current = useAppStore.getState().selectedServerId;
       if (current === serverId) {
         useAppStore.getState().setSelectedServerId(null);
+      }
+    },
+  });
+}
+
+export function useTransferOwnershipMutation(serverId: number | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (newOwnerId: string) => {
+      if (serverId == null) throw new Error("No server selected");
+      return transferOwnership(serverId, newOwnerId);
+    },
+    onSuccess: () => {
+      if (serverId != null) {
+        queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+        queryClient.invalidateQueries({ queryKey: serversKeys.user() });
       }
     },
   });

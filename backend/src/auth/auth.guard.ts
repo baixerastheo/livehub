@@ -16,6 +16,13 @@ type RequestWithAuth = Request & {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  /**
+   * Vérifie que la requête entrante possède une session valide.
+   * Attache l'utilisateur et la session à la requête si l'authentification réussit.
+   * @param context - Contexte d'exécution NestJS (HTTP)
+   * @returns true si l'utilisateur est authentifié
+   * @throws UnauthorizedException si la session est absente ou invalide
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
 
