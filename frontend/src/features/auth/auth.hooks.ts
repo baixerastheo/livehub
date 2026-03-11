@@ -1,6 +1,8 @@
 "use client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signIn, signUp, signOut } from "@/src/lib/auth-client";
+import { disconnectSocket } from "@/src/lib/realtime/socketClient";
+import { useAppStore } from "@/src/core/store/appStore";
 
 interface Login { email: string; password: string }
 interface Register { name: string; email: string; password: string }
@@ -37,12 +39,17 @@ export function useRegisterMutation() {
 }
 
 export function useLogoutMutation() {
+  const queryClient = useQueryClient();
+  const resetOnLogout = useAppStore((s) => s.resetOnLogout);
   return useMutation({
     mutationFn: async () => {
       const result = await signOut();
       if (result.error) {
         throw new Error(result.error.message);
       }
+      disconnectSocket();
+      queryClient.clear();
+      resetOnLogout();
       return result.data;
     },
   });

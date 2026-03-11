@@ -32,3 +32,14 @@ export function getSocket(): Socket {
   }
   return socket;
 }
+
+/**
+ * Disconnects the singleton socket and resets it so a new connection
+ * will be created on the next getSocket() call (e.g. after login).
+ */
+export function disconnectSocket(): void {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+}

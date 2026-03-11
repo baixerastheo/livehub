@@ -27,6 +27,12 @@ import { CreateMessageDto } from './dto/create-message.dto';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
+  /**
+   * Récupère la liste des conversations privées de l'utilisateur connecté.
+   * Retourne un pair par conversation avec la date du dernier message.
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Liste des pairs de conversation triée par date décroissante
+   */
   @Get('conversations/private')
   @UseGuards(AuthGuard)
   @ApiOkResponse({ description: 'List of private conversation peers' })
@@ -48,6 +54,12 @@ export class MessageController {
     }));
   }
 
+  /**
+   * Récupère l'historique d'une conversation privée entre l'utilisateur connecté et un pair.
+   * @param peerUserId - Identifiant de l'utilisateur pair
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Infos du pair et liste des messages triés par date croissante
+   */
   @Get('messages/private/:peerUserId')
   @UseGuards(AuthGuard)
   @ApiOkResponse({ description: 'Private conversation with peer user' })
@@ -85,6 +97,13 @@ export class MessageController {
     };
   }
 
+  /**
+   * Envoie un message privé à un utilisateur.
+   * @param peerUserId - Identifiant du destinataire
+   * @param dto - Corps du message à envoyer
+   * @param req - Requête authentifiée contenant l'expéditeur
+   * @returns Le message créé ou erreur si l'utilisateur est introuvable
+   */
   @Post('messages/private/:peerUserId')
   @UseGuards(AuthGuard)
   @ApiCreatedResponse({ description: 'Private message sent' })
@@ -103,9 +122,6 @@ export class MessageController {
       if (result.error === 'User not found') {
         throw new NotFoundException(result.error);
       }
-      if (result.error.includes('yourself')) {
-        throw new BadRequestException(result.error);
-      }
       throw new BadRequestException(result.error);
     }
     const m = result.value;
@@ -120,13 +136,14 @@ export class MessageController {
     };
   }
 
+  /**
+   * Récupère l'historique des messages d'un canal.
+   * @param id - Identifiant du canal
+   * @returns Liste des messages triés par date croissante ou 404 si le canal est introuvable
+   */
   @Get('channels/:id/messages')
-  @ApiOkResponse({
-    description: 'Channel message history',
-  })
-  @ApiNotFoundResponse({
-    description: 'Channel not found',
-  })
+  @ApiOkResponse({ description: 'Channel message history' })
+  @ApiNotFoundResponse({ description: 'Channel not found' })
   async getChannelMessages(@Param('id', ParseIntPipe) id: number) {
     const result = await this.messageService.getHistoryMessageByChannel(id);
     if (result.isErr()) {
@@ -135,11 +152,17 @@ export class MessageController {
     return result.value;
   }
 
+  /**
+   * Envoie un message dans un canal.
+   * L'utilisateur doit être membre du serveur auquel appartient le canal.
+   * @param canalId - Identifiant du canal cible
+   * @param dto - Corps du message à envoyer
+   * @param req - Requête authentifiée contenant l'auteur
+   * @returns Le message créé ou 404 si le canal est introuvable ou l'accès refusé
+   */
   @Post('channels/:id/messages')
   @UseGuards(AuthGuard)
-  @ApiCreatedResponse({
-    description: 'Message sent successfully',
-  })
+  @ApiCreatedResponse({ description: 'Message sent successfully' })
   @ApiNotFoundResponse({
     description: 'Channel not found or you are not a member of the server',
   })
@@ -159,14 +182,17 @@ export class MessageController {
     return result.value;
   }
 
+  /**
+   * Supprime un message de canal.
+   * Seuls le propriétaire et les administrateurs du serveur peuvent supprimer des messages.
+   * @param id - Identifiant du message à supprimer
+   * @param req - Requête authentifiée contenant l'utilisateur qui effectue l'action
+   * @returns Le message supprimé ou erreur si introuvable / non autorisé
+   */
   @Delete('messages/:id')
   @UseGuards(AuthGuard)
-  @ApiOkResponse({
-    description: 'Message deleted successfully',
-  })
-  @ApiNotFoundResponse({
-    description: 'Message not found',
-  })
+  @ApiOkResponse({ description: 'Message deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Message not found' })
   @ApiForbiddenResponse({
     description:
       'Only the server owner and administrators can delete channel messages',

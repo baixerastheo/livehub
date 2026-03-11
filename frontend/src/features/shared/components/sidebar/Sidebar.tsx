@@ -7,6 +7,7 @@ import {
   useSidebarContext,
 } from "@/src/features/shared/components/sidebar/SidebarContext";
 import { useAppStore } from "@/src/core/store/appStore";
+import { useAuth } from "@/src/core/store/auth/useAuth";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarConversationSection } from "@/src/features/shared/components/sidebar/SidebarConversationSection";
 import { SidebarActivitySection } from "@/src/features/shared/components/sidebar/SidebarActivitySection";
@@ -61,13 +62,21 @@ export function Sidebar() {
   const isOpen = useAppStore((state) => state.isSidebarOpen);
   const section = useAppStore((state) => state.sidebarSection);
   const closeMobileSidebars = useAppStore((state) => state.closeMobileSidebars);
+  const resetOnLogout = useAppStore((state) => state.resetOnLogout);
+  const { isAuthenticated, isLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      resetOnLogout();
+    }
+  }, [isAuthenticated, isLoading, resetOnLogout]);
 
   return (
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>
       <SidebarCloseButton />
       {section === "conversation" && <SidebarConversationSection />}
       {section === "activity" && <SidebarActivitySection />}
-      {section === "teams" && <SidebarTeamsSection />}
+      {section === "teams" && isAuthenticated && <SidebarTeamsSection />}
     </SidebarRoot>
   );
 }

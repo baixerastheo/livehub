@@ -64,3 +64,22 @@ export type ServerMemberJoinedEvent = {
     };
   };
 };
+
+/**
+ * Payload for event user:added-to-server - sent to the new member's personal room.
+ * Allows their client to update the server list without a page reload.
+ */
+export type UserAddedToServerEvent = {
+  serverId: number;
+  serverName: string;
+  role: string;
+};
+
+/**
+ * Payload for event server-ownership:transferred - sent to all server members.
+ */
+export type ServerOwnershipTransferredEvent = {
+  serverId: number;
+  newOwnerId: string;
+  previousOwnerId: string;
+};

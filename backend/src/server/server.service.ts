@@ -235,7 +235,63 @@ export class ServerService {
       },
     });
 
+    // Notify the added user on their personal room so their client updates
+    // the server list in real-time without requiring a page reload.
+    this.messageGateway.emitUserAddedToServer(targetUserId, {
+      serverId,
+      serverName: newMember.serveur.nom,
+      role: newMember.role,
+    });
+
     return ok(newMember);
+  }
+
+  /**
+   * Transfère la propriété d'un serveur à un autre membre.
+   * L'ancien propriétaire devient ADMINISTRATEUR, le nouveau membre devient PROPRIETAIRE.
+   * @param serverId - Identifiant du serveur
+   * @param newOwnerId - Identifiant du nouveau propriétaire
+   * @param currentOwnerId - Identifiant de l'actuel propriétaire
+   * @returns Les deux membres mis à jour ou erreur
+   */
+  async transferOwnership(
+    serverId: number,
+    newOwnerId: string,
+    currentOwnerId: string,
+  ) {
+    const actingMember = await this.findServerMember(currentOwnerId, serverId);
+    if (!actingMember) {
+      return err('You are not a member of this server');
+    }
+    if (actingMember.role !== Role.PROPRIETAIRE) {
+      return err('Only the server owner can transfer ownership');
+    }
+
+    const targetMember = await this.findServerMember(newOwnerId, serverId);
+    if (!targetMember) {
+      return err('Target user is not a member of this server');
+    }
+    if (newOwnerId === currentOwnerId) {
+      return err('Cannot transfer ownership to yourself');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.membreServeur.update({
+        where: { id: targetMember.id },
+        data: { role: Role.PROPRIETAIRE },
+      }),
+      this.prisma.membreServeur.update({
+        where: { id: actingMember.id },
+        data: { role: Role.ADMINISTRATEUR },
+      }),
+    ]);
+
+    this.messageGateway.emitServerOwnershipTransferred(serverId, {
+      newOwnerId,
+      previousOwnerId: currentOwnerId,
+    });
+
+    return ok({ newOwnerId, previousOwnerId: currentOwnerId });
   }
 
   /**

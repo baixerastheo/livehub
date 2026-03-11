@@ -36,6 +36,12 @@ type ServerMemberJoinedEvent = {
   };
 };
 
+type ServerOwnershipTransferredEvent = {
+  serverId: number;
+  newOwnerId: string;
+  previousOwnerId: string;
+};
+
 function mapRealtimeMemberToDto(m: ServerMemberJoinedEvent["member"]): ServerMemberDto {
   return {
     id: m.id,
@@ -59,7 +65,8 @@ export function useServerRealtime(serverId: number | null) {
     if (serverId == null) return;
 
     const socket = getSocket();
-    socket.emit("server:subscribe", { serverId });
+    const subscribe = () => socket.emit("server:subscribe", { serverId });
+    subscribe();
 
     const onChannelCreated = (event: ServerChannelCreatedEvent) => {
       if (event.serverId !== serverId) return;
@@ -72,7 +79,11 @@ export function useServerRealtime(serverId: number | null) {
       };
       const key = channelsKeys.byServer(serverId);
       queryClient.setQueryData<ChannelDto[]>(key, (old) => {
-        if (!old) return old;
+        // If channels not yet cached, force a refetch so the new channel appears.
+        if (!old) {
+          void queryClient.invalidateQueries({ queryKey: key });
+          return old;
+        }
         if (old.some((c) => c.id === channel.id)) return old;
         return [...old, channel];
       });
@@ -118,19 +129,54 @@ export function useServerRealtime(serverId: number | null) {
       });
     };
 
+    const onOwnershipTransferred = (event: ServerOwnershipTransferredEvent) => {
+      if (event.serverId !== serverId) return;
+      // Invalidate members and user's own server list to reflect the new roles.
+      queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+    };
+
+    // Re-subscribe after reconnect: Socket.IO rooms are per-connection and
+    // are lost when the socket disconnects.
+    socket.on("connect", subscribe);
     socket.on("server-channel:created", onChannelCreated);
     socket.on("server-channel:deleted", onChannelDeleted);
     socket.on("server-member:joined", onMemberJoined);
     socket.on("server-member:online", onMemberOnline);
     socket.on("server-member:offline", onMemberOffline);
+    socket.on("server-ownership:transferred", onOwnershipTransferred);
 
     return () => {
+      socket.off("connect", subscribe);
       socket.off("server-channel:created", onChannelCreated);
       socket.off("server-channel:deleted", onChannelDeleted);
       socket.off("server-member:joined", onMemberJoined);
       socket.off("server-member:online", onMemberOnline);
       socket.off("server-member:offline", onMemberOffline);
+      socket.off("server-ownership:transferred", onOwnershipTransferred);
       socket.emit("server:unsubscribe", { serverId });
     };
   }, [serverId, queryClient]);
+}
+
+/**
+ * Listens globally for the "you were added to a server" event on the user's
+ * personal room and invalidates the server list so the sidebar updates without
+ * a page reload.
+ */
+export function useUserServerAddedRealtime() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    const onAddedToServer = () => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+    };
+
+    socket.on("user:added-to-server", onAddedToServer);
+    return () => {
+      socket.off("user:added-to-server", onAddedToServer);
+    };
+  }, [queryClient]);
 }

@@ -159,6 +159,16 @@ export async function createChannel(
   });
 }
 
+export async function transferOwnership(
+  serverId: ServerId,
+  newOwnerId: string,
+): Promise<{ newOwnerId: string; previousOwnerId: string }> {
+  return fetchJson<{ newOwnerId: string; previousOwnerId: string }>(
+    `/servers/${serverId}/transfer-ownership/${newOwnerId}`,
+    { method: "POST" },
+  );
+}
+
 export const serverService = {
   listUserServers,
   createServer,

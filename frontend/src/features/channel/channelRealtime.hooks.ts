@@ -25,7 +25,8 @@ export function useChannelMessagesRealtime(channelId: number | null) {
     if (channelId == null) return;
 
     const socket = getSocket();
-    socket.emit("channel:subscribe", { channelId });
+    const subscribe = () => socket.emit("channel:subscribe", { channelId });
+    subscribe();
 
     const handler = (event: ChannelMessageCreatedEvent) => {
       if (event.channelId !== channelId) return;
@@ -50,9 +51,13 @@ export function useChannelMessagesRealtime(channelId: number | null) {
       });
     };
 
+    // Re-subscribe after reconnect: Socket.IO rooms are per-connection and
+    // are lost when the socket disconnects.
+    socket.on("connect", subscribe);
     socket.on("channel-message:created", handler);
 
     return () => {
+      socket.off("connect", subscribe);
       socket.off("channel-message:created", handler);
       socket.emit("channel:unsubscribe", { channelId });
     };
