@@ -1,26 +1,9 @@
-import {
-  IsString,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import {IsString,IsEmail,IsEnum,IsNotEmpty,IsOptional,MinLength,MaxLength,Matches,} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-@ApiSchema({
-  description:
-    'User creation schema (name, email, password, optional status). Photo de profil uniquement via le modal profil (POST /users/me/avatar).',
-})
+
+
 export class CreateUser {
-  @ApiProperty({
-    description: 'Display name',
-    example: 'Toby Garcia',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'name' field is required!",
   })
@@ -35,11 +18,6 @@ export class CreateUser {
   })
   name: string;
 
-  @ApiProperty({
-    description: 'User email',
-    example: 'toby.garcia@gmail.com',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'email' field is required!",
   })
@@ -54,11 +32,6 @@ export class CreateUser {
   })
   email: string;
 
-  @ApiProperty({
-    description: 'User password',
-    example: '12345abc!@',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'password' field is required!",
   })
@@ -77,13 +50,6 @@ export class CreateUser {
   })
   password: string;
 
-  @ApiProperty({
-    description: 'User status',
-    example: 'EN_LIGNE',
-    enum: StatutUtilisateur,
-    required: false,
-    default: 'EN_LIGNE',
-  })
   @IsOptional()
   @IsEnum(StatutUtilisateur, {
     message:

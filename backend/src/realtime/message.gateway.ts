@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket,} from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 import { getSessionFromHeaders } from '../lib/session-from-headers.js';
-import type { PrivateMessageCreatedEvent, ChannelMessageCreatedEvent, ServerChannelCreatedEvent, ServerChannelDeletedEvent, ServerMemberJoinedEvent, UserAddedToServerEvent, ServerOwnershipTransferredEvent,} from './realtime-events.types.js';
+import type { PrivateMessageCreatedEvent, ChannelMessageCreatedEvent, ServerChannelCreatedEvent, ServerChannelUpdatedEvent, ServerChannelDeletedEvent, ServerMemberJoinedEvent, UserAddedToServerEvent, ServerOwnershipTransferredEvent,} from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
 
@@ -383,6 +383,24 @@ export class MessageGateway
     this.server
       .to('server:' + serverId)
       .emit('server-channel:created', eventPayload);
+  }
+
+  /**
+   * Émet l'événement `server-channel:updated` à tous les membres d'un serveur.
+   * @param serverId - Identifiant du serveur cible
+   * @param payload - Données du canal mis à jour
+   */
+  emitServerChannelUpdated(
+    serverId: number,
+    payload: ServerChannelUpdatedEvent['channel'],
+  ) {
+    const eventPayload: ServerChannelUpdatedEvent = {
+      serverId,
+      channel: payload,
+    };
+    this.server
+      .to('server:' + serverId)
+      .emit('server-channel:updated', eventPayload);
   }
 
   /**

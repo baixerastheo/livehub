@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from 'src/realtime/message.gateway';
-import { ok, err } from '../result';
 
 const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
 
@@ -17,6 +21,10 @@ function canDeleteChannelMessage(role: string): boolean {
   );
 }
 
+/**
+ * Service de gestion des messages.
+ * Gère les messages privés et les messages de canal.
+ */
 @Injectable()
 export class MessageService {
   constructor(
@@ -40,11 +48,7 @@ export class MessageService {
         ],
       },
       orderBy: { creeLe: 'desc' },
-      select: {
-        expediteurId: true,
-        destinataireId: true,
-        creeLe: true,
-      },
+      select: { expediteurId: true, destinataireId: true, creeLe: true },
     });
 
     const peerIdToLastAt = new Map<string, Date>();
@@ -57,9 +61,7 @@ export class MessageService {
     }
 
     const peerIds = Array.from(peerIdToLastAt.keys());
-    if (peerIds.length === 0) {
-      return ok([]);
-    }
+    if (peerIds.length === 0) return [];
 
     const users = await this.prisma.user.findMany({
       where: { id: { in: peerIds } },
@@ -75,32 +77,27 @@ export class MessageService {
           lastMessageAt: peerIdToLastAt.get(id),
         }))
         .filter(
-          (
-            x,
-          ): x is {
-            id: string;
-            user: (typeof users)[number];
-            lastMessageAt: Date | undefined;
-          } => x.user != null,
+          (x): x is { id: string; user: (typeof users)[number]; lastMessageAt: Date | undefined } =>
+            x.user != null,
         )
         .map(async ({ user, lastMessageAt }) => {
           let avatarUrl: string | null = null;
           if (user.avatarPath) {
-            const result = await this.supabaseStorage.publicUrl(
-              user.avatarPath,
-            );
-            if (result.isOk()) avatarUrl = result.value;
+            try {
+              avatarUrl = await this.supabaseStorage.publicUrl(user.avatarPath);
+            } catch {
+              avatarUrl = null;
+            }
           }
           const { avatarPath: _avatarPath, ...peer } = user;
           return { peer: { ...peer, avatarUrl }, lastMessageAt };
         }),
     );
 
-    const list = listWithAvatars.sort(
+    return listWithAvatars.sort(
       (a, b) =>
         (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
     );
-    return ok(list);
   }
 
   /**
@@ -108,6 +105,7 @@ export class MessageService {
    * @param peerUserId - Identifiant de l'utilisateur pair
    * @param currentUserId - Identifiant de l'utilisateur courant
    * @returns Infos du pair et liste des messages triés par date croissante
+   * @throws NotFoundException si le pair n'existe pas
    */
   async getPrivateConversation(peerUserId: string, currentUserId: string) {
     const peer = await this.prisma.user.findUnique({
@@ -115,7 +113,7 @@ export class MessageService {
       select: { id: true, name: true, email: true },
     });
     if (!peer) {
-      return err('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const messages = await this.prisma.messagePrive.findMany({
@@ -131,7 +129,7 @@ export class MessageService {
       },
     });
 
-    return ok({ peer, messages });
+    return { peer, messages };
   }
 
   /**
@@ -139,30 +137,22 @@ export class MessageService {
    * @param senderId - Identifiant de l'expéditeur
    * @param recipientId - Identifiant du destinataire
    * @param content - Contenu du message
-   * @returns Le message créé ou erreur si le destinataire est introuvable / envoi à soi-même
+   * @returns Le message créé
+   * @throws BadRequestException si l'expéditeur et le destinataire sont identiques
+   * @throws NotFoundException si le destinataire n'existe pas
    */
-  async createPrivateMessage(
-    senderId: string,
-    recipientId: string,
-    content: string,
-  ) {
+  async createPrivateMessage(senderId: string, recipientId: string, content: string) {
     if (senderId === recipientId) {
-      return err('Cannot send a private message to yourself');
+      throw new BadRequestException('Cannot send a private message to yourself');
     }
 
-    const recipient = await this.prisma.user.findUnique({
-      where: { id: recipientId },
-    });
+    const recipient = await this.prisma.user.findUnique({ where: { id: recipientId } });
     if (!recipient) {
-      return err('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const message = await this.prisma.messagePrive.create({
-      data: {
-        expediteurId: senderId,
-        destinataireId: recipientId,
-        contenu: content,
-      },
+      data: { expediteurId: senderId, destinataireId: recipientId, contenu: content },
       include: {
         expediteur: { select: { id: true, name: true, email: true } },
       },
@@ -179,27 +169,26 @@ export class MessageService {
       recipientId,
     });
 
-    return ok(message);
+    return message;
   }
 
   /**
    * Récupère l'historique des messages d'un canal, triés par date croissante.
    * @param id - Identifiant du canal
-   * @returns Liste des messages avec les infos auteur ou erreur si le canal est introuvable
+   * @returns Liste des messages avec les infos auteur
+   * @throws NotFoundException si le canal n'existe pas
    */
   async getHistoryMessageByChannel(id: number) {
     const channel = await this.prisma.canal.findUnique({ where: { id } });
     if (!channel) {
-      return err('No channel found for ID ' + id);
+      throw new NotFoundException(`No channel found for ID ${id}`);
     }
 
-    const messages = await this.prisma.message.findMany({
+    return this.prisma.message.findMany({
       where: { canalId: id },
       orderBy: { creeLe: 'asc' },
       include: { auteur: true },
     });
-
-    return ok(messages);
   }
 
   /**
@@ -208,7 +197,9 @@ export class MessageService {
    * @param content - Contenu du message
    * @param channelId - Identifiant du canal cible
    * @param userId - Identifiant de l'auteur
-   * @returns Le message créé ou erreur si le canal est introuvable / accès refusé
+   * @returns Le message créé
+   * @throws NotFoundException si le canal n'existe pas
+   * @throws ForbiddenException si l'utilisateur n'est pas membre du serveur
    */
   async createMessage(content: string, channelId: number, userId: string) {
     const channel = await this.prisma.canal.findUnique({
@@ -216,27 +207,19 @@ export class MessageService {
       include: { serveur: true },
     });
     if (!channel) {
-      return err('No channel found for ID ' + channelId);
+      throw new NotFoundException(`No channel found for ID ${channelId}`);
     }
 
     const serverMember = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId, serveurId: channel.serveur.id },
-      },
+      where: { userId_serveurId: { userId, serveurId: channel.serveur.id } },
     });
     if (!serverMember) {
-      return err('No member of this server');
+      throw new ForbiddenException('You are not a member of this server');
     }
 
     const message = await this.prisma.message.create({
-      data: {
-        contenu: content,
-        canalId: channelId,
-        auteurId: userId,
-      },
-      include: {
-        auteur: { select: { name: true } },
-      },
+      data: { contenu: content, canalId: channelId, auteurId: userId },
+      include: { auteur: { select: { name: true } } },
     });
 
     this.messageGateway.emitChannelMessageCreated(channelId, {
@@ -247,7 +230,7 @@ export class MessageService {
       createdAtIso: message.creeLe.toISOString(),
     });
 
-    return ok(message);
+    return message;
   }
 
   /**
@@ -255,7 +238,9 @@ export class MessageService {
    * Seuls le propriétaire et les administrateurs du serveur peuvent supprimer des messages.
    * @param id - Identifiant du message à supprimer
    * @param userId - Identifiant de l'utilisateur qui effectue l'action
-   * @returns Le message supprimé ou erreur si introuvable / non autorisé
+   * @returns Le message supprimé
+   * @throws NotFoundException si le message n'existe pas ou n'est pas un message de canal
+   * @throws ForbiddenException si l'utilisateur n'est pas membre ou n'a pas les droits
    */
   async deleteMessage(id: number, userId: string) {
     const message = await this.prisma.message.findUnique({
@@ -263,24 +248,26 @@ export class MessageService {
       include: { auteur: true, canal: true },
     });
     if (!message) {
-      return err('No message found for ID ' + id);
+      throw new NotFoundException(`No message found for ID ${id}`);
     }
     if (!message.canal) {
-      return err('Message is not a channel message');
+      throw new NotFoundException('Message is not a channel message');
     }
 
-    const serverId = message.canal.serveurId;
     const member = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId, serveurId: message.canal.serveurId },
+      },
     });
     if (!member) {
-      return err('You are not a member of this server');
+      throw new ForbiddenException('You are not a member of this server');
     }
     if (!canDeleteChannelMessage(String(member.role))) {
-      return err('Only the server owner and administrators can delete messages');
+      throw new ForbiddenException(
+        'Only the server owner and administrators can delete messages',
+      );
     }
 
-    const deletedMessage = await this.prisma.message.delete({ where: { id } });
-    return ok(deletedMessage);
+    return this.prisma.message.delete({ where: { id } });
   }
 }

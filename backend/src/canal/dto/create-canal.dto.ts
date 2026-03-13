@@ -1,12 +1,7 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+
 
 export class CreateCanal {
-  @ApiProperty({
-    description: 'Channel name',
-    example: 'general',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'name' field is required!",
   })

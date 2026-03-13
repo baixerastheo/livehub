@@ -1,8 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from '../realtime/presence.service.js';
-import { err, ok, Result } from '../result.js';
 
 /**
  * Ordonne une paire d'IDs utilisateurs de manière déterministe.
@@ -15,18 +19,10 @@ function orderPair(a: string, b: string): { userAId: string; userBId: string } {
   return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
 }
 
-export type FriendsErrorCode =
-  | 'SELF'
-  | 'USER_NOT_FOUND'
-  | 'ALREADY_FRIENDS'
-  | 'REQUEST_PENDING'
-  | 'REQUEST_NOT_FOUND'
-  | 'REQUEST_NOT_PENDING'
-  | 'NOT_ALLOWED'
-  | 'UNKNOWN';
-
-export type FriendsError = { code: FriendsErrorCode; message: string };
-
+/**
+ * Service de gestion des amis.
+ * Gère les demandes d'amitié, les acceptations, les refus et la liste des amis.
+ */
 @Injectable()
 export class FriendsService {
   constructor(
@@ -35,19 +31,64 @@ export class FriendsService {
   ) {}
 
   /**
-   * Récupère la liste des amis d'un utilisateur.
+   * Récupère une demande d'amitié par son ID.
+   * @param requestId - Identifiant de la demande
+   * @returns La demande correspondante
+   * @throws NotFoundException si la demande n'existe pas
+   */
+  private async findRequest(requestId: string) {
+    const request = await this.prisma.demandeAmitie.findUnique({
+      where: { id: requestId },
+    });
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
+    }
+    return request;
+  }
+
+  /**
+   * Vérifie qu'un utilisateur existe.
    * @param userId - Identifiant de l'utilisateur
-   * @returns Liste des amis avec leurs informations publiques
+   * @returns L'utilisateur correspondant
+   * @throws NotFoundException si l'utilisateur n'existe pas
+   */
+  private async assertUserExists(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  /**
+   * Vérifie qu'une relation d'amitié n'existe pas déjà entre deux utilisateurs.
+   * @param a - Premier ID utilisateur
+   * @param b - Second ID utilisateur
+   * @throws BadRequestException si les utilisateurs sont déjà amis
+   */
+  private async assertNotAlreadyFriends(a: string, b: string) {
+    const { userAId, userBId } = orderPair(a, b);
+    const friendship = await this.prisma.amitie.findUnique({
+      where: { userAId_userBId: { userAId, userBId } },
+      select: { id: true },
+    });
+    if (friendship) {
+      throw new BadRequestException('Users are already friends');
+    }
+  }
+
+  /**
+   * Récupère la liste des amis d'un utilisateur avec leur statut de présence.
+   * @param userId - Identifiant de l'utilisateur
+   * @returns Liste des amis avec leur statut en ligne ou hors ligne
    */
   async listFriends(userId: string) {
     const rows = await this.prisma.amitie.findMany({
-      where: {
-        OR: [{ userAId: userId }, { userBId: userId }],
-      },
-      include: {
-        userA: true,
-        userB: true,
-      },
+      where: { OR: [{ userAId: userId }, { userBId: userId }] },
+      include: { userA: true, userB: true },
     });
 
     return rows.map((r) => {
@@ -70,78 +111,44 @@ export class FriendsService {
         statut: 'EN_ATTENTE',
         OR: [{ fromUserId: userId }, { toUserId: userId }],
       },
-      include: {
-        fromUser: true,
-        toUser: true,
-      },
+      include: { fromUser: true, toUser: true },
       orderBy: { creeLe: 'desc' },
     });
   }
 
   /**
    * Envoie une demande d'amitié à un utilisateur.
-   * Vérifie que la demande est valide (pas soi-même, utilisateur existe, pas déjà amis).
    * @param fromUserId - Identifiant de l'expéditeur
    * @param toUserId - Identifiant du destinataire
-   * @returns Succès ou erreur avec code explicite
+   * @throws BadRequestException si l'envoi est à soi-même ou une demande existe déjà
+   * @throws NotFoundException si le destinataire n'existe pas
    */
-  async sendRequest(
-    fromUserId: string,
-    toUserId: string,
-  ): Promise<Result<void, FriendsError>> {
+  async sendRequest(fromUserId: string, toUserId: string) {
     if (fromUserId === toUserId) {
-      return err({
-        code: 'SELF',
-        message: 'Cannot send a friend request to yourself',
-      });
+      throw new BadRequestException('Cannot send a friend request to yourself');
     }
 
-    const toUser = await this.prisma.user.findUnique({
-      where: { id: toUserId },
-      select: { id: true },
-    });
-    if (!toUser) {
-      return err({ code: 'USER_NOT_FOUND', message: 'User not found' });
-    }
-
-    const { userAId, userBId } = orderPair(fromUserId, toUserId);
-    const existingFriendship = await this.prisma.amitie.findUnique({
-      where: { userAId_userBId: { userAId, userBId } },
-      select: { id: true },
-    });
-    if (existingFriendship) {
-      return err({ code: 'ALREADY_FRIENDS', message: 'Already friends' });
-    }
+    await this.assertUserExists(toUserId);
+    await this.assertNotAlreadyFriends(fromUserId, toUserId);
 
     const existingRequest = await this.prisma.demandeAmitie.findUnique({
       where: { fromUserId_toUserId: { fromUserId, toUserId } },
     });
+
     if (existingRequest?.statut === 'EN_ATTENTE') {
-      return err({
-        code: 'REQUEST_PENDING',
-        message: 'Friend request already pending',
-      });
+      throw new BadRequestException('Friend request already pending');
     }
 
     if (!existingRequest) {
       await this.prisma.demandeAmitie.create({
-        data: {
-          fromUserId,
-          toUserId,
-          statut: 'EN_ATTENTE',
-        },
+        data: { fromUserId, toUserId, statut: 'EN_ATTENTE' },
       });
     } else {
-      if (existingRequest.statut === 'ACCEPTEE') {
-        return err({ code: 'ALREADY_FRIENDS', message: 'Already friends' });
-      }
       await this.prisma.demandeAmitie.update({
         where: { id: existingRequest.id },
         data: { statut: 'EN_ATTENTE' },
       });
     }
-
-    return ok(undefined);
   }
 
   /**
@@ -149,85 +156,54 @@ export class FriendsService {
    * Crée la relation d'amitié et met à jour le statut de la demande.
    * @param requestId - Identifiant de la demande
    * @param currentUserId - Identifiant de l'utilisateur acceptant (doit être le destinataire)
-   * @returns Succès ou erreur avec code explicite
+   * @throws NotFoundException si la demande n'existe pas
+   * @throws BadRequestException si la demande n'est pas en attente
+   * @throws ForbiddenException si l'utilisateur n'est pas le destinataire
    */
-  async acceptRequest(
-    requestId: string,
-    currentUserId: string,
-  ): Promise<Result<void, FriendsError>> {
-    const request = await this.prisma.demandeAmitie.findUnique({
-      where: { id: requestId },
-    });
-    if (!request) {
-      return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
-    }
+  async acceptRequest(requestId: string, currentUserId: string) {
+    const request = await this.findRequest(requestId);
+
     if (request.statut !== 'EN_ATTENTE') {
-      return err({
-        code: 'REQUEST_NOT_PENDING',
-        message: 'Request is not pending',
-      });
+      throw new BadRequestException('Request is not pending');
     }
     if (request.toUserId !== currentUserId) {
-      return err({ code: 'NOT_ALLOWED', message: 'Not allowed' });
+      throw new ForbiddenException('Not allowed');
     }
 
-    const { userAId, userBId } = orderPair(
-      request.fromUserId,
-      request.toUserId,
-    );
+    const { userAId, userBId } = orderPair(request.fromUserId, request.toUserId);
 
-    try {
-      await this.prisma.$transaction([
-        this.prisma.demandeAmitie.update({
-          where: { id: requestId },
-          data: { statut: 'ACCEPTEE' },
-        }),
-        this.prisma.amitie.create({
-          data: {
-            id: randomUUID(),
-            userAId,
-            userBId,
-          },
-        }),
-      ]);
-    } catch {
-      return err({ code: 'UNKNOWN', message: 'Unable to accept request' });
-    }
-
-    return ok(undefined);
+    await this.prisma.$transaction([
+      this.prisma.demandeAmitie.update({
+        where: { id: requestId },
+        data: { statut: 'ACCEPTEE' },
+      }),
+      this.prisma.amitie.create({
+        data: { id: randomUUID(), userAId, userBId },
+      }),
+    ]);
   }
 
   /**
    * Refuse une demande d'amitié.
    * @param requestId - Identifiant de la demande
    * @param currentUserId - Identifiant de l'utilisateur refusant (doit être le destinataire)
-   * @returns Succès ou erreur avec code explicite
+   * @throws NotFoundException si la demande n'existe pas
+   * @throws BadRequestException si la demande n'est pas en attente
+   * @throws ForbiddenException si l'utilisateur n'est pas le destinataire
    */
-  async declineRequest(
-    requestId: string,
-    currentUserId: string,
-  ): Promise<Result<void, FriendsError>> {
-    const request = await this.prisma.demandeAmitie.findUnique({
-      where: { id: requestId },
-    });
-    if (!request) {
-      return err({ code: 'REQUEST_NOT_FOUND', message: 'Request not found' });
-    }
+  async declineRequest(requestId: string, currentUserId: string) {
+    const request = await this.findRequest(requestId);
+
     if (request.statut !== 'EN_ATTENTE') {
-      return err({
-        code: 'REQUEST_NOT_PENDING',
-        message: 'Request is not pending',
-      });
+      throw new BadRequestException('Request is not pending');
     }
     if (request.toUserId !== currentUserId) {
-      return err({ code: 'NOT_ALLOWED', message: 'Not allowed' });
+      throw new ForbiddenException('Not allowed');
     }
 
     await this.prisma.demandeAmitie.update({
       where: { id: requestId },
       data: { statut: 'REFUSEE' },
     });
-
-    return ok(undefined);
   }
 }

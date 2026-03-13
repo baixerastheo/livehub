@@ -1,17 +1,16 @@
-import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,Req,UseGuards,NotFoundException,} from '@nestjs/common';
-import {ApiOkResponse,ApiCreatedResponse,ApiNotFoundResponse,} from '@nestjs/swagger';
+import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,Req,UseGuards,} from '@nestjs/common';
 import { CanalService } from './canal.service';
 import { CreateCanal } from './dto/create-canal.dto';
 import { UpdateCanal } from './dto/update-canal.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
-import { Canal } from 'generated/prisma/client';
 
 /**
  * Contrôleur de gestion des canaux.
  * Gère les requêtes liées aux canaux.
  */
 @Controller()
+@UseGuards(AuthGuard)
 export class CanalController {
   constructor(private readonly canalService: CanalService) {}
 
@@ -23,29 +22,12 @@ export class CanalController {
    * @returns Canal créé
    */
   @Post('/servers/:serverId/channels')
-  @UseGuards(AuthGuard)
-  @ApiCreatedResponse({
-    description: 'Channel created successfully',
-    type: CreateCanal,
-  })
-  @ApiNotFoundResponse({
-    description:
-      "Server with this ID does not exist or you don't have permission",
-  })
-  async createChannel(
-    @Param('serverId', ParseIntPipe) serverId: number,
-    @Body() data: CreateCanal,
-    @Req() req: RequestWithAuth,
-  ): Promise<Canal> {
-    const result = await this.canalService.createChannel(
+  async createChannel(@Param('serverId', ParseIntPipe) serverId: number,@Body() data: CreateCanal,@Req() req: RequestWithAuth){
+    return this.canalService.createChannel(
       serverId,
       req.user.id,
       data,
     );
-    if (result.isErr()) {
-      throw new NotFoundException(result.error);
-    }
-    return result.value;
   }
 
   /**
@@ -54,20 +36,10 @@ export class CanalController {
    * @returns Tous les canaux du serveur
    */
   @Get('/servers/:serverId/channels')
-  @ApiOkResponse({
-    description: 'Server channels retrieved successfully',
-  })
-  @ApiNotFoundResponse({
-    description: 'Server with this ID does not exist or has no channels',
-  })
   async getAllChannelsByServer(
     @Param('serverId', ParseIntPipe) serverId: number,
   ) {
-    const result = await this.canalService.getAllChannelsByServer(serverId);
-    if (result.isErr()) {
-      throw new NotFoundException(result.error);
-    }
-    return result.value;
+    return this.canalService.getAllChannelsByServer(serverId);
   }
 
   /**
@@ -76,18 +48,10 @@ export class CanalController {
    * @returns Les détails du canal
    */
   @Get('/channels/:id')
-  @ApiOkResponse({
-    description: 'Channel retrieved successfully',
-  })
-  @ApiNotFoundResponse({
-    description: 'Channel with this ID does not exist',
-  })
-  async getChannelById(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.canalService.getChannelDetails(id);
-    if (result.isErr()) {
-      throw new NotFoundException(result.error);
-    }
-    return result.value;
+  async getChannelById(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.canalService.getChannelById(id);
   }
 
   /**
@@ -97,22 +61,12 @@ export class CanalController {
    * @returns Canal mis à jour
    */
   @Put('/channels/:id')
-  @ApiOkResponse({
-    description: 'Channel updated successfully',
-    type: UpdateCanal,
-  })
-  @ApiNotFoundResponse({
-    description: 'Channel with this ID does not exist',
-  })
   async updateChannel(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateCanal,
+    @Req() req: RequestWithAuth,
   ) {
-    const result = await this.canalService.updateChannel(id, data);
-    if (result.isErr()) {
-      throw new NotFoundException(result.error);
-    }
-    return result.value;
+    return this.canalService.updateChannel(id, req.user.id, data);
   }
 
   /**
@@ -123,22 +77,10 @@ export class CanalController {
    * @returns Canal supprimé
    */
   @Delete('/channels/:id')
-  @UseGuards(AuthGuard)
-  @ApiOkResponse({
-    description: 'Channel deleted successfully',
-  })
-  @ApiNotFoundResponse({
-    description:
-      'Channel with this ID does not exist or you do not have permission',
-  })
   async deleteChannel(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: RequestWithAuth,
   ) {
-    const result = await this.canalService.deleteChannel(id, req.user.id);
-    if (result.isErr()) {
-      throw new NotFoundException(result.error);
-    }
-    return result.value;
+    return this.canalService.deleteChannel(id, req.user.id);
   }
 }

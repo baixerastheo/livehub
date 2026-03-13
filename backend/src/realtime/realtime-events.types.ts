@@ -38,6 +38,20 @@ export type ServerChannelCreatedEvent = {
 };
 
 /**
+ * Payload for event server-channel:updated - a channel was updated in a server.
+ */
+export type ServerChannelUpdatedEvent = {
+  serverId: number;
+  channel: {
+    id: number;
+    serverId: number;
+    name: string;
+    createdAtIso: string;
+    updatedAtIso: string;
+  };
+};
+
+/**
  * Payload for event server-channel:deleted - a channel was deleted in a server.
  */
 export type ServerChannelDeletedEvent = {

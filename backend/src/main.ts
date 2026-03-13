@@ -17,19 +17,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const config = new DocumentBuilder()
-    .setTitle('LiveHub API')
-    .setDescription('The LiveHub API description')
-    .setVersion('1.0')
-    .addTag('LiveHub')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
-
   const port = process.env.PORT ?? 4001;
   await app.listen(port);
   console.log('API running at http://localhost:' + port);
-  console.log('Swagger docs available at http://localhost:' + port + '/api');
 }
 
 bootstrap().catch((err) => {
