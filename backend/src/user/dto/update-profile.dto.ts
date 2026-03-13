@@ -1,26 +1,10 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsEmail,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import {IsString,IsEnum,IsOptional,IsEmail,MinLength,MaxLength,Matches,} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-@ApiSchema({
-  description:
-    'Profile update schema for authenticated user (name, email, password, statut)',
-})
+
+
 export class UpdateProfileDto {
-  @ApiProperty({
-    description: 'Display name',
-    example: 'Toby Garcia',
-    type: String,
-    required: false,
-  })
+
   @IsOptional()
   @IsString({
     message: "The 'name' field must be a string!",
@@ -33,12 +17,6 @@ export class UpdateProfileDto {
   })
   name?: string;
 
-  @ApiProperty({
-    description: 'New email address (will require verification)',
-    example: 'newemail@example.com',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsEmail({}, { message: "The 'email' field must be a valid email address!" })
   @MaxLength(255, {
@@ -46,24 +24,12 @@ export class UpdateProfileDto {
   })
   email?: string;
 
-  @ApiProperty({
-    description: 'Current password (required when changing email or password)',
-    example: 'currentPassword123!',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsString({
     message: "The 'currentPassword' field must be a string!",
   })
   currentPassword?: string;
 
-  @ApiProperty({
-    description: 'New password',
-    example: 'newPassword123!',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsString({
     message: "The 'newPassword' field must be a string!",
@@ -80,12 +46,6 @@ export class UpdateProfileDto {
   })
   newPassword?: string;
 
-  @ApiProperty({
-    description: 'User status',
-    example: 'EN_LIGNE',
-    enum: StatutUtilisateur,
-    required: false,
-  })
   @IsOptional()
   @IsEnum(StatutUtilisateur, {
     message:

@@ -1,13 +1,6 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-@ApiSchema({ description: 'Server creation schema' })
 export class CreateServer {
-  @ApiProperty({
-    description: 'Server name',
-    example: 'My Live Hub Server',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'name' field is required!",
   })

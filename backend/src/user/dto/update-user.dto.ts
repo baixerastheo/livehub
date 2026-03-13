@@ -1,26 +1,7 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsUrl,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import {IsString,IsEnum,IsOptional,IsUrl,MinLength,MaxLength,Matches,} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-@ApiSchema({
-  description:
-    'User update schema (name, password, image, statut - email cannot be modified)',
-})
 export class UpdateUser {
-  @ApiProperty({
-    description: 'Display name',
-    example: 'Toby Garcia',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsString({
     message: "The 'name' field must be a string!",
@@ -33,12 +14,6 @@ export class UpdateUser {
   })
   name?: string;
 
-  @ApiProperty({
-    description: 'User password',
-    example: '12345abc!@',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsString({
     message: "The 'password' field must be a string!",
@@ -55,12 +30,6 @@ export class UpdateUser {
   })
   password?: string;
 
-  @ApiProperty({
-    description: 'Profile image URL',
-    example: 'https://example.com/avatar.png',
-    type: String,
-    required: false,
-  })
   @IsOptional()
   @IsString()
   @IsUrl({}, { message: "The 'image' field must be a valid URL!" })
@@ -69,12 +38,6 @@ export class UpdateUser {
   })
   image?: string;
 
-  @ApiProperty({
-    description: 'User status',
-    example: 'EN_LIGNE',
-    enum: StatutUtilisateur,
-    required: false,
-  })
   @IsOptional()
   @IsEnum(StatutUtilisateur, {
     message:

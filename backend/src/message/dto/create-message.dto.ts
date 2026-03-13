@@ -1,12 +1,7 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+
 
 export class CreateMessageDto {
-  @ApiProperty({
-    description: 'Message content',
-    example: 'Hello everyone!',
-    type: String,
-  })
   @IsNotEmpty({
     message: "The 'content' field is required.",
   })
