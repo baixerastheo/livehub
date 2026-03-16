@@ -1,4 +1,9 @@
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class BanMember {
   @IsNotEmpty({ message: "The 'userId' field is required!" })
@@ -10,6 +15,9 @@ export class BanMember {
   raison?: string;
 
   @IsOptional()
-  @IsDateString({}, { message: "The 'expireLe' field must be a valid ISO date string!" })
+  @IsDateString(
+    {},
+    { message: "The 'expireLe' field must be a valid ISO date string!" },
+  )
   expireLe?: string;
 }

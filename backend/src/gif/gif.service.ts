@@ -8,10 +8,7 @@ export class GifService {
   async getTrending(): Promise<unknown> {
     try {
       const url =
-        this.baseUrl +
-        '/' +
-        this.apiKey +
-        '/gifs/trending?page=1&per_page=24';
+        this.baseUrl + '/' + this.apiKey + '/gifs/trending?page=1&per_page=24';
       const res = await fetch(url);
       return await res.json();
     } catch {
