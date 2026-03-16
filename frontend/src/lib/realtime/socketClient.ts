@@ -21,12 +21,17 @@ export function getSocket(): Socket {
       withCredentials: true,
       transports: ["websocket"],
     });
+    socket.on("disconnect", (reason) => {
+      if (reason === "io server disconnect") {
+        socket = null;
+      }
+      if (process.env.NODE_ENV === "development") {
+        console.debug("[Socket.IO] disconnected:", reason);
+      }
+    });
     if (process.env.NODE_ENV === "development") {
       socket.on("connect", () => {
         console.debug("[Socket.IO] connected");
-      });
-      socket.on("disconnect", (reason) => {
-        console.debug("[Socket.IO] disconnected:", reason);
       });
     }
   }
