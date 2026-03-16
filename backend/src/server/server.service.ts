@@ -1,4 +1,9 @@
-import {Injectable,NotFoundException,ForbiddenException,BadRequestException,ConflictException,
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
@@ -407,7 +412,6 @@ export class ServerService {
     });
   }
 
-
   /**
    * Bannit un membre d'un serveur.
    * Le membre est supprimé du serveur et un enregistrement de ban est créé.
@@ -430,7 +434,9 @@ export class ServerService {
     }
 
     const targetMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: payload.userId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: payload.userId, serveurId: serverId },
+      },
     });
     if (!targetMember) {
       throw new NotFoundException('This user is not a member of this server');
@@ -438,15 +444,24 @@ export class ServerService {
     if (targetMember.role === Role.PROPRIETAIRE) {
       throw new ForbiddenException('Cannot ban the server owner');
     }
-    if (targetMember.role === Role.ADMINISTRATEUR && actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can ban an administrator');
+    if (
+      targetMember.role === Role.ADMINISTRATEUR &&
+      actingMember.role !== Role.PROPRIETAIRE
+    ) {
+      throw new ForbiddenException(
+        'Only the server owner can ban an administrator',
+      );
     }
 
     const existingBan = await this.prisma.banServeur.findUnique({
-      where: { userId_serveurId: { userId: payload.userId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: payload.userId, serveurId: serverId },
+      },
     });
     if (existingBan) {
-      throw new ConflictException('This user is already banned from this server');
+      throw new ConflictException(
+        'This user is already banned from this server',
+      );
     }
 
     const ban = await this.prisma.$transaction(async (tx) => {
@@ -482,18 +497,26 @@ export class ServerService {
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
    * @throws NotFoundException si l'utilisateur n'est pas banni
    */
-  async unbanMember(serverId: number, actingUserId: string, targetUserId: string) {
+  async unbanMember(
+    serverId: number,
+    actingUserId: string,
+    targetUserId: string,
+  ) {
     const actingMember = await this.assertServerMember(actingUserId, serverId);
     this.assertAdminRole(actingMember.role);
 
     const ban = await this.prisma.banServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (!ban) {
       throw new NotFoundException('This user is not banned from this server');
     }
 
-    const deleted = await this.prisma.banServeur.delete({ where: { id: ban.id } });
+    const deleted = await this.prisma.banServeur.delete({
+      where: { id: ban.id },
+    });
 
     this.messageGateway.emitServerMemberUnbanned(serverId, {
       unbannedUserId: targetUserId,
@@ -520,7 +543,11 @@ export class ServerService {
     });
   }
 
-  async kickMember(serverId: number, actingUserId: string, targetUserId: string) {
+  async kickMember(
+    serverId: number,
+    actingUserId: string,
+    targetUserId: string,
+  ) {
     const actingMember = await this.assertServerMember(actingUserId, serverId);
     this.assertAdminRole(actingMember.role);
 
@@ -528,7 +555,9 @@ export class ServerService {
       throw new BadRequestException('You cannot kick yourself');
     }
     const targetMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (!targetMember) {
       throw new NotFoundException('This user is not a member of this server');
@@ -536,8 +565,13 @@ export class ServerService {
     if (targetMember.role === Role.PROPRIETAIRE) {
       throw new ForbiddenException('Cannot kick the server owner');
     }
-    if (targetMember.role === Role.ADMINISTRATEUR && actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can kick an administrator');
+    if (
+      targetMember.role === Role.ADMINISTRATEUR &&
+      actingMember.role !== Role.PROPRIETAIRE
+    ) {
+      throw new ForbiddenException(
+        'Only the server owner can kick an administrator',
+      );
     }
 
     await this.prisma.membreServeur.delete({ where: { id: targetMember.id } });
@@ -547,6 +581,4 @@ export class ServerService {
       kickedByUserId: actingUserId,
     });
   }
-
-
 }
