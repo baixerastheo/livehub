@@ -36,7 +36,7 @@ export class ServerService {
   private async assertServerExists(id: number) {
     const server = await this.prisma.serveur.findUnique({ where: { id } });
     if (!server) {
-      throw new NotFoundException(`Server with ID ${id} not found`);
+      throw new NotFoundException('Server with ID ' + id + ' not found');
     }
     return server;
   }
@@ -308,8 +308,19 @@ export class ServerService {
   async leaveServer(serverId: number, userId: string) {
     const member = await this.assertServerMember(userId, serverId);
 
-    // TODO: gérer le cas où le propriétaire quitte le serveur
+    if (member.role === Role.PROPRIETAIRE) {
+      const memberCount = await this.prisma.membreServeur.count({
+        where: { serveurId: serverId },
+      });
 
+      if (memberCount === 1) {
+        return this.prisma.serveur.delete({ where: { id: serverId } });
+      }
+
+      throw new BadRequestException(
+        'You must transfer ownership to another member before leaving the server',
+      );
+    }
     return this.prisma.membreServeur.delete({ where: { id: member.id } });
   }
 

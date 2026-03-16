@@ -6,30 +6,42 @@ export class GifService {
   private readonly apiKey = process.env.KLIPY_API_KEY;
 
   async getTrending(): Promise<unknown> {
-    const url =
-      this.baseUrl + '/' + this.apiKey + '/gifs/trending?page=1&per_page=24';
-    const res = await fetch(url);
-    const data: unknown = await res.json();
-    return data;
+    try {
+      const url =
+        this.baseUrl +
+        '/' +
+        this.apiKey +
+        '/gifs/trending?page=1&per_page=24';
+      const res = await fetch(url);
+      return await res.json();
+    } catch {
+      throw new Error('Failed to fetch trending GIFs');
+    }
   }
 
   async search(requete: string): Promise<unknown> {
-    const url =
-      this.baseUrl +
-      '/' +
-      this.apiKey +
-      '/gifs/search?q=' +
-      encodeURIComponent(requete) +
-      '&page=1&per_page=24';
-    const res = await fetch(url);
-    const data: unknown = await res.json();
-    return data;
+    try {
+      const url =
+        this.baseUrl +
+        '/' +
+        this.apiKey +
+        '/gifs/search?q=' +
+        encodeURIComponent(requete) +
+        '&page=1&per_page=24';
+      const res = await fetch(url);
+      return await res.json();
+    } catch {
+      throw new Error('Failed to search gifs');
+    }
   }
 
   async getById(id: string): Promise<unknown> {
-    const url = this.baseUrl + '/' + this.apiKey + '/gifs/' + id;
-    const res = await fetch(url);
-    const data: unknown = await res.json();
-    return data;
+    try {
+      const url = this.baseUrl + '/' + this.apiKey + '/gifs/' + id;
+      const res = await fetch(url);
+      return await res.json();
+    } catch {
+      throw new Error('Failed to fetch gif by ID');
+    }
   }
 }
