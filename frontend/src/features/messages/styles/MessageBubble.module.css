@@ -1,6 +1,6 @@
 .bubbleRow {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3);
   align-items: flex-start;
 }
 
@@ -11,31 +11,31 @@
 .bubbleMeta {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--space-2);
   margin-bottom: 3px;
 }
 
 .author {
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .time {
-  font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.55);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 .deleteButton {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 2px 6px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--text-muted);
 }
 
 .deleteButton:hover:not(:disabled) {
@@ -49,25 +49,25 @@
 }
 
 .deletingLabel {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
 }
 
 .bubble {
   max-width: 72ch;
-  border-radius: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .bubbleMe {
-  background: #eaf1ff;
-  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(15, 23, 42, 0.03);
+  border-color: var(--border-strong);
 }
 
 .text {
-  font-size: 0.92rem;
+  font-size: var(--font-size-sm);
   line-height: 1.35;
   white-space: pre-wrap;
 }
