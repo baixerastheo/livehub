@@ -6,20 +6,32 @@ export class GifService {
   private readonly apiKey = process.env.KLIPY_API_KEY;
 
   async getTrending() {
-    const url = this.baseUrl+'/' + this.apiKey+'/gifs/trending?page=1&per_page=24';
-    const res = await fetch(url);
-    return res.json();
+    try {
+        const url = this.baseUrl+'/' + this.apiKey+'/gifs/trending?page=1&per_page=24';
+        const res = await fetch(url);
+        return res.json();
+  } catch (error) {
+    throw new Error('Failed to fetch trending GIFs');
   }
+}
 
   async search(requete: string) {
-    const url = this.baseUrl+'/' + this.apiKey+'/gifs/search?q='+encodeURIComponent(requete)+'&page=1&per_page=24';
-    const res = await fetch(url);
-    return res.json();
+    try {
+        const url = this.baseUrl+'/' + this.apiKey+'/gifs/search?q='+encodeURIComponent(requete)+'&page=1&per_page=24';
+        const res = await fetch(url);
+        return res.json();
+  } catch (error) {
+    throw new Error('Failed to search gifs');
   }
+}
 
   async getById(id: string) {
-    const url = this.baseUrl+'/' + this.apiKey+'/gifs/'+id;
-    const res = await fetch(url);
-    return res.json();
+    try {
+      const url = this.baseUrl+'/' + this.apiKey+'/gifs/'+id;
+      const res = await fetch(url);
+      return res.json();
+    } catch (error) {
+      throw new Error('Failed to fetch gif by ID');
+    }
   }
 }
