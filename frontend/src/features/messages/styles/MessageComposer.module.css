@@ -4,7 +4,7 @@
   background: #ffffff;
   display: flex;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .composerBar {
@@ -44,12 +44,6 @@
   background: rgba(255, 255, 255, 1);
 }
 
-.composerDivider {
-  width: 1px;
-  height: 28px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
 .input {
   flex: 1;
   min-width: 0;
@@ -68,13 +62,6 @@
 
 .composerBar:focus-within {
   background: rgba(0, 0, 0, 0.05);
-}
-
-.composerActions {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
 }
 
 @media (max-width: 700px) {
