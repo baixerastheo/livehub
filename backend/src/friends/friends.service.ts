@@ -170,7 +170,10 @@ export class FriendsService {
       throw new ForbiddenException('Not allowed');
     }
 
-    const { userAId, userBId } = orderPair(request.fromUserId, request.toUserId);
+    const { userAId, userBId } = orderPair(
+      request.fromUserId,
+      request.toUserId,
+    );
 
     await this.prisma.$transaction([
       this.prisma.demandeAmitie.update({

@@ -4,6 +4,7 @@ import React from "react";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarConversationsContent } from "./SidebarConversationsContent";
+import { SidebarUserFooter } from "@/src/features/shared/components/sidebar/SidebarUserFooter";
 
 export function SidebarConversationSection() {
   return (
@@ -16,6 +17,7 @@ export function SidebarConversationSection() {
           </React.Suspense>
         </div>
       </div>
+      <SidebarUserFooter />
     </>
   );
 }

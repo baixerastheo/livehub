@@ -1,7 +1,7 @@
 .composer {
   padding: 12px 18px 16px;
   border-top: none;
-  background: #ffffff;
+  background: var(--surface);
   display: flex;
   position: relative;
   z-index: 10;
@@ -10,29 +10,29 @@
 .composerBar {
   width: 100%;
   min-height: 54px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: none;
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(15, 23, 42, 0.03);
   box-shadow: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
 }
 
 .composerLeft {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .composerIconButton {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.9);
-  color: rgba(0, 0, 0, 0.78);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -52,16 +52,16 @@
   background: transparent;
   outline: none;
   padding: 0 6px;
-  font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.85);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
 }
 
 .input::placeholder {
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--text-muted);
 }
 
 .composerBar:focus-within {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.05);
 }
 
 @media (max-width: 700px) {

@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -95,9 +95,7 @@ export function SidebarRail() {
             <span className={styles.railLabelRow}>
               <span className={styles.railLabel}>Server</span>
               <span
-                className={`${styles.serverArrow} ${
-                  isServerMenuOpen ? styles.serverArrowOpen : ""
-                }`}
+                className={styles.serverArrow}
                 aria-hidden="true"
               >
                 <FiChevronDown className={styles.serverArrowIcon} />

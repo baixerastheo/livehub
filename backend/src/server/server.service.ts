@@ -101,7 +101,11 @@ export class ServerService {
     });
 
     await this.prisma.membreServeur.create({
-      data: { serveurId: server.id, userId: creatorId, role: Role.PROPRIETAIRE },
+      data: {
+        serveurId: server.id,
+        userId: creatorId,
+        role: Role.PROPRIETAIRE,
+      },
     });
 
     await this.prisma.canal.create({
@@ -194,10 +198,14 @@ export class ServerService {
     }
 
     const existingMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (existingMember) {
-      throw new ConflictException('This user is already a member of the server');
+      throw new ConflictException(
+        'This user is already a member of the server',
+      );
     }
 
     const newMember = await this.prisma.membreServeur.create({
@@ -208,7 +216,9 @@ export class ServerService {
     let avatarUrl: string | null = null;
     if (newMember.user.avatarPath) {
       try {
-        avatarUrl = await this.supabaseStorage.publicUrl(newMember.user.avatarPath);
+        avatarUrl = await this.supabaseStorage.publicUrl(
+          newMember.user.avatarPath,
+        );
       } catch {
         avatarUrl = null;
       }
@@ -221,7 +231,12 @@ export class ServerService {
       userId: newMember.userId,
       role: newMember.role,
       rejointLe: newMember.rejointLe.toISOString(),
-      user: { id: userRest.id, name: userRest.name ?? '', email: userRest.email, avatarUrl },
+      user: {
+        id: userRest.id,
+        name: userRest.name ?? '',
+        email: userRest.email,
+        avatarUrl,
+      },
     });
 
     this.messageGateway.emitUserAddedToServer(targetUserId, {
@@ -244,10 +259,19 @@ export class ServerService {
    * @throws NotFoundException si le membre cible n'est pas dans le serveur
    * @throws BadRequestException si le transfert est vers soi-même
    */
-  async transferOwnership(serverId: number, newOwnerId: string, currentOwnerId: string) {
-    const actingMember = await this.assertServerMember(currentOwnerId, serverId);
+  async transferOwnership(
+    serverId: number,
+    newOwnerId: string,
+    currentOwnerId: string,
+  ) {
+    const actingMember = await this.assertServerMember(
+      currentOwnerId,
+      serverId,
+    );
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can transfer ownership');
+      throw new ForbiddenException(
+        'Only the server owner can transfer ownership',
+      );
     }
 
     if (newOwnerId === currentOwnerId) {
@@ -351,14 +375,23 @@ export class ServerService {
    * @throws NotFoundException si le membre cible n'est pas dans le serveur
    * @throws ForbiddenException si on tente de changer le rôle du propriétaire
    */
-  async updateMemberRole(serverId: number, targetUserId: string, newRole: Role, actingUserId: string) {
+  async updateMemberRole(
+    serverId: number,
+    targetUserId: string,
+    newRole: Role,
+    actingUserId: string,
+  ) {
     const actingMember = await this.assertServerMember(actingUserId, serverId);
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can change member roles');
+      throw new ForbiddenException(
+        'Only the server owner can change member roles',
+      );
     }
 
     const targetMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (!targetMember) {
       throw new NotFoundException('This user is not a member of this server');

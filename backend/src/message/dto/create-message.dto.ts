@@ -1,6 +1,5 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
 
-
 export class CreateMessageDto {
   @IsNotEmpty({
     message: "The 'content' field is required.",

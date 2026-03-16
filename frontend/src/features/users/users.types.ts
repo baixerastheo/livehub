@@ -11,7 +11,6 @@ export type UtilisateurDto = {
   image?: string | null;
   avatarPath?: string | null;
   avatarUpdatedAt?: string | null;
-  /** URL signée pour afficher l’avatar (bucket privé, valide 1 h). */
   avatarUrl?: string | null;
 };
 

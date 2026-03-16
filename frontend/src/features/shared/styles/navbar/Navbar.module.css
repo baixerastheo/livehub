@@ -2,25 +2,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 1.25rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background-color: #ffffff;
-  color: #000000;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  height: var(--app-navbar-height);
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--surface);
+  color: var(--text-primary);
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   min-width: 220px;
   width: 100%;
   flex: 1 1 auto;
@@ -36,8 +36,8 @@
 }
 
 .userInfo {
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.75);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -46,18 +46,18 @@
 
 .authButton {
   flex: 0 0 auto;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
-  color: #000000;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text-primary);
   height: 32px;
-  padding: 0 0.9rem;
-  border-radius: 999px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
 }
 
 .authButton:hover {
-  background: #f6f6f6;
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .profileWrapper {
@@ -68,8 +68,8 @@
 }
 
 .profileButton {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
   width: 32px;
   height: 32px;
   border-radius: 999px;
@@ -83,7 +83,7 @@
 }
 
 .profileButton:hover {
-  background: #f6f6f6;
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .profileAvatar {
@@ -119,10 +119,9 @@
   top: calc(100% + 10px);
   right: 0;
   width: 280px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(15, 23, 42, 0.06);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   z-index: 60;
 }
@@ -132,24 +131,24 @@
 }
 
 .profileUsername {
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
   margin: 0;
 }
 
 .profileSubtle {
   margin-top: 0.15rem;
-  font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.6);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
 .dropdownDivider {
   height: 1px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--border-subtle);
 }
 
 .dropdownActions {
-  padding: 0.35rem;
+  padding: var(--space-1);
 }
 
 .dropdownButton {
@@ -158,32 +157,32 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
-  padding: 0.6rem 0.75rem;
-  border-radius: 10px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.85);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
 }
 
 .dropdownButton:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .dropdownButtonDanger {
-  color: #b42318;
+  color: var(--danger);
 }
 
 .dropdownButtonDanger:hover {
-  background: rgba(180, 35, 24, 0.08);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .menuButton {
   display: none;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
   width: 32px;
   height: 32px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   line-height: 0;
 }
@@ -197,7 +196,7 @@
 .menuBar {
   width: 18px;
   height: 2px;
-  background-color: #000000;
+  background-color: var(--text-primary);
   border-radius: 999px;
 }
 

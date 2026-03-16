@@ -1,4 +1,12 @@
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket,} from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 import { getSessionFromHeaders } from '../lib/session-from-headers.js';
 import type { PrivateMessageCreatedEvent, ChannelMessageCreatedEvent, ServerChannelCreatedEvent, ServerChannelUpdatedEvent, ServerChannelDeletedEvent, ServerMemberJoinedEvent, UserAddedToServerEvent, ServerOwnershipTransferredEvent, ServerMemberBannedEvent, ServerMemberUnbannedEvent, ServerMemberKickedEvent,} from './realtime-events.types.js';
@@ -26,7 +34,10 @@ export class MessageGateway
   @WebSocketServer()
   server!: Server;
 
-  constructor( private readonly prisma: PrismaService, private readonly presence: PresenceService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+  ) {}
 
   /**
    * Point d'entrée synchrone requis par NestJS lors d'une nouvelle connexion.
@@ -113,7 +124,6 @@ export class MessageGateway
     }
   }
 
-
   /**
    * Extrait l'userId authentifié stocké dans les données du socket.
    * @param client - Socket dont on veut l'identifiant
@@ -189,7 +199,6 @@ export class MessageGateway
     }
   }
 
-
   /**
    * Gère l'événement de frappe en cours dans un canal (événement `channel:typing`).
    * @param payload - Corps du message contenant channelId et userName
@@ -260,7 +269,6 @@ export class MessageGateway
       .emit('channel:stop-typing', { channelId, userId });
   }
 
-
   /**
    * Gère l'abonnement d'un client à un serveur (événement `server:subscribe`).
    * @param payload - Corps du message contenant le serverId
@@ -311,8 +319,7 @@ export class MessageGateway
     @ConnectedSocket() client: Socket,
   ) {
     const body = payload as ServerUnsubscribePayload;
-    const serverId =
-      typeof body?.serverId === 'number' ? body.serverId : null;
+    const serverId = typeof body?.serverId === 'number' ? body.serverId : null;
     if (serverId != null) {
       void client.leave('server:' + serverId);
     }

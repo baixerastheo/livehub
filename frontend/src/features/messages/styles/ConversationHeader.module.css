@@ -1,7 +1,7 @@
 .header {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -22,13 +22,13 @@
 .avatar {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-weight: 800;
-  font-size: 0.85rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
   flex: 0 0 auto;
   overflow: hidden;
 }
@@ -39,8 +39,8 @@
 }
 
 .title {
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -48,8 +48,8 @@
 
 .subtitle {
   margin-top: 2px;
-  font-size: 0.83rem;
-  color: rgba(0, 0, 0, 0.62);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
 }
 
 .headerActions {
@@ -60,8 +60,8 @@
 }
 
 .iconButton {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -73,7 +73,7 @@
 }
 
 .iconButton:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 @media (max-width: 700px) {

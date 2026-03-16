@@ -12,6 +12,7 @@ import { ModalAddChannel } from "@/src/features/server/components/modalAddChanne
 import { ServerHeaderMenu } from "@/src/features/server/components/ServerHeaderMenu";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarChannelsContent } from "./SidebarChannelsContent";
+import { SidebarUserFooter } from "@/src/features/shared/components/sidebar/SidebarUserFooter";
 
 export function SidebarTeamsSection() {
   const selectedServerId = useAppStore((state) => state.selectedServerId);
@@ -69,6 +70,7 @@ export function SidebarTeamsSection() {
           </React.Suspense>
         </div>
       </div>
+      <SidebarUserFooter />
       <ModalAddMembers
         isOpen={isAddMembersOpen}
         onClose={() => setIsAddMembersOpen(false)}

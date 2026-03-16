@@ -1,10 +1,15 @@
-import {IsString,IsEnum,IsOptional,IsEmail,MinLength,MaxLength,Matches,} from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsEmail,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
 
-
-
 export class UpdateProfileDto {
-
   @IsOptional()
   @IsString({
     message: "The 'name' field must be a string!",

@@ -34,7 +34,7 @@ export function AppShell({ children }: AppShellProps) {
       <div
         style={{
           display: "flex",
-          height: "100vh",
+          height: "calc(100vh - var(--app-navbar-height))",
           overflow: "visible",
           position: "relative",
         }}

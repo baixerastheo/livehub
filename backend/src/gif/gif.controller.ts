@@ -13,8 +13,7 @@ export class GifController {
   }
 
   @Get('search')
-  search(
-    @Query('q') q: string) {
+  search(@Query('q') q: string) {
     return this.gifService.search(q);
   }
 
