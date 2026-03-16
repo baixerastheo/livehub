@@ -168,6 +168,11 @@ export class ServerController {
     @Body() data: UpdateMemberRole,
     @Req() req: RequestWithAuth,
   ) {
-    return this.serverService.updateMemberRole(serverId, userId, data.role, req.user.id);
+    return this.serverService.updateMemberRole(
+      serverId,
+      userId,
+      data.role,
+      req.user.id,
+    );
   }
 }

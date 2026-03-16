@@ -77,8 +77,13 @@ export class MessageService {
           lastMessageAt: peerIdToLastAt.get(id),
         }))
         .filter(
-          (x): x is { id: string; user: (typeof users)[number]; lastMessageAt: Date | undefined } =>
-            x.user != null,
+          (
+            x,
+          ): x is {
+            id: string;
+            user: (typeof users)[number];
+            lastMessageAt: Date | undefined;
+          } => x.user != null,
         )
         .map(async ({ user, lastMessageAt }) => {
           let avatarUrl: string | null = null;
@@ -141,18 +146,30 @@ export class MessageService {
    * @throws BadRequestException si l'expéditeur et le destinataire sont identiques
    * @throws NotFoundException si le destinataire n'existe pas
    */
-  async createPrivateMessage(senderId: string, recipientId: string, content: string) {
+  async createPrivateMessage(
+    senderId: string,
+    recipientId: string,
+    content: string,
+  ) {
     if (senderId === recipientId) {
-      throw new BadRequestException('Cannot send a private message to yourself');
+      throw new BadRequestException(
+        'Cannot send a private message to yourself',
+      );
     }
 
-    const recipient = await this.prisma.user.findUnique({ where: { id: recipientId } });
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: recipientId },
+    });
     if (!recipient) {
       throw new NotFoundException('User not found');
     }
 
     const message = await this.prisma.messagePrive.create({
-      data: { expediteurId: senderId, destinataireId: recipientId, contenu: content },
+      data: {
+        expediteurId: senderId,
+        destinataireId: recipientId,
+        contenu: content,
+      },
       include: {
         expediteur: { select: { id: true, name: true, email: true } },
       },

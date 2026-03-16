@@ -1,4 +1,12 @@
-import {IsString,IsEnum,IsOptional,IsUrl,MinLength,MaxLength,Matches,} from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsUrl,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
 
 export class UpdateUser {

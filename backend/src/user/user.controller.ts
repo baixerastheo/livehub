@@ -86,7 +86,12 @@ export class UserController {
   ) {
     const ext = file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
     const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
-    return this.userService.replaceAvatar(req.user.id, file.buffer, file.mimetype, normalizedExt);
+    return this.userService.replaceAvatar(
+      req.user.id,
+      file.buffer,
+      file.mimetype,
+      normalizedExt,
+    );
   }
 
   /**
