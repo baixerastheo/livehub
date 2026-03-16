@@ -21,7 +21,7 @@ export function SidebarUserFooter() {
     <div className={footerStyles.footer}>
       <div className={footerStyles.left}>
         <UserAvatar
-          avatarUrl={user?.avatarUrl ?? undefined}
+          avatarUrl={user?.image ?? undefined}
           displayName={displayName}
           size="sm"
           className={footerStyles.avatar}
