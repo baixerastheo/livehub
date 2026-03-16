@@ -1,14 +1,14 @@
 .rail {
-  width: 110px;
-  min-width: 84px;
+  width: 76px;
+  min-width: 76px;
   height: 100%;
   min-height: 0;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-  background: #f3f4f6;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface);
   padding: 10px 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .railBackdrop {
@@ -24,21 +24,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 14px 6px;
-  border-radius: 8px;
-  color: rgba(0, 0, 0, 0.72);
+  gap: var(--space-1);
+  padding: 10px 4px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .railItem:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.railItem:hover .railIcon,
+.railItemActive .railIcon {
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
 }
 
 .railItemActive {
-  background: rgba(131, 131, 131, 0.12);
-  color: rgb(0, 0, 0);
+  background: transparent;
+  color: var(--text-primary);
 }
 
 .railItemActive::before {
@@ -48,19 +55,19 @@
   top: 10px;
   bottom: 10px;
   width: 3px;
-  border-radius: 999px;
-  background: rgb(0, 0, 0);
+  border-radius: var(--radius-full);
+  background: var(--text-primary);
 }
 
 .railIcon {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+  border: none;
   line-height: 0;
 }
 
@@ -71,7 +78,7 @@
 }
 
 .railLabel {
-  font-size: 0.82rem;
+  font-size: var(--font-size-xs);
   line-height: 1.1;
   font-weight: 600;
   text-align: center;
@@ -91,7 +98,7 @@
   transform: translateY(-50%);
   margin-left: 10px;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #1f2937;
   color: #fff;
   font-size: 0.8rem;
@@ -138,6 +145,12 @@
   display: none;
 }
 
+/* Désactive l'effet hover sur le trigger Server (garde les autres items inchangés) */
+.serverSectionTrigger.railItem:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
 .serverMenu {
   display: flex;
   flex-direction: column;
@@ -176,9 +189,9 @@
 }
 
 .serverAvatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -9,8 +9,8 @@ export function NavbarLogo({}: NavbarLogoProps) {
       <Image
         src="/brand/Livehub_logo.png"
         alt="LiveHub logo"
-        width={300}
-        height={60}
+        width={220}
+        height={44}
         className={styles.logoImage}
         priority
       />

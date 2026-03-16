@@ -1,6 +1,5 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
 
-
 export class CreateCanal {
   @IsNotEmpty({
     message: "The 'name' field is required!",

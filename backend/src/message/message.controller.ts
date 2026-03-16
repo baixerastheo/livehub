@@ -30,7 +30,9 @@ export class MessageController {
    */
   @Get('conversations/private')
   async listPrivateConversations(@Req() req: RequestWithAuth) {
-    const list = await this.messageService.listPrivateConversations(req.user.id);
+    const list = await this.messageService.listPrivateConversations(
+      req.user.id,
+    );
     return list.map(({ peer, lastMessageAt }) => ({
       peer: {
         id: peer.id,

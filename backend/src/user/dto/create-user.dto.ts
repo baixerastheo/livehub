@@ -1,7 +1,14 @@
-import {IsString,IsEmail,IsEnum,IsNotEmpty,IsOptional,MinLength,MaxLength,Matches,} from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { StatutUtilisateur } from '../../../generated/prisma/enums';
-
-
 
 export class CreateUser {
   @IsNotEmpty({

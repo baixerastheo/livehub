@@ -213,14 +213,24 @@ export class UserService {
    * @throws NotFoundException si l'utilisateur n'existe pas
    * @throws InternalServerErrorException si l'upload ou la suppression échoue
    */
-  async replaceAvatar(userId: string, buffer: Buffer, contentType: string, ext: string) {
+  async replaceAvatar(
+    userId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
     const oldAvatarPath = user.avatarPath ?? null;
-    const newPath = await this.supabaseStorage.uploadAvatar(userId, buffer, contentType, ext);
+    const newPath = await this.supabaseStorage.uploadAvatar(
+      userId,
+      buffer,
+      contentType,
+      ext,
+    );
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -236,7 +246,9 @@ export class UserService {
           data: { avatarPath: oldAvatarPath, avatarUpdatedAt: new Date() },
         });
         await this.supabaseStorage.removeObjects([newPath]);
-        throw new InternalServerErrorException('Failed to remove old avatar from storage');
+        throw new InternalServerErrorException(
+          'Failed to remove old avatar from storage',
+        );
       }
     }
 
