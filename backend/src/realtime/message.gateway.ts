@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket,} from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 import { getSessionFromHeaders } from '../lib/session-from-headers.js';
-import type { PrivateMessageCreatedEvent, ChannelMessageCreatedEvent, ServerChannelCreatedEvent, ServerChannelUpdatedEvent, ServerChannelDeletedEvent, ServerMemberJoinedEvent, UserAddedToServerEvent, ServerOwnershipTransferredEvent,} from './realtime-events.types.js';
+import type { PrivateMessageCreatedEvent, ChannelMessageCreatedEvent, ServerChannelCreatedEvent, ServerChannelUpdatedEvent, ServerChannelDeletedEvent, ServerMemberJoinedEvent, UserAddedToServerEvent, ServerOwnershipTransferredEvent, ServerMemberBannedEvent, ServerMemberUnbannedEvent, ServerMemberKickedEvent,} from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
 
@@ -456,5 +456,31 @@ export class MessageGateway
     this.server
       .to('server:' + serverId)
       .emit('server-ownership:transferred', eventPayload);
+  }
+
+  emitServerMemberBanned(
+    serverId: number,
+    payload: Omit<ServerMemberBannedEvent, 'serverId'>,
+  ) {
+    const eventPayload: ServerMemberBannedEvent = { serverId, ...payload };
+    this.server.to('server:' + serverId).emit('server-member:banned', eventPayload);
+    this.server.to('user:' + payload.bannedUserId).emit('server-member:banned', eventPayload);
+  }
+
+  emitServerMemberKicked(
+    serverId: number,
+    payload: Omit<ServerMemberKickedEvent, 'serverId'>,
+  ) {
+    const eventPayload: ServerMemberKickedEvent = { serverId, ...payload };
+    this.server.to('server:' + serverId).emit('server-member:kicked', eventPayload);
+    this.server.to('user:' + payload.kickedUserId).emit('server-member:kicked', eventPayload);
+  }
+
+  emitServerMemberUnbanned(
+    serverId: number,
+    payload: Omit<ServerMemberUnbannedEvent, 'serverId'>,
+  ) {
+    const eventPayload: ServerMemberUnbannedEvent = { serverId, ...payload };
+    this.server.to('server:' + serverId).emit('server-member:unbanned', eventPayload);
   }
 }

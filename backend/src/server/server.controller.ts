@@ -15,6 +15,7 @@ import { UpdateServer } from './dto/update-server.dto';
 import { UpdateMemberRole } from './dto/update-member-role.dto';
 import { CreateServer } from './dto/create-server.dto';
 import { AddMember } from './dto/add-member.dto';
+import { BanMember } from './dto/ban-member.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { RequestWithAuth } from '../lib/request-with-auth';
 
@@ -169,5 +170,40 @@ export class ServerController {
     @Req() req: RequestWithAuth,
   ) {
     return this.serverService.updateMemberRole(serverId, userId, data.role, req.user.id);
+  }
+
+  @Delete('/:id/members/:userId')
+  async kickMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverService.kickMember(serverId, req.user.id, userId);
+  }
+
+  @Post('/:id/bans')
+  async banMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Body() data: BanMember,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverService.banMember(serverId, req.user.id, data);
+  }
+
+  @Delete('/:id/bans/:userId')
+  async unbanMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverService.unbanMember(serverId, req.user.id, userId);
+  }
+
+  @Get('/:id/bans')
+  async getBans(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverService.getBans(serverId, req.user.id);
   }
 }

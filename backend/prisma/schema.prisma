@@ -62,10 +62,28 @@ model Serveur {
   membres     MembreServeur[]
   canaux      Canal[]
   invitations Invitation[]
+  bans        BanServeur[]
   creeLe      DateTime        @default(now())
   modifieLe   DateTime        @updatedAt
 
   @@index([nom])
+}
+
+model BanServeur {
+  id        Int       @id @default(autoincrement())
+  serveurId Int
+  serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation("BansRecus", fields: [userId], references: [id], onDelete: Cascade)
+  bannePar  String
+  banneur   User      @relation("BansEmis", fields: [bannePar], references: [id], onDelete: Cascade)
+  raison    String?
+  expireLe  DateTime?
+  creeLe    DateTime  @default(now())
+
+  @@unique([userId, serveurId])
+  @@index([serveurId])
+  @@index([userId])
 }
 
 model MembreServeur {
@@ -166,6 +184,8 @@ model User {
   amitiesCommeB       Amitie[]         @relation("Amitie_userBIdToUser")
   demandesEnvoyees    DemandeAmitie[]  @relation("DemandeAmitie_fromUser")
   demandesRecues      DemandeAmitie[]  @relation("DemandeAmitie_toUser")
+  bansRecus           BanServeur[]     @relation("BansRecus")
+  bansEmis            BanServeur[]     @relation("BansEmis")
 
   @@unique([email])
   @@index([name])

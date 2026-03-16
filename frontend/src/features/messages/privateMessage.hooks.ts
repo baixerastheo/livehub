@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { privateMessageService } from "@/src/features/messages/privateMessage.service";
+import type { GetPrivateConversationResponseDto } from "@/src/features/messages/messages.types";
 
 export const privateConversationsKey = ["conversations", "private"] as const;
 
@@ -37,12 +38,16 @@ export function useSendPrivateMessageMutation() {
       peerUserId: string;
       content: string;
     }) => privateMessageService.sendPrivateMessage(peerUserId, content),
-    onSuccess: (_data, { peerUserId }) => {
-      // Refetch immédiat pour que la nouvelle conv apparaisse dans la sidebar sans refresh
+    onSuccess: (data, { peerUserId }) => {
+      queryClient.setQueryData<GetPrivateConversationResponseDto>(
+        privateConversationKey(peerUserId),
+        (old) => {
+          if (!old) return old;
+          if (old.messages.some((m) => m.id === data.id)) return old;
+          return { ...old, messages: [...old.messages, data] };
+        },
+      );
       void queryClient.refetchQueries({ queryKey: privateConversationsKey });
-      queryClient.invalidateQueries({
-        queryKey: privateConversationKey(peerUserId),
-      });
     },
   });
 }
