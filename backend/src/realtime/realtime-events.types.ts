@@ -97,3 +97,32 @@ export type ServerOwnershipTransferredEvent = {
   newOwnerId: string;
   previousOwnerId: string;
 };
+
+/**
+ * Payload for event server-member:banned - sent to all server members and to the banned user.
+ */
+export type ServerMemberBannedEvent = {
+  serverId: number;
+  bannedUserId: string;
+  bannedByUserId: string;
+  raison: string | null;
+  expireLe: string | null;
+};
+
+/**
+ * Payload for event server-member:unbanned - sent to all server members.
+ */
+export type ServerMemberUnbannedEvent = {
+  serverId: number;
+  unbannedUserId: string;
+  unbannedByUserId: string;
+};
+
+/**
+ * Payload for event server-member:kicked - sent to all server members and to the kicked user.
+ */
+export type ServerMemberKickedEvent = {
+  serverId: number;
+  kickedUserId: string;
+  kickedByUserId: string;
+};
