@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "../styles/MessageComposer.module.css";
-import { FiPlus, FiSmile } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 
 type Props = {
   value: string;
@@ -33,7 +33,6 @@ export function MessageComposer({
           >
             <FiPlus />
           </button>
-          <div className={styles.composerDivider} aria-hidden="true" />
         </div>
 
         <input
@@ -43,16 +42,6 @@ export function MessageComposer({
           placeholder={placeholder}
           aria-label="Message input"
         />
-
-        <div className={styles.composerActions}>
-          <button
-            type="button"
-            className={styles.composerIconButton}
-            aria-label="Emoji"
-          >
-            <FiSmile />
-          </button>
-        </div>
 
         <button type="submit" style={{ display: "none" }} aria-hidden="true">
           Send

@@ -61,7 +61,9 @@ export function MessageBubble({
             </button>
           )}
         </div>
-        <div className={styles.text}>{message.content}</div>
+        <div className={styles.text}>
+          {message.content}
+        </div>
       </div>
     </div>
   );

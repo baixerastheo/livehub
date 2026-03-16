@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { FriendsModule } from './friends/friends.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { RealtimeModule } from './realtime/realtime.module.js';
+import { GifModule } from './gif/gif.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RealtimeModule } from './realtime/realtime.module.js';
     FriendsModule,
     SupabaseModule,
     RealtimeModule,
+    GifModule,
   ],
   controllers: [],
 })
