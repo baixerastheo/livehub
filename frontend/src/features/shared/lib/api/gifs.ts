@@ -3,8 +3,9 @@ import { fetchJson } from "@/src/lib/apiClient";
 import type { Gif } from "@/src/features/shared/lib/api/gifs.types";
 
 type KlipyListResponse = {
-  data?: Gif[];
-  results?: Gif[];
+  result?: boolean;
+  data?: Gif[] | { data?: Gif[]; results?: Gif[] };
+  results?: Gif[] | { data?: Gif[]; results?: Gif[] };
 };
 
 type KlipyDetailResponse = {
@@ -16,19 +17,17 @@ function extractGifList(payload: KlipyListResponse | Gif[] | undefined): Gif[] {
 
   if (Array.isArray(payload)) return payload;
 
-  const anyPayload = payload as Record<string, unknown>;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.results)) return payload.results;
 
-  if (Array.isArray(anyPayload.data)) return anyPayload.data;
-  if (Array.isArray(anyPayload.results)) return anyPayload.results;
-
-  if (anyPayload.data) {
-    if (Array.isArray(anyPayload.data.data)) return anyPayload.data.data;
-    if (Array.isArray(anyPayload.data.results)) return anyPayload.data.results;
+  if (payload.data && !Array.isArray(payload.data)) {
+    if (Array.isArray(payload.data.data)) return payload.data.data;
+    if (Array.isArray(payload.data.results)) return payload.data.results;
   }
 
-  if (anyPayload.results) {
-    if (Array.isArray(anyPayload.results.data)) return anyPayload.results.data;
-    if (Array.isArray(anyPayload.results.results)) return anyPayload.results.results;
+  if (payload.results && !Array.isArray(payload.results)) {
+    if (Array.isArray(payload.results.data)) return payload.results.data;
+    if (Array.isArray(payload.results.results)) return payload.results.results;
   }
 
   return [];
