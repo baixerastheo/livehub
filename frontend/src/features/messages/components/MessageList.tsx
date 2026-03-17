@@ -1,11 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/MessageList.module.css";
 import type { ChatMessage } from "@/src/features/messages/messages.mock";
 import { MessageBubble } from "@/src/features/messages/components/MessageBubble";
 import { FiChevronDown } from "react-icons/fi";
-
-const EMPTY_LABEL = "Start the conversation";
 
 type Props = {
   messages: ChatMessage[];
@@ -20,11 +19,13 @@ export function MessageList({
   onDeleteMessage,
   isDeletingMessageId = null,
 }: Props) {
+  const t = useTranslations("messages");
+
   return (
     <div className={styles.messages} role="list" aria-label="Message list">
       {messages.length === 0 ? (
         <div className={styles.threadEmpty}>
-          <p className={styles.threadEmptyMessage}>{EMPTY_LABEL}</p>
+          <p className={styles.threadEmptyMessage}>{t("startConversation")}</p>
           <FiChevronDown className={styles.threadEmptyArrow} aria-hidden />
         </div>
       ) : (

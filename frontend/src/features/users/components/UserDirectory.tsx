@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useUsersQuery } from "@/src/features/users/users.hooks";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
@@ -37,6 +38,7 @@ export function UserDirectory({
   const openLogin = useAuthModal((state) => state.openLogin);
   const { user: authUser, isAuthenticated } = useAuth();
   const authUserId = authUser?.id ?? null;
+  const t = useTranslations("people");
 
   const usersQuery = useUsersQuery({ q });
 
@@ -85,13 +87,13 @@ export function UserDirectory({
   const handleAddFriend = async (user: UtilisateurDto) => {
     if (!isAuthenticated) return openLogin();
     if (onAddFriend) return onAddFriend(user);
-    showNotice("Friends: bientôt disponible.");
+    showNotice(t("title") + ": coming soon.");
   };
 
   const handleMessage = async (user: UtilisateurDto) => {
     if (!isAuthenticated) return openLogin();
     if (onMessage) return onMessage(user);
-    showNotice("DM: bientôt disponible.");
+    showNotice("DM: coming soon.");
   };
 
   return (

@@ -1,5 +1,6 @@
- "use client";
+"use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/ProfileModalMenu.module.css";
 import type { AccountModalSection } from "@/src/core/store/appStore";
 
@@ -9,6 +10,8 @@ type ProfileModalMenuProps = {
 };
 
 export function ProfileModalMenu({ active, onChange }: ProfileModalMenuProps) {
+  const t = useTranslations("profile");
+
   return (
     <div className={styles.menuBar} role="tablist" aria-label="Account sections">
       <button
@@ -20,7 +23,7 @@ export function ProfileModalMenu({ active, onChange }: ProfileModalMenuProps) {
         }`}
         onClick={() => onChange("profile")}
       >
-        Sécurité
+        {t("security")}
       </button>
       <button
         type="button"
@@ -31,7 +34,7 @@ export function ProfileModalMenu({ active, onChange }: ProfileModalMenuProps) {
         }`}
         onClick={() => onChange("settings")}
       >
-        Statut
+        {t("status")}
       </button>
     </div>
   );

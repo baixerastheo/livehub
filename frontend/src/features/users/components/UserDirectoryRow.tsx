@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/UserDirectory.module.css";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import { FiClock, FiMessageSquare, FiUserPlus } from "react-icons/fi";
@@ -19,6 +20,20 @@ export function UserDirectoryRow({
   onMessage,
   isAddFriendPending,
 }: UserDirectoryRowProps) {
+  const t = useTranslations("friends");
+  const tMessages = useTranslations("messages");
+  const tCommon = useTranslations("common");
+
+  const statusKeyMap: Record<string, string> = {
+    EN_LIGNE: "online",
+    HORS_LIGNE: "offline",
+    ABSENT: "absent",
+    INVISIBLE: "invisible",
+  };
+  const statusLabel = user.statut
+    ? tCommon(statusKeyMap[user.statut] ?? "offline")
+    : tCommon("offline");
+
   return (
     <li className={styles.row}>
       <div className={styles.userBlock}>
@@ -33,7 +48,7 @@ export function UserDirectoryRow({
           <div className={styles.username}>{getDisplayName(user)}</div>
           <div className={styles.userSubtle}>
             <span className={styles.statusDot} data-status={user.statut} />
-            {user.statut?.replaceAll("_", " ")?.toLowerCase()}
+            {statusLabel}
           </div>
         </div>
       </div>
@@ -43,18 +58,18 @@ export function UserDirectoryRow({
           type="button"
           className={styles.secondaryButton}
           onClick={() => onAddFriend(user)}
-          aria-label={isAddFriendPending ? "Friend request pending" : "Add friend"}
+          aria-label={isAddFriendPending ? t("friendRequestPending") : t("addFriend")}
           disabled={isAddFriendPending}
         >
           {isAddFriendPending ? (
             <>
               <FiClock className={styles.buttonIcon} aria-hidden="true" />
-              <span className={styles.srOnly}>Pending</span>
+              <span className={styles.srOnly}>{t("pending")}</span>
             </>
           ) : (
             <>
               <FiUserPlus className={styles.buttonIcon} aria-hidden="true" />
-              <span className={styles.srOnly}>Add friend</span>
+              <span className={styles.srOnly}>{t("addFriend")}</span>
             </>
           )}
         </button>
@@ -62,10 +77,10 @@ export function UserDirectoryRow({
           type="button"
           className={styles.primaryButton}
           onClick={() => onMessage(user)}
-          aria-label="Message"
+          aria-label={t("sendMessage")}
         >
           <FiMessageSquare className={styles.buttonIcon} aria-hidden="true" />
-          <span className={styles.srOnly}>Message</span>
+          <span className={styles.srOnly}>{t("sendMessage")}</span>
         </button>
       </div>
     </li>

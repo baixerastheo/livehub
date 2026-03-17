@@ -1,7 +1,8 @@
- "use client";
+"use client";
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../../styles/sidebar/SidebarRail.module.css";
 import {
@@ -11,13 +12,14 @@ import {
   FiPlus,
   FiChevronDown,
 } from "react-icons/fi";
-import { ModalCreateServer } from "@/src/features/server/components/modalCreateServer";
+import { ModalCreateServer } from "@/src/features/server/components/ModalCreateServer";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
 
 type RailItem = "activity" | "conversation" | "teams";
 
 export function SidebarRail() {
   const router = useRouter();
+  const t = useTranslations("sidebar");
   const isSidebarRailOpen = useAppStore((state) => state.isSidebarRailOpen);
   const active = useAppStore((state) => state.sidebarSection);
   const openSidebar = useAppStore((state) => state.openSidebar);
@@ -42,7 +44,7 @@ export function SidebarRail() {
     <>
       <nav
         className={`${styles.rail} ${isSidebarRailOpen ? styles.railOpen : ""}`}
-        aria-label="Sidebar menu"
+        aria-label={t("sidebarMenu")}
       >
         <button
           type="button"
@@ -50,13 +52,13 @@ export function SidebarRail() {
             active === "activity" ? styles.railItemActive : ""
           }`}
           onClick={() => activate("activity")}
-          aria-label="Notification"
+          aria-label={t("notification")}
         >
           <span className={styles.railIcon} aria-hidden="true">
             <FiBell className={styles.railIconSvg} />
           </span>
-          <span className={styles.railLabel}>Notification</span>
-          <span className={styles.railTooltip}>Notification</span>
+          <span className={styles.railLabel}>{t("notification")}</span>
+          <span className={styles.railTooltip}>{t("notification")}</span>
         </button>
 
         <button
@@ -65,13 +67,13 @@ export function SidebarRail() {
             active === "conversation" ? styles.railItemActive : ""
           }`}
           onClick={() => activate("conversation")}
-          aria-label="Private message"
+          aria-label={t("privateMessage")}
         >
           <span className={styles.railIcon} aria-hidden="true">
             <FiMessageSquare className={styles.railIconSvg} />
           </span>
-          <span className={styles.railLabel}>Private message</span>
-          <span className={styles.railTooltip}>Private message</span>
+          <span className={styles.railLabel}>{t("privateMessage")}</span>
+          <span className={styles.railTooltip}>{t("privateMessage")}</span>
         </button>
 
         <div
@@ -87,13 +89,13 @@ export function SidebarRail() {
             onClick={toggleServerMenu}
             aria-expanded={isServerMenuOpen}
             aria-controls="sidebar-server-menu"
-            aria-label="Server"
+            aria-label={t("server")}
           >
             <span className={styles.railIcon} aria-hidden="true">
               <FiUsers className={styles.railIconSvg} />
             </span>
             <span className={styles.railLabelRow}>
-              <span className={styles.railLabel}>Server</span>
+              <span className={styles.railLabel}>{t("server")}</span>
               <span
                 className={styles.serverArrow}
                 aria-hidden="true"
@@ -101,7 +103,7 @@ export function SidebarRail() {
                 <FiChevronDown className={styles.serverArrowIcon} />
               </span>
             </span>
-            <span className={styles.railTooltip}>Server</span>
+            <span className={styles.railTooltip}>{t("server")}</span>
           </button>
 
           <div
@@ -145,13 +147,13 @@ export function SidebarRail() {
               type="button"
               className={styles.railItem}
               onClick={() => setIsCreateServerOpen(true)}
-              aria-label="New server"
+              aria-label={t("newServer")}
             >
               <span className={styles.railIcon} aria-hidden="true">
                 <FiPlus className={styles.railIconSvg} />
               </span>
-              <span className={styles.railLabel}>New server</span>
-              <span className={styles.railTooltip}>New server</span>
+              <span className={styles.railLabel}>{t("newServer")}</span>
+              <span className={styles.railTooltip}>{t("newServer")}</span>
             </button>
           </div>
         </div>
@@ -160,7 +162,7 @@ export function SidebarRail() {
         <button
           type="button"
           className={styles.railBackdrop}
-          aria-label="Close sidebar"
+          aria-label={t("sidebarMenu")}
           onClick={closeMobileSidebars}
         />
       )}

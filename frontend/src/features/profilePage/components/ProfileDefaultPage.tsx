@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
 import { useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../styles/ProfileDefaultPage.module.css";
 import { ProfileSection } from "./ProfileSection";
@@ -8,6 +9,7 @@ import { SettingSection } from "./SettingSection";
 import { ProfileModalMenu } from "./ProfileModalMenu";
 
 export function ProfileDefaultPage() {
+  const t = useTranslations("profile");
   const accountModal = useAppStore((state) => state.accountModal);
   const closeAccountModal = useAppStore((state) => state.closeAccountModal);
   const setAccountModalSection = useAppStore(
@@ -30,13 +32,13 @@ export function ProfileDefaultPage() {
   const title = useMemo(() => {
     switch (accountModal.section) {
       case "profile":
-        return "My Account";
+        return t("myAccount");
       case "settings":
-        return "Settings";
+        return t("settings");
       default:
-        return "My Account";
+        return t("myAccount");
     }
-  }, [accountModal.section]);
+  }, [accountModal.section, t]);
 
   if (!accountModal.isOpen) return null;
 
@@ -57,7 +59,7 @@ export function ProfileDefaultPage() {
             type="button"
             className={styles.closeButton}
             onClick={closeAccountModal}
-            aria-label="Close"
+            aria-label={t("close")}
           >
             ×
           </button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/src/lib/schemas";
@@ -11,6 +12,7 @@ export function LoginForm() {
   const openAuthModal = useAuthModal().openLogin;
   const closeAuthModal = useAuthModal().close;
   const loginMutation = useLoginMutation();
+  const t = useTranslations("auth");
 
   const {
     register,
@@ -47,7 +49,7 @@ export function LoginForm() {
       )}
       <div className={styles.field}>
         <label htmlFor="login-identifier" className={styles.label}>
-          Email or username
+          {t("emailOrUsername")}
         </label>
         <input
           id="login-identifier"
@@ -65,7 +67,7 @@ export function LoginForm() {
 
       <div className={styles.field}>
         <label htmlFor="login-password" className={styles.label}>
-          Password
+          {t("password")}
         </label>
         <input
           id="login-password"
@@ -86,7 +88,7 @@ export function LoginForm() {
         disabled={isPending}
         className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
       >
-        {isPending ? "Sending..." : "Sign in"}
+        {isPending ? t("sending") : t("signIn")}
       </button>
 
       <div className={styles.switchContainer}>
@@ -95,7 +97,7 @@ export function LoginForm() {
           className={styles.switchLink}
           onClick={() => openAuthModal()}
         >
-          No account? Sign up
+          {t("noAccount")}
         </button>
       </div>
     </form>

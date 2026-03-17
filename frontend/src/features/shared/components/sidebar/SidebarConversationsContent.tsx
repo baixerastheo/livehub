@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { usePrivateConversationsQuery } from "@/src/features/messages/privateMessage.hooks";
@@ -14,6 +15,7 @@ import { useSidebarContext } from "./SidebarContext";
 import { SidebarEmptyState, SidebarStartButton } from "./SidebarParts";
 
 export function SidebarConversationsContent() {
+  const t = useTranslations("sidebar");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -116,8 +118,8 @@ export function SidebarConversationsContent() {
   return (
     <div className={styles.emptySection}>
       <SidebarEmptyState
-        title="No conversation"
-        subtitle="Start a new conversation to see it here."
+        title={t("noConversation")}
+        subtitle={t("noConversationSubtitle")}
       />
       <SidebarStartButton
         onClick={() => {
@@ -127,7 +129,7 @@ export function SidebarConversationsContent() {
           }
         }}
       >
-        Start conversation
+        {t("startConversation")}
       </SidebarStartButton>
     </div>
   );

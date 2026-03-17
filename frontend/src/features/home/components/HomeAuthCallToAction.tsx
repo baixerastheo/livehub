@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import styles from "../styles/Home.module.css";
 import { useAuthModal } from "../../modalAuth/store/useAuthModal";
 
 export function HomeAuthCallToAction() {
   const { openLogin, openRegister } = useAuthModal();
+  const t = useTranslations("auth");
 
   return (
     <div className={styles.authContainer}>
@@ -17,21 +19,21 @@ export function HomeAuthCallToAction() {
         className={styles.authLogo}
         priority
       />
-      <span className={styles.authLabel}>You&apos;re not logged in.</span>
+      <span className={styles.authLabel}>{t("notLoggedIn")}</span>
       <div className={styles.authActions}>
         <button
           type="button"
           className={styles.primaryButton}
           onClick={openLogin}
         >
-          Sign in
+          {t("signIn")}
         </button>
         <button
           type="button"
           className={styles.secondaryButton}
           onClick={openRegister}
         >
-          Sign up
+          {t("signUp")}
         </button>
       </div>
     </div>

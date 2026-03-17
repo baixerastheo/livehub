@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import styles from "../styles/MessagesScreen.module.css";
 import type {
@@ -32,7 +33,8 @@ const AVATAR_COLORS = [
 function buildHeaderFromPeer(
   displayName: string,
   userId: string,
-  peerUser?: { avatarUrl?: string | null } | null,
+  peerUser: { avatarUrl?: string | null } | null | undefined,
+  subtitle: string,
 ): ConversationHeaderType {
   const initial = displayName.slice(0, 2).toUpperCase() || "?";
   const colorIndex =
@@ -40,7 +42,7 @@ function buildHeaderFromPeer(
     AVATAR_COLORS.length;
   return {
     title: displayName,
-    subtitle: "Private message",
+    subtitle,
     avatarText: initial,
     avatarColor: AVATAR_COLORS[colorIndex],
     avatarUrl: peerUser?.avatarUrl ?? undefined,
@@ -49,6 +51,7 @@ function buildHeaderFromPeer(
 
 export function MessagesScreen() {
   const searchParams = useSearchParams();
+  const t = useTranslations("messages");
   const peerUserId = searchParams.get("with");
   const peerNameFromUrl = searchParams.get("name");
   const decodedPeerName = peerNameFromUrl
@@ -92,12 +95,12 @@ export function MessagesScreen() {
     return (
       <main className={styles.root}>
         <div className={styles.emptyState}>
-          <p className={styles.emptyStateTitle}>No conversation selected</p>
+          <p className={styles.emptyStateTitle}>{t("noConversationSelected")}</p>
           <p className={styles.emptyStateSubtitle}>
-            Start a private conversation from the People page.
+            {t("startPrivateConversation")}
           </p>
           <Link href="/people" className={styles.emptyStateLink}>
-            Go to People
+            {t("goToPeople")}
           </Link>
         </div>
       </main>
@@ -108,6 +111,7 @@ export function MessagesScreen() {
     displayName,
     peerUserId,
     peerUser,
+    t("privateMessage"),
   );
 
   return (
@@ -130,7 +134,7 @@ export function MessagesScreen() {
 
         {rightPanelOpen ? (
           <ConversationDetailsPanel
-            mode="Private message"
+            mode={t("privateMessage")}
             activeTitle={conversationHeader.title}
           />
         ) : null}

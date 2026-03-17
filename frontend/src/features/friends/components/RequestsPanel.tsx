@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import styles from "./FriendsPanels.module.css";
 import {
   useAcceptFriendRequestMutation,
@@ -20,6 +21,9 @@ export function RequestsPanel() {
   const requestsQuery = useFriendRequestsQuery();
   const acceptMutation = useAcceptFriendRequestMutation();
   const declineMutation = useDeclineFriendRequestMutation();
+  const t = useTranslations("friends");
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
 
   const incoming = React.useMemo(() => {
     const all = requestsQuery.data ?? [];
@@ -38,25 +42,25 @@ export function RequestsPanel() {
   if (!isAuthenticated) {
     return (
       <div className={styles.state}>
-        <div className={styles.stateTitle}>You&apos;re not logged in.</div>
+        <div className={styles.stateTitle}>{tAuth("notLoggedIn")}</div>
         <button
           type="button"
           className={styles.primaryButton}
           onClick={() => openLogin()}
         >
-          Sign in
+          {tAuth("signIn")}
         </button>
       </div>
     );
   }
 
   if (requestsQuery.isLoading)
-    return <div className={styles.state}>Loading requests…</div>;
+    return <div className={styles.state}>{t("loadingRequests")}</div>;
   if (requestsQuery.isError) {
     const message =
       requestsQuery.error instanceof Error
         ? requestsQuery.error.message
-        : "Failed to load requests.";
+        : t("failedToLoadRequests");
     return (
       <div className={styles.stateError}>
         {message}{" "}
@@ -65,19 +69,19 @@ export function RequestsPanel() {
           className={styles.retryButton}
           onClick={() => requestsQuery.refetch()}
         >
-          Retry
+          {tCommon("retry")}
         </button>
       </div>
     );
   }
-  if (count === 0) return <div className={styles.state}>No requests.</div>;
+  if (count === 0) return <div className={styles.state}>{t("noRequests")}</div>;
 
   return (
     <div className={styles.requestsGrid}>
       <div>
-        <div className={styles.subTitle}>Incoming</div>
+        <div className={styles.subTitle}>{t("incoming")}</div>
         {incoming.length === 0 ? (
-          <div className={styles.state}>No incoming requests.</div>
+          <div className={styles.state}>{t("noIncomingRequests")}</div>
         ) : (
           <ul className={styles.list}>
             {incoming.map((r) => (
@@ -94,7 +98,7 @@ export function RequestsPanel() {
                     <div className={styles.username}>
                       {getDisplayName(r.fromUser)}
                     </div>
-                    <div className={styles.subtleRow}>pending</div>
+                    <div className={styles.subtleRow}>{t("pending")}</div>
                   </div>
                 </div>
                 <div className={styles.actions}>
@@ -103,20 +107,20 @@ export function RequestsPanel() {
                     className={`${styles.iconButton} ${styles.acceptButton}`}
                     disabled={acceptMutation.isPending}
                     onClick={() => acceptMutation.mutate(r.id)}
-                    aria-label="Accept request"
+                    aria-label={t("acceptRequest")}
                   >
                     <FiCheck className={styles.buttonIcon} aria-hidden="true" />
-                    <span className={styles.srOnly}>Accept</span>
+                    <span className={styles.srOnly}>{t("accept")}</span>
                   </button>
                   <button
                     type="button"
                     className={`${styles.iconButton} ${styles.declineButton}`}
                     disabled={declineMutation.isPending}
                     onClick={() => declineMutation.mutate(r.id)}
-                    aria-label="Decline request"
+                    aria-label={t("declineRequest")}
                   >
                     <FiX className={styles.buttonIcon} aria-hidden="true" />
-                    <span className={styles.srOnly}>Decline</span>
+                    <span className={styles.srOnly}>{t("decline")}</span>
                   </button>
                 </div>
               </li>
@@ -126,9 +130,9 @@ export function RequestsPanel() {
       </div>
 
       <div>
-        <div className={styles.subTitle}>Outgoing</div>
+        <div className={styles.subTitle}>{t("outgoing")}</div>
         {outgoing.length === 0 ? (
-          <div className={styles.state}>No outgoing requests.</div>
+          <div className={styles.state}>{t("noOutgoingRequests")}</div>
         ) : (
           <ul className={styles.list}>
             {outgoing.map((r) => (
@@ -145,11 +149,11 @@ export function RequestsPanel() {
                     <div className={styles.username}>
                       {getDisplayName(r.toUser)}
                     </div>
-                    <div className={styles.subtleRow}>pending</div>
+                    <div className={styles.subtleRow}>{t("pending")}</div>
                   </div>
                 </div>
                 <div className={styles.actions}>
-                  <span className={styles.pill}>Sent</span>
+                  <span className={styles.pill}>{t("sent")}</span>
                 </div>
               </li>
             ))}

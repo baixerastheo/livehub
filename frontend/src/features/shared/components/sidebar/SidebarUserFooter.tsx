@@ -1,12 +1,15 @@
- "use client";
+"use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
 import footerStyles from "../../styles/sidebar/SidebarUserFooter.module.css";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
 
 export function SidebarUserFooter() {
+  const t = useTranslations("sidebar");
+  const tCommon = useTranslations("common");
   const { user } = useAuth();
 
   const displayName =
@@ -15,7 +18,7 @@ export function SidebarUserFooter() {
           name: user.name ?? undefined,
           email: user.email ?? undefined,
         })
-      : "Invité";
+      : t("guest");
 
   return (
     <div className={footerStyles.footer}>
@@ -32,16 +35,16 @@ export function SidebarUserFooter() {
             {user ? (
               <>
                 <span className={footerStyles.onlineDot} />
-                Online
+                {tCommon("online")}
               </>
-            ) : "Offline"}
+            ) : tCommon("offline")}
           </div>
         </div>
       </div>
       <button
         type="button"
         className={footerStyles.actionButton}
-        aria-label="Ouvrir les paramètres du compte"
+        aria-label={t("openAccountSettings")}
       >
         ⇲
       </button>

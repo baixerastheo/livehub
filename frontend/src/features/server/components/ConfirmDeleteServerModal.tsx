@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import styles from "../styles/ConfirmDeleteServerModal.module.css";
 import { useDeleteServerMutation } from "../server.hooks";
 
@@ -19,6 +20,7 @@ export function ConfirmDeleteServerModal({
   serverName,
 }: Props) {
   const router = useRouter();
+  const t = useTranslations("server");
   const deleteMutation = useDeleteServerMutation();
 
   const handleConfirm = async () => {
@@ -52,12 +54,11 @@ export function ConfirmDeleteServerModal({
       >
         <div className={styles.header}>
           <h2 id="confirm-delete-server-title" className={styles.title}>
-            Supprimer le serveur
+            {t("deleteServer")}
           </h2>
         </div>
         <p className={styles.message}>
-          Êtes-vous sûr de vouloir supprimer <strong>{serverName}</strong> ? Cette
-          action est irréversible.
+          {t("deleteServerConfirm", { serverName })}
         </p>
         <div className={styles.footer}>
           <button
@@ -66,7 +67,7 @@ export function ConfirmDeleteServerModal({
             onClick={handleClose}
             disabled={deleteMutation.isPending}
           >
-            Annuler
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -74,7 +75,7 @@ export function ConfirmDeleteServerModal({
             onClick={handleConfirm}
             disabled={deleteMutation.isPending}
           >
-            {deleteMutation.isPending ? "Suppression…" : "Supprimer"}
+            {deleteMutation.isPending ? t("deleting") : t("deleteServer")}
           </button>
         </div>
       </div>

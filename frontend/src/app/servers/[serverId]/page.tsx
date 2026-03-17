@@ -2,9 +2,11 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useChannelsByServerQuery } from "@/src/features/channel/channel.hooks";
 
 export default function ServerRedirectPage() {
+  const t = useTranslations("server");
   const params = useParams();
   const router = useRouter();
   const serverIdParam = params?.serverId;
@@ -31,7 +33,7 @@ export default function ServerRedirectPage() {
 
   return (
     <div style={{ padding: "1rem", fontSize: "0.9rem" }}>
-      Redirection vers le canal…
+      {t("redirecting")}
     </div>
   );
 }

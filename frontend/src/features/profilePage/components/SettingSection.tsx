@@ -1,60 +1,58 @@
- "use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { setLocale } from "@/src/i18n/actions";
 import styles from "../styles/SettingSection.module.css";
 
-type ThemeMode = "light" | "dark";
-
-function getStoredTheme(): ThemeMode {
-  if (typeof window === "undefined") return "light";
-  const value = window.localStorage.getItem("livehub.theme");
-  return value === "dark" ? "dark" : "light";
-}
-
 export function SettingSection() {
-  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("livehub.theme", theme);
-  }, [theme]);
+  const t = useTranslations("profile");
+  const locale = useLocale();
 
   return (
     <div className={styles.sectionStack}>
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <div className={styles.cardTitle}>Preferences</div>
-            <div className={styles.cardSubtle}>
-              Easy client-side settings stored locally.
-            </div>
+            <div className={styles.cardTitle}>{t("preferences")}</div>
+            <div className={styles.cardSubtle}>{t("preferencesSubtitle")}</div>
           </div>
         </div>
 
         <div className={styles.preferenceRow}>
           <div>
-            <div className={styles.preferenceTitle}>Theme</div>
-            <div className={styles.cardSubtle}>Light / Dark</div>
+            <div className={styles.preferenceTitle}>{t("language")}</div>
+            <div className={styles.cardSubtle}>{t("languageSubtitle")}</div>
           </div>
           <div className={styles.segmented}>
             <button
               type="button"
-              className={`${styles.segment} ${
-                theme === "light" ? styles.segmentActive : ""
-              }`}
-              onClick={() => setTheme("light")}
+              className={`${styles.segment} ${locale === "fr" ? styles.segmentActive : ""}`}
+              onClick={() => setLocale("fr")}
             >
-              Light
+              {t("french")}
             </button>
             <button
               type="button"
-              className={`${styles.segment} ${
-                theme === "dark" ? styles.segmentActive : ""
-              }`}
-              onClick={() => setTheme("dark")}
+              className={`${styles.segment} ${locale === "en" ? styles.segmentActive : ""}`}
+              onClick={() => setLocale("en")}
             >
-              Dark
+              {t("english")}
             </button>
+            <button
+              type="button"
+              className={`${styles.segment} ${locale === "es" ? styles.segmentActive : ""}`}
+              onClick={() => setLocale("es")}
+            >
+              {t("spanish")}
+            </button>
+            <button
+              type="button"
+              className={`${styles.segment} ${locale === "de" ? styles.segmentActive : ""}`}
+              onClick={() => setLocale("de")}
+            >
+              {t("german")}
+            </button>
+          
           </div>
         </div>
       </div>

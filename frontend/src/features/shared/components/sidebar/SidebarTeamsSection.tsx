@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { FiUsers, FiPlus } from "react-icons/fi";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
@@ -15,6 +16,7 @@ import { SidebarChannelsContent } from "./SidebarChannelsContent";
 import { SidebarUserFooter } from "@/src/features/shared/components/sidebar/SidebarUserFooter";
 
 export function SidebarTeamsSection() {
+  const t = useTranslations("sidebar");
   const selectedServerId = useAppStore((state) => state.selectedServerId);
   const [isAddMembersOpen, setIsAddMembersOpen] = React.useState(false);
   const [isAddChannelOpen, setIsAddChannelOpen] = React.useState(false);
@@ -46,20 +48,20 @@ export function SidebarTeamsSection() {
           <button
             type="button"
             className={channelStyles.actionButton}
-            aria-label="More members"
+            aria-label={t("moreMembers")}
             onClick={() => setIsAddMembersOpen(true)}
           >
             <FiUsers size={14} aria-hidden className={channelStyles.actionIcon} />
-            More members
+            {t("moreMembers")}
           </button>
           <button
             type="button"
             className={channelStyles.actionButton}
-            aria-label="Add a channel"
+            aria-label={t("addChannel")}
             onClick={() => setIsAddChannelOpen(true)}
           >
             <FiPlus size={14} aria-hidden className={channelStyles.actionIcon} />
-            Add a channel
+            {t("addChannel")}
           </button>
         </div>
       )}

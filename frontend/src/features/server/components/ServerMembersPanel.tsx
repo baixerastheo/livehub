@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import panelStyles from "@/src/features/messages/styles/ConversationDetailsPanel.module.css";
 import styles from "../styles/ServerMembersPanel.module.css";
 import {
@@ -27,11 +28,6 @@ function isOnline(statut: UserStatus | undefined): boolean {
 }
 
 const ROLE_ORDER: ServerRole[] = ["PROPRIETAIRE", "ADMINISTRATEUR", "MEMBRE"];
-const ROLE_SECTION_LABELS: Record<ServerRole, string> = {
-  PROPRIETAIRE: "Owner",
-  ADMINISTRATEUR: "Admin",
-  MEMBRE: "Member",
-};
 
 function groupMembersByRole<T extends { role: ServerRole }>(
   members: T[],
@@ -51,11 +47,19 @@ type Props = {
 };
 
 export function ServerMembersPanel({ serverId }: Props) {
+  const t = useTranslations("server");
+  const tCommon = useTranslations("common");
   const selectedServerId = useAppStore((s) => s.selectedServerId);
   const { data: userServers } = useUserServersQuery();
   const { data: members, isLoading, error } = useServerMembersQuery(serverId);
   const updateRoleMutation = useUpdateMemberRoleMutation(serverId);
   const transferOwnershipMutation = useTransferOwnershipMutation(serverId);
+
+  const ROLE_SECTION_LABELS: Record<ServerRole, string> = {
+    PROPRIETAIRE: t("owner"),
+    ADMINISTRATEUR: t("admin"),
+    MEMBRE: t("member"),
+  };
 
   const currentUserRole = React.useMemo(
     () =>
@@ -74,22 +78,22 @@ export function ServerMembersPanel({ serverId }: Props) {
   return (
     <aside
       className={panelStyles.rightPanel}
-      aria-label="Membres du serveur"
+      aria-label={t("membersPanel")}
     >
-      <div className={panelStyles.panelTitle}>Membres</div>
+      <div className={panelStyles.panelTitle}>{t("members")}</div>
 
       {error && (
         <div className={styles.error}>
-          Impossible de charger les membres.
+          {t("cannotLoadMembers")}
         </div>
       )}
 
       {isLoading && (
-        <div className={styles.loading}>Chargement…</div>
+        <div className={styles.loading}>{t("loadingMembers")}</div>
       )}
 
       {!error && !isLoading && (!members || members.length === 0) && (
-        <div className={styles.empty}>Aucun membre.</div>
+        <div className={styles.empty}>{t("noMembers")}</div>
       )}
 
       {!error && !isLoading && members && members.length > 0 && (
@@ -121,13 +125,13 @@ export function ServerMembersPanel({ serverId }: Props) {
                           }
                           aria-label={
                             isOnline(member.user.statut)
-                              ? "En ligne"
-                              : "Hors ligne"
+                              ? tCommon("online")
+                              : tCommon("offline")
                           }
                           title={
                             isOnline(member.user.statut)
-                              ? "En ligne"
-                              : "Hors ligne"
+                              ? tCommon("online")
+                              : tCommon("offline")
                           }
                         />
                       </div>
@@ -156,13 +160,13 @@ export function ServerMembersPanel({ serverId }: Props) {
                               }
                               title={
                                 member.role === ROLE_ADMINISTRATEUR
-                                  ? "Retirer le rôle admin"
-                                  : "Passer admin"
+                                  ? t("removeAdmin")
+                                  : t("makeAdmin")
                               }
                             >
                               {member.role === ROLE_ADMINISTRATEUR
-                                ? "Retirer admin"
-                                : "Passer admin"}
+                                ? t("removeAdmin")
+                                : t("makeAdmin")}
                             </button>
                             <button
                               type="button"
@@ -170,7 +174,7 @@ export function ServerMembersPanel({ serverId }: Props) {
                               onClick={() => {
                                 if (
                                   window.confirm(
-                                    `Transférer la propriété du serveur à ${getDisplayName(member.user)} ? Vous deviendrez administrateur.`,
+                                    t("transferOwnership"),
                                   )
                                 ) {
                                   transferOwnershipMutation.mutate(member.userId);
@@ -180,9 +184,9 @@ export function ServerMembersPanel({ serverId }: Props) {
                                 updateRoleMutation.isPending ||
                                 transferOwnershipMutation.isPending
                               }
-                              title="Transférer la propriété"
+                              title={t("transferOwnership")}
                             >
-                              Céder propriété
+                              {t("transferOwnership")}
                             </button>
                           </>
                         )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/MessageComposer.module.css";
 import { FiPlus } from "react-icons/fi";
 
@@ -14,8 +15,11 @@ export function MessageComposer({
   value,
   onChange,
   onSubmit,
-  placeholder = "Envoyer un message…",
+  placeholder,
 }: Props) {
+  const t = useTranslations("messages");
+  const resolvedPlaceholder = placeholder ?? t("sendMessagePlaceholder");
+
   return (
     <form
       className={styles.composer}
@@ -29,7 +33,7 @@ export function MessageComposer({
           <button
             type="button"
             className={styles.composerIconButton}
-            aria-label="Add attachment"
+            aria-label={t("addAttachment")}
           >
             <FiPlus />
           </button>
@@ -39,8 +43,8 @@ export function MessageComposer({
           className={styles.input}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          aria-label="Message input"
+          placeholder={resolvedPlaceholder}
+          aria-label={resolvedPlaceholder}
         />
 
         <button type="submit" style={{ display: "none" }} aria-hidden="true">

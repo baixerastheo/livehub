@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../../styles/navbar/Navbar.module.css";
 
 type NavbarModalProfileProps = {
@@ -15,19 +16,22 @@ export function NavbarModalProfile({
   onMyFriends,
   onLogout,
 }: NavbarModalProfileProps) {
+  const tNav = useTranslations("nav");
+  const tAuth = useTranslations("auth");
+
   return (
-    <div className={styles.profileDropdown} role="menu" aria-label="Profile menu">
+    <div className={styles.profileDropdown} role="menu" aria-label={tNav("profileMenu")}>
       <div className={styles.profileHeader}>
-        <p className={styles.profileUsername}>{username || "Logged in"}</p>
-        <div className={styles.profileSubtle}>Account</div>
+        <p className={styles.profileUsername}>{username}</p>
+        <div className={styles.profileSubtle}>{tNav("account")}</div>
       </div>
       <div className={styles.dropdownDivider} />
       <div className={styles.dropdownActions}>
         <button type="button" className={styles.dropdownButton} onClick={onMyAccount}>
-          My Account
+          {tNav("myAccount")}
         </button>
         <button type="button" className={styles.dropdownButton} onClick={onMyFriends}>
-          Friends
+          {tNav("friends")}
         </button>
         <div className={styles.dropdownDivider} />
         <button
@@ -35,7 +39,7 @@ export function NavbarModalProfile({
           className={`${styles.dropdownButton} ${styles.dropdownButtonDanger}`}
           onClick={onLogout}
         >
-          Logout
+          {tAuth("logout")}
         </button>
       </div>
     </div>

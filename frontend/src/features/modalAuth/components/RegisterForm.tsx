@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/src/lib/schemas";
@@ -12,6 +13,8 @@ export function RegisterForm() {
   const openAuthModal = useAuthModal().openLogin;
   const closeAuthModal = useAuthModal().close;
   const registerMutation = useRegisterMutation();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
 
   const {
     register,
@@ -49,7 +52,7 @@ export function RegisterForm() {
       )}
       <div className={styles.field}>
         <label htmlFor="register-username" className={styles.label}>
-          Username
+          {t("username")}
         </label>
         <input
           id="register-username"
@@ -67,7 +70,7 @@ export function RegisterForm() {
 
       <div className={styles.field}>
         <label htmlFor="register-email" className={styles.label}>
-          Email
+          {t("email")}
         </label>
         <input
           id="register-email"
@@ -85,7 +88,7 @@ export function RegisterForm() {
 
       <div className={styles.field}>
         <label htmlFor="register-password" className={styles.label}>
-          Password
+          {t("password")}
         </label>
         <input
           id="register-password"
@@ -103,7 +106,7 @@ export function RegisterForm() {
 
       <div className={styles.field}>
         <label htmlFor="register-confirmPassword" className={styles.label}>
-          Confirm password
+          {t("confirmPassword")}
         </label>
         <input
           id="register-confirmPassword"
@@ -124,11 +127,11 @@ export function RegisterForm() {
         disabled={isPending}
         className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
       >
-        {isPending ? "Sending..." : "Create account"}
+        {isPending ? t("sending") : t("createAccount")}
       </button>
 
       <div className={styles.divider}>
-        <span>or</span>
+        <span>{tCommon("or")}</span>
       </div>
 
       <button
@@ -145,7 +148,7 @@ export function RegisterForm() {
         >
           <path d="M5.164 0L.001 18.932 18.836 24l5.163-18.932L5.164 0zm7.453 14.531l-3.26-.871.865-3.24 3.26.871-.865 3.24z" />
         </svg>
-        Continue with Roblox
+        {t("continueWithRoblox")}
       </button>
 
       <button
@@ -176,7 +179,7 @@ export function RegisterForm() {
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Continue with Google
+        {t("continueWithGoogle")}
       </button>
 
       <div className={styles.switchContainer}>
@@ -185,7 +188,7 @@ export function RegisterForm() {
           className={styles.switchLink}
           onClick={() => openAuthModal()}
         >
-          Already have an account? Sign in
+          {t("hasAccount")}
         </button>
       </div>
     </form>

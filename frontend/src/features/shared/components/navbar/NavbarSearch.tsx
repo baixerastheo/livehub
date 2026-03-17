@@ -1,22 +1,26 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import styles from "../../styles/navbar/NavbarSearch.module.css";
 
 type NavbarSearchProps = {
   placeholder?: string;
 };
 
-export function NavbarSearch({
-  placeholder = "Search conversations, channels, people...",
-}: NavbarSearchProps) {
+export function NavbarSearch({ placeholder }: NavbarSearchProps) {
+  const t = useTranslations("nav");
+  const resolvedPlaceholder = placeholder ?? t("searchPlaceholder");
+
   return (
     <div className={styles.searchWrapper}>
       <input
         type="text"
         className={styles.searchInput}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
       />
       <button
         type="button"
-        aria-label="Search"
+        aria-label={t("search")}
         className={styles.searchIconButton}
       >
         <span className={styles.searchIcon} aria-hidden="true">
