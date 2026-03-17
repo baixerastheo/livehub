@@ -80,6 +80,16 @@ export function Sidebar() {
     closeMobileSidebars();
   }, [pathname]);
 
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        closeMobileSidebars();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [closeMobileSidebars]);
+
   return (
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>
       <SidebarCloseButton />

@@ -48,19 +48,19 @@ export class MessageService {
         ],
       },
       orderBy: { creeLe: 'desc' },
-      select: { expediteurId: true, destinataireId: true, creeLe: true },
+      select: { expediteurId: true, destinataireId: true, creeLe: true, contenu: true },
     });
 
-    const peerIdToLastAt = new Map<string, Date>();
+    const peerIdToLast = new Map<string, { at: Date; content: string }>();
     for (const m of messages) {
       const peerId =
         m.expediteurId === currentUserId ? m.destinataireId : m.expediteurId;
-      if (!peerIdToLastAt.has(peerId)) {
-        peerIdToLastAt.set(peerId, m.creeLe);
+      if (!peerIdToLast.has(peerId)) {
+        peerIdToLast.set(peerId, { at: m.creeLe, content: m.contenu });
       }
     }
 
-    const peerIds = Array.from(peerIdToLastAt.keys());
+    const peerIds = Array.from(peerIdToLast.keys());
     if (peerIds.length === 0) return [];
 
     const users = await this.prisma.user.findMany({
@@ -74,7 +74,8 @@ export class MessageService {
         .map((id) => ({
           id,
           user: userById.get(id),
-          lastMessageAt: peerIdToLastAt.get(id),
+          lastMessageAt: peerIdToLast.get(id)?.at,
+          lastMessageContent: peerIdToLast.get(id)?.content,
         }))
         .filter(
           (
@@ -83,9 +84,10 @@ export class MessageService {
             id: string;
             user: (typeof users)[number];
             lastMessageAt: Date | undefined;
+            lastMessageContent: string | undefined;
           } => x.user != null,
         )
-        .map(async ({ user, lastMessageAt }) => {
+        .map(async ({ user, lastMessageAt, lastMessageContent }) => {
           let avatarUrl: string | null = null;
           if (user.avatarPath) {
             try {
@@ -95,7 +97,7 @@ export class MessageService {
             }
           }
           const { avatarPath: _avatarPath, ...peer } = user;
-          return { peer: { ...peer, avatarUrl }, lastMessageAt };
+          return { peer: { ...peer, avatarUrl }, lastMessageAt, lastMessageContent };
         }),
     );
 

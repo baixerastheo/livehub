@@ -36,6 +36,15 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+.bubbleRow:hover .deleteButton,
+.deleteButtonVisible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .deleteButton:hover:not(:disabled) {

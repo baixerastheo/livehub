@@ -57,7 +57,8 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  background: #ffffff;
+  /* Même fond que la navbar / ConversationHeader pour éviter les micro différences au scroll */
+  background: var(--surface);
 }
 
 .typingIndicator {
@@ -74,5 +75,6 @@
   .root {
     height: auto;
     min-height: calc(100vh - var(--app-navbar-height));
+    overflow: visible;
   }
 }

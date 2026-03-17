@@ -44,7 +44,6 @@ function groupMembersByRole<T extends { role: ServerRole }>(
 
 type Props = {
   serverId: number;
-  onClose?: () => void;
 };
 
 export function ServerMembersPanel({ serverId }: Props) {
@@ -115,7 +114,6 @@ export function ServerMembersPanel({ serverId }: Props) {
                           avatarUrl={member.user.avatarUrl}
                           displayName={getDisplayName(member.user)}
                           size="smMd"
-                          className={styles.avatar}
                           aria-hidden
                         />
                         <span

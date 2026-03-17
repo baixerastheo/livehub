@@ -177,7 +177,7 @@
 
 .menuButton {
   display: none;
-  border: 1px solid var(--border-subtle);
+  border: none;
   background: var(--surface);
   width: 32px;
   height: 32px;

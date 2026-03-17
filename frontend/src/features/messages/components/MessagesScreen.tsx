@@ -78,7 +78,9 @@ export function MessagesScreen() {
     }));
   }, [conversationData?.messages]);
 
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(
+    () => typeof window !== "undefined" && window.innerWidth > 980,
+  );
   const [composerValue, setComposerValue] = React.useState("");
 
   const send = async () => {
@@ -117,11 +119,13 @@ export function MessagesScreen() {
     );
   }
 
+  const peerStatus = peerUser?.statut === "EN_LIGNE" ? "Online" : "Offline";
+
   const conversationHeader = buildHeaderFromPeer(
     displayName,
     peerUserId,
     peerUser,
-    t("privateMessage"),
+    peerStatus,
   );
 
   return (
@@ -147,7 +151,6 @@ export function MessagesScreen() {
           <ConversationDetailsPanel
             mode={t("privateMessage")}
             activeTitle={conversationHeader.title}
-            onClose={() => setRightPanelOpen(false)}
           />
         ) : null}
       </div>

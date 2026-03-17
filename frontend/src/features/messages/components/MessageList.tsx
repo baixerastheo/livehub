@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useTranslations } from "next-intl";
 import styles from "../styles/MessageList.module.css";
 import type { ChatMessage } from "@/src/features/messages/messages.mock";
@@ -20,6 +21,11 @@ export function MessageList({
   isDeletingMessageId = null,
 }: Props) {
   const t = useTranslations("messages");
+  const bottomRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [messages]);
 
   return (
     <div className={styles.messages} role="list" aria-label="Message list">
@@ -43,6 +49,7 @@ export function MessageList({
           />
         ))
       )}
+      <div ref={bottomRef} />
     </div>
   );
 }

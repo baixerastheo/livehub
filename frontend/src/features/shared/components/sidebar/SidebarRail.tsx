@@ -12,7 +12,7 @@ import {
   FiPlus,
   FiChevronDown,
 } from "react-icons/fi";
-import { ModalCreateServer } from "@/src/features/server/components/ModalCreateServer";
+import { ModalCreateServer } from "@/src/features/server/components/modalCreateServer";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
 
 type RailItem = "activity" | "conversation" | "teams";

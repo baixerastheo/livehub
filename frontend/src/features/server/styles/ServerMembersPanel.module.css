@@ -52,11 +52,9 @@
 .avatarWrapper {
   position: relative;
   flex-shrink: 0;
+  display: inline-flex;
 }
 
-.avatar {
-  display: block;
-}
 
 .statusOnline,
 .statusOffline {
@@ -66,16 +64,16 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
   box-sizing: border-box;
 }
 
 .statusOnline {
-  background-color: #22c55e;
+  background-color: var(--success);
 }
 
 .statusOffline {
-  background-color: #ef4444;
+  background-color: var(--danger);
 }
 
 .memberInfo {

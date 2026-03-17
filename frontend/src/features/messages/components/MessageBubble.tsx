@@ -27,14 +27,10 @@ export function MessageBubble({
 }: Props) {
   const t = useTranslations("messages");
   const isMe = message.isMe ?? false;
-  const [showDelete, setShowDelete] = React.useState(false);
-
   return (
     <div
       className={`${styles.bubbleRow} ${isMe ? styles.bubbleRowMe : ""}`}
       role="listitem"
-      onMouseEnter={() => setShowDelete(true)}
-      onMouseLeave={() => setShowDelete(false)}
     >
       <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : ""}`}>
         <div className={styles.bubbleMeta}>
@@ -44,10 +40,10 @@ export function MessageBubble({
           <span className={styles.time}>
             {formatTime(message.createdAtIso)}
           </span>
-          {canDelete && onDelete && (showDelete || isDeleting) && (
+          {canDelete && onDelete && (
             <button
               type="button"
-              className={styles.deleteButton}
+              className={`${styles.deleteButton} ${isDeleting ? styles.deleteButtonVisible : ""}`}
               onClick={(e) => {
                 e.preventDefault();
                 onDelete();

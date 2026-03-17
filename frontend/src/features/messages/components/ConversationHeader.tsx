@@ -38,7 +38,16 @@ export function ConversationHeader({ header, onToggleDetails }: Props) {
             ))}
           <div style={{ minWidth: 0 }}>
             <div className={styles.title}>{header.title}</div>
-            <div className={styles.subtitle}>{header.subtitle}</div>
+            <div className={styles.subtitle}>
+              {header.subtitle === "Online" || header.subtitle === "Offline" ? (
+                <>
+                  <span className={header.subtitle === "Online" ? styles.dotOnline : styles.dotOffline} />
+                  <span className={header.subtitle === "Online" ? styles.textOnline : styles.textOffline}>
+                    {header.subtitle}
+                  </span>
+                </>
+              ) : header.subtitle}
+            </div>
           </div>
         </div>
       </div>
