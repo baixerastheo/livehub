@@ -33,6 +33,7 @@
   border: 1px solid var(--border-subtle);
   background: var(--surface-elevated);
   color: var(--text-secondary);
+  font-size: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,8 +41,42 @@
   line-height: 0;
 }
 
+.composerIconButton svg {
+  width: 18px;
+  height: 18px;
+}
+
 .composerIconButton:hover {
   background: rgba(255, 255, 255, 1);
+}
+
+.composerGifButton {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.composerGifButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.composerGifButton:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.composerGifButton:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
 }
 
 .input {
@@ -62,6 +97,12 @@
 
 .composerBar:focus-within {
   background: rgba(15, 23, 42, 0.05);
+}
+
+.gifPickerPopover {
+  position: absolute;
+  right: 18px;
+  bottom: 64px;
 }
 
 @media (max-width: 700px) {

@@ -6,6 +6,7 @@ import styles from "../styles/ConversationDetailsPanel.module.css";
 type Props = {
   mode: string;
   activeTitle: string;
+  onClose?: () => void;
 };
 
 export function ConversationDetailsPanel({ mode, activeTitle }: Props) {

@@ -44,6 +44,7 @@ function groupMembersByRole<T extends { role: ServerRole }>(
 
 type Props = {
   serverId: number;
+  onClose?: () => void;
 };
 
 export function ServerMembersPanel({ serverId }: Props) {

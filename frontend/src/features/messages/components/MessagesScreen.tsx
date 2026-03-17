@@ -91,6 +91,16 @@ export function MessagesScreen() {
     }
   };
 
+  const sendGif = async (gif: import("@/src/features/shared/lib/api/gifs.types").Gif) => {
+    if (!peerUserId) return;
+    const url = gif.file?.md?.gif?.url ?? gif.file?.sm?.gif?.url ?? gif.file?.hd?.gif?.url ?? "";
+    if (!url) return;
+    try {
+      await sendMessageMutation.mutateAsync({ peerUserId, content: `[gif]${url}` });
+    } catch {
+    }
+  };
+
   if (!peerUserId) {
     return (
       <main className={styles.root}>
@@ -129,6 +139,7 @@ export function MessagesScreen() {
             value={composerValue}
             onChange={setComposerValue}
             onSubmit={send}
+            onGifSelect={sendGif}
           />
         </section>
 
@@ -136,6 +147,7 @@ export function MessagesScreen() {
           <ConversationDetailsPanel
             mode={t("privateMessage")}
             activeTitle={conversationHeader.title}
+            onClose={() => setRightPanelOpen(false)}
           />
         ) : null}
       </div>

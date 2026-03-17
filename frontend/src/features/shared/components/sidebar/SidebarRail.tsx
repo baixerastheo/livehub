@@ -129,7 +129,7 @@ export function SidebarRail() {
                       className={styles.serverAvatarButton}
                       onClick={() => {
                         setSelectedServerId(server.id);
-                        activate("teams");
+                        setSidebarSection("teams");
                         router.push(`/servers/${server.id}`);
                       }}
                       aria-label={`Open server ${server.name}`}

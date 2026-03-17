@@ -1,14 +1,18 @@
-"use client";
+ "use client";
 
 import { useTranslations } from "next-intl";
 import styles from "../styles/MessageComposer.module.css";
 import { FiPlus } from "react-icons/fi";
+import { MdOutlineGif } from "react-icons/md";
+import type { Gif } from "@/src/features/shared/lib/api/gifs.types";
+import { GifPicker } from "./GifPicker";
 
 type Props = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   placeholder?: string;
+  onGifSelect?: (gif: Gif) => void;
 };
 
 export function MessageComposer({
@@ -50,7 +54,28 @@ export function MessageComposer({
         <button type="submit" style={{ display: "none" }} aria-hidden="true">
           Send
         </button>
+
+        <button
+          type="button"
+          className={styles.composerGifButton}
+          aria-label="Add GIF"
+          onClick={() => setIsGifPickerOpen((prev) => !prev)}
+        >
+          <MdOutlineGif />
+        </button>
       </div>
+
+      {isGifPickerOpen && (
+        <div className={styles.gifPickerPopover}>
+          <GifPicker
+            onSelect={(gif) => {
+              onGifSelect?.(gif);
+              setIsGifPickerOpen(false);
+            }}
+            onClose={() => setIsGifPickerOpen(false)}
+          />
+        </div>
+      )}
     </form>
   );
 }

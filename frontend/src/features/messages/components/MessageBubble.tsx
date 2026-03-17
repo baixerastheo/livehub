@@ -64,7 +64,15 @@ export function MessageBubble({
           )}
         </div>
         <div className={styles.text}>
-          {message.content}
+          {message.content.startsWith("[gif]") ? (
+            <img
+              src={message.content.slice(5)}
+              alt="GIF"
+              className={styles.gifImage}
+            />
+          ) : (
+            message.content
+          )}
         </div>
       </div>
     </div>

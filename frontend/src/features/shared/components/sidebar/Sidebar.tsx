@@ -67,11 +67,17 @@ export function Sidebar() {
   const resetOnLogout = useAppStore((state) => state.resetOnLogout);
   const { isAuthenticated, isLoading } = useAuth();
 
+  const pathname = usePathname();
+
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       resetOnLogout();
     }
   }, [isAuthenticated, isLoading, resetOnLogout]);
+
+  React.useEffect(() => {
+    closeMobileSidebars();
+  }, [pathname]);
 
   return (
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>
