@@ -55,7 +55,9 @@ export function ChannelMessagesScreen() {
   const { data: userServers } = useUserServersQuery();
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
   const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(
+    () => typeof window !== "undefined" && window.innerWidth > 980,
+  );
   const [composerValue, setComposerValue] = React.useState("");
 
   useChannelMessagesRealtime(channelId);
@@ -188,7 +190,7 @@ export function ChannelMessagesScreen() {
         </section>
 
         {rightPanelOpen ? (
-          <ServerMembersPanel serverId={channel.serverId} onClose={() => setRightPanelOpen(false)} />
+          <ServerMembersPanel serverId={channel.serverId} />
         ) : null}
       </div>
     </main>

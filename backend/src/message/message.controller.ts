@@ -33,7 +33,7 @@ export class MessageController {
     const list = await this.messageService.listPrivateConversations(
       req.user.id,
     );
-    return list.map(({ peer, lastMessageAt }) => ({
+    return list.map(({ peer, lastMessageAt, lastMessageContent }) => ({
       peer: {
         id: peer.id,
         name: peer.name,
@@ -41,6 +41,7 @@ export class MessageController {
         avatarUrl: peer.avatarUrl,
       },
       lastMessageAt: lastMessageAt?.toISOString() ?? null,
+      lastMessageContent: lastMessageContent ?? null,
     }));
   }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { CurrentUserAvatar } from "@/src/features/shared/components/avatar/CurrentUserAvatar";
@@ -42,6 +41,9 @@ export function SidebarUserFooter() {
         type="button"
         className={footerStyles.actionButton}
         aria-label={t("openAccountSettings")}
+        onClick={() => {
+          openAccountModal("profile");
+        }}
       >
         <IoSettingsOutline />
       </button>

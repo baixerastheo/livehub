@@ -26,6 +26,7 @@ export type SendPrivateMessageResponseDto = PrivateMessageDto;
 export type PrivateConversationListItemDto = {
   peer: PrivateConversationPeerDto;
   lastMessageAt: string | null;
+  lastMessageContent: string | null;
 };
 
 export type ListPrivateConversationsResponseDto =

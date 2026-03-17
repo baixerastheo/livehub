@@ -126,13 +126,33 @@ export class MessageGateway
       this.server.to('server:' + serveurId).emit(serverEvent, { userId });
     }
 
+    const recipientIds = new Set<string>();
+
     const friendships = await this.prisma.amitie.findMany({
       where: { OR: [{ userAId: userId }, { userBId: userId }] },
       select: { userAId: true, userBId: true },
     });
     for (const { userAId, userBId } of friendships) {
-      const friendId = userAId === userId ? userBId : userAId;
-      this.server.to('user:' + friendId).emit(friendEvent, { userId });
+      recipientIds.add(userAId === userId ? userBId : userAId);
+    }
+
+    const [sent, received] = await Promise.all([
+      this.prisma.messagePrive.findMany({
+        where: { expediteurId: userId },
+        select: { destinataireId: true },
+        distinct: ['destinataireId'],
+      }),
+      this.prisma.messagePrive.findMany({
+        where: { destinataireId: userId },
+        select: { expediteurId: true },
+        distinct: ['expediteurId'],
+      }),
+    ]);
+    for (const { destinataireId } of sent) recipientIds.add(destinataireId);
+    for (const { expediteurId } of received) recipientIds.add(expediteurId);
+
+    for (const recipientId of recipientIds) {
+      this.server.to('user:' + recipientId).emit(friendEvent, { userId });
     }
   }
 

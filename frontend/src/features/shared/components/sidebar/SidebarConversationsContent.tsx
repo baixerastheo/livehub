@@ -8,6 +8,29 @@ import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { usePrivateConversationsQuery } from "@/src/features/messages/privateMessage.hooks";
 import { useUserQuery } from "@/src/features/users/users.hooks";
+
+function formatLastTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const now = new Date();
+  const isToday =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  if (isToday) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString([], { weekday: "short" });
+}
+
+function PeerStatusDot({ peerId }: { peerId: string }) {
+  const { data } = useUserQuery(peerId);
+  const isOnline = data?.statut === "EN_LIGNE";
+  return (
+    <span
+      className={isOnline ? styles.dotOnline : styles.dotOffline}
+      aria-hidden
+    />
+  );
+}
 import { ParticlesBackground } from "@/src/features/shared/components/particles/ParticlesBackground";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
@@ -38,6 +61,8 @@ export function SidebarConversationsContent() {
             email: "",
             avatarUrl: undefined as string | null | undefined,
           },
+          lastMessageContent: null as string | null,
+          lastMessageAt: null as string | null,
         }
       : null;
 
@@ -63,7 +88,7 @@ export function SidebarConversationsContent() {
   if (showList) {
     return (
       <ul className={styles.list} aria-label="Conversations">
-        {conversationItems.map(({ peer }) => {
+        {conversationItems.map(({ peer, lastMessageContent, lastMessageAt }) => {
           const name = getDisplayName(peer);
           const isActive = activePeerId === peer.id;
           const isHovered = hoveredPeerId === peer.id;
@@ -96,16 +121,31 @@ export function SidebarConversationsContent() {
                   onClick={onClose}
                   aria-current={isActive ? "true" : undefined}
                 >
-                  <span className={styles.avatar}>
-                    <UserAvatar
-                      avatarUrl={avatarUrl}
-                      displayName={name}
-                      size="md"
-                      className={styles.avatarInner}
-                      aria-hidden
-                    />
+                  <span className={styles.avatarWrapper}>
+                    <span className={styles.avatar}>
+                      <UserAvatar
+                        avatarUrl={avatarUrl}
+                        displayName={name}
+                        size="md"
+                        className={styles.avatarInner}
+                        aria-hidden
+                      />
+                    </span>
+                    <PeerStatusDot peerId={peer.id} />
                   </span>
-                  <span className={styles.name}>{name}</span>
+                  <span className={styles.textBlock}>
+                    <span className={styles.nameRow}>
+                      <span className={styles.name}>{name}</span>
+                      {lastMessageAt && (
+                        <span className={styles.lastTime}>{formatLastTime(lastMessageAt)}</span>
+                      )}
+                    </span>
+                    {lastMessageContent && (
+                      <span className={styles.lastMsg}>
+                        {lastMessageContent.startsWith("[gif]") ? "🖼 GIF" : lastMessageContent}
+                      </span>
+                    )}
+                  </span>
                 </Link>
               </div>
             </li>
