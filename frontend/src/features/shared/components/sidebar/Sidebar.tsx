@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import {

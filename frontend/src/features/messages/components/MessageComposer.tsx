@@ -1,5 +1,6 @@
  "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import styles from "../styles/MessageComposer.module.css";
 import { FiPlus } from "react-icons/fi";
@@ -20,7 +21,9 @@ export function MessageComposer({
   onChange,
   onSubmit,
   placeholder,
+  onGifSelect,
 }: Props) {
+  const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
   const t = useTranslations("messages");
   const resolvedPlaceholder = placeholder ?? t("sendMessagePlaceholder");
 
