@@ -48,9 +48,10 @@ function groupMembersByRole<T extends { role: ServerRole }>(
 
 type Props = {
   serverId: number;
+  onClose?: () => void;
 };
 
-export function ServerMembersPanel({ serverId }: Props) {
+export function ServerMembersPanel({ serverId, onClose }: Props) {
   const selectedServerId = useAppStore((s) => s.selectedServerId);
   const { data: userServers } = useUserServersQuery();
   const { data: members, isLoading, error } = useServerMembersQuery(serverId);
@@ -76,7 +77,14 @@ export function ServerMembersPanel({ serverId }: Props) {
       className={panelStyles.rightPanel}
       aria-label="Membres du serveur"
     >
-      <div className={panelStyles.panelTitle}>Membres</div>
+      <div className={panelStyles.panelHeader}>
+        <div className={panelStyles.panelTitle}>Membres</div>
+        {onClose && (
+          <button type="button" className={panelStyles.closeButton} onClick={onClose} aria-label="Fermer">
+            ×
+          </button>
+        )}
+      </div>
 
       {error && (
         <div className={styles.error}>

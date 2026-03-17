@@ -92,8 +92,8 @@ export function ParticlesBackground({
       const { w, h } = getSize();
 
       let targetCount = Math.min(
-        1200,
-        Math.max(400, Math.floor((w * h) / 3200)),
+        500,
+        Math.max(150, Math.floor((w * h) / 8000)),
       );
       if (maxParticlesProp != null) {
         targetCount = Math.min(targetCount, maxParticlesProp);
@@ -109,8 +109,8 @@ export function ParticlesBackground({
       };
 
       const baseR = isSubtle ? 0.55 : 0.7;
-      const baseAlphaMin = isSubtle ? 0.18 : 0.32;
-      const baseAlphaRange = isSubtle ? 0.17 : 0.28;
+      const baseAlphaMin = isSubtle ? 0.08 : 0.12;
+      const baseAlphaRange = isSubtle ? 0.08 : 0.12;
 
       for (let i = 0; i < targetCount; i++) {
         particles.push({
@@ -211,7 +211,7 @@ export function ParticlesBackground({
           const dy = qy1 - py1;
           const dist2 = dx * dx + dy * dy;
           if (dist2 > drawLinkMaxRadius2) continue;
-          const linkAlpha = isSubtle ? 0.045 : 0.06;
+          const linkAlpha = isSubtle ? 0.02 : 0.03;
           const alpha = linkAlpha * (1 - 0.5 * Math.random());
           ctx.strokeStyle = getColorRgba(p.color, alpha);
           ctx.beginPath();
@@ -273,7 +273,7 @@ export function ParticlesBackground({
       if (pointerActive) {
         const connectRadius = isSubtle ? 50 : 110;
         const connectRadius2 = connectRadius * connectRadius;
-        const connectAlphaMax = isSubtle ? 0.16 : 0.22;
+        const connectAlphaMax = isSubtle ? 0.08 : 0.12;
         ctx.lineWidth = 1;
         for (const p of particles) {
           const dx = p.x - px;

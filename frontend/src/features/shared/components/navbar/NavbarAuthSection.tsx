@@ -6,10 +6,8 @@ import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useLogoutMutation } from "@/src/features/auth/auth.hooks";
-import { useProfile } from "@/src/features/profilePage/profile.hooks";
 import { useToast } from "@/src/core/store/toast/useToastStore";
-import { UserAvatar } from "../avatar/UserAvatar";
-import { getDisplayName } from "../../lib/displayName";
+import { CurrentUserAvatar } from "../avatar/CurrentUserAvatar";
 import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
@@ -25,9 +23,7 @@ export function NavbarAuthSection() {
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: profile } = useProfile(user?.id);
-  const username =
-    user?.name?.trim() || user?.email?.trim() || "Logged in";
+  const username = user?.name?.trim() || user?.email?.trim() || "Logged in";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -78,11 +74,7 @@ export function NavbarAuthSection() {
           onClick={toggleProfileMenu}
         >
           <span className={styles.profileAvatar} aria-hidden="true">
-            <UserAvatar
-              avatarUrl={profile?.avatarUrl}
-              displayName={getDisplayName(user ?? {})}
-              size="sm"
-            />
+            <CurrentUserAvatar size="sm" />
           </span>
         </button>
         {isOpen ? (
