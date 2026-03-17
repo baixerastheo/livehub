@@ -16,7 +16,7 @@ function extractGifList(payload: KlipyListResponse | Gif[] | undefined): Gif[] {
 
   if (Array.isArray(payload)) return payload;
 
-  const anyPayload = payload as any;
+  const anyPayload = payload as Record<string, unknown>;
 
   if (Array.isArray(anyPayload.data)) return anyPayload.data;
   if (Array.isArray(anyPayload.results)) return anyPayload.results;
