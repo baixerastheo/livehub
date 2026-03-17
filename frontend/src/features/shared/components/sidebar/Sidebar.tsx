@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import {
   SidebarContext,
@@ -65,11 +66,17 @@ export function Sidebar() {
   const resetOnLogout = useAppStore((state) => state.resetOnLogout);
   const { isAuthenticated, isLoading } = useAuth();
 
+  const pathname = usePathname();
+
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       resetOnLogout();
     }
   }, [isAuthenticated, isLoading, resetOnLogout]);
+
+  React.useEffect(() => {
+    closeMobileSidebars();
+  }, [pathname]);
 
   return (
     <SidebarRoot isOpen={isOpen} onClose={closeMobileSidebars}>

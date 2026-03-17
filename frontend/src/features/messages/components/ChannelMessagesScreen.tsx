@@ -103,6 +103,17 @@ export function ChannelMessagesScreen() {
     }
   };
 
+  const sendGif = async (gif: import("@/src/features/shared/lib/api/gifs.types").Gif) => {
+    if (channelId == null) return;
+    const url = gif.file?.md?.gif?.url ?? gif.file?.sm?.gif?.url ?? gif.file?.hd?.gif?.url ?? "";
+    if (!url) return;
+    try {
+      await sendMessageMutation.mutateAsync(`[gif]${url}`);
+    } catch {
+      // ignore
+    }
+  };
+
   if (channelId == null || Number.isNaN(channelId)) {
     return (
       <main className={styles.root}>
@@ -190,13 +201,14 @@ export function ChannelMessagesScreen() {
                 value={composerValue}
                 onChange={setComposerValue}
                 onSubmit={send}
+                onGifSelect={sendGif}
               />
             </>
           )}
         </section>
 
         {rightPanelOpen ? (
-          <ServerMembersPanel serverId={channel.serverId} />
+          <ServerMembersPanel serverId={channel.serverId} onClose={() => setRightPanelOpen(false)} />
         ) : null}
       </div>
     </main>

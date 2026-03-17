@@ -1,14 +1,15 @@
  "use client";
 
-import React from "react";
 import { useAuth } from "@/src/core/store/auth/useAuth";
-import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { CurrentUserAvatar } from "@/src/features/shared/components/avatar/CurrentUserAvatar";
 import footerStyles from "../../styles/sidebar/SidebarUserFooter.module.css";
 import { getDisplayName } from "@/src/features/shared/lib/displayName";
+import { IoSettingsOutline } from "react-icons/io5";
+import { useAppStore } from "@/src/core/store/appStore";
 
 export function SidebarUserFooter() {
   const { user } = useAuth();
-
+  const openAccountModal = useAppStore((state) => state.openAccountModal);
   const displayName =
     user != null
       ? getDisplayName({
@@ -20,12 +21,7 @@ export function SidebarUserFooter() {
   return (
     <div className={footerStyles.footer}>
       <div className={footerStyles.left}>
-        <UserAvatar
-          avatarUrl={user?.image ?? undefined}
-          displayName={displayName}
-          size="sm"
-          className={footerStyles.avatar}
-        />
+        <CurrentUserAvatar size="smMd" className={footerStyles.avatar} />
         <div className={footerStyles.texts}>
           <div className={footerStyles.name}>{displayName}</div>
           <div className={footerStyles.subtext}>
@@ -42,8 +38,11 @@ export function SidebarUserFooter() {
         type="button"
         className={footerStyles.actionButton}
         aria-label="Ouvrir les paramètres du compte"
+        onClick={() => {
+          openAccountModal("profile");
+        }}
       >
-        ⇲
+        <IoSettingsOutline />
       </button>
     </div>
   );

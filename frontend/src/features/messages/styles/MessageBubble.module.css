@@ -71,3 +71,10 @@
   line-height: 1.35;
   white-space: pre-wrap;
 }
+
+.gifImage {
+  max-width: 240px;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  display: block;
+}
