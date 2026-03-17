@@ -118,6 +118,7 @@ export function usePrivateConversationListRealtime() {
             avatarUrl: null,
           },
           lastMessageAt: event.createdAtIso,
+          lastMessageContent: event.content ?? null,
         };
         flushSync(() => {
           queryClient.setQueryData<ListPrivateConversationsResponseDto>(key, (prev) => [
@@ -138,6 +139,7 @@ export function usePrivateConversationListRealtime() {
           updated.unshift({
             ...item,
             lastMessageAt: event.createdAtIso,
+            lastMessageContent: event.content ?? item.lastMessageContent ?? null,
           });
           return updated;
         });

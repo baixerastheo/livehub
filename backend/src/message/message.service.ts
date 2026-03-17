@@ -48,7 +48,12 @@ export class MessageService {
         ],
       },
       orderBy: { creeLe: 'desc' },
-      select: { expediteurId: true, destinataireId: true, creeLe: true, contenu: true },
+      select: {
+        expediteurId: true,
+        destinataireId: true,
+        creeLe: true,
+        contenu: true,
+      },
     });
 
     const peerIdToLast = new Map<string, { at: Date; content: string }>();
@@ -97,7 +102,11 @@ export class MessageService {
             }
           }
           const { avatarPath: _avatarPath, ...peer } = user;
-          return { peer: { ...peer, avatarUrl }, lastMessageAt, lastMessageContent };
+          return {
+            peer: { ...peer, avatarUrl },
+            lastMessageAt,
+            lastMessageContent,
+          };
         }),
     );
 
