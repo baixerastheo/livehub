@@ -120,4 +120,3 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
     </div>
   );
 }
-

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
@@ -18,6 +19,7 @@ import { SidebarEmptyState } from "./SidebarParts";
 const ROLES_CAN_DELETE_CHANNEL: ServerRole[] = ["PROPRIETAIRE", "ADMINISTRATEUR"];
 
 export function SidebarChannelsContent() {
+  const t = useTranslations("sidebar");
   const pathname = usePathname();
   const router = useRouter();
   const selectedServerId = useAppStore((state) => state.selectedServerId);
@@ -41,8 +43,8 @@ export function SidebarChannelsContent() {
   if (selectedServerId === null) {
     return (
       <SidebarEmptyState
-        title="Select a server"
-        subtitle="Click a server in the rail to see its channels."
+        title={t("selectServer")}
+        subtitle={t("selectServerSubtitle")}
       />
     );
   }
@@ -50,8 +52,8 @@ export function SidebarChannelsContent() {
   if (error) {
     return (
       <SidebarEmptyState
-        title="Cannot load channels"
-        subtitle="Try again later or select another server."
+        title={t("cannotLoadChannels")}
+        subtitle={t("cannotLoadChannelsSubtitle")}
       />
     );
   }
@@ -59,8 +61,8 @@ export function SidebarChannelsContent() {
   if (isLoading || channels === undefined) {
     return (
       <SidebarEmptyState
-        title={selectedServer?.name ?? "Server"}
-        subtitle="Loading channels…"
+        title={selectedServer?.name ?? t("channels")}
+        subtitle={t("loadingChannels")}
       />
     );
   }
@@ -69,8 +71,8 @@ export function SidebarChannelsContent() {
     return (
       <div className={channelStyles.wrapper}>
         <SidebarEmptyState
-          title={selectedServer?.name ?? "Server"}
-          subtitle="No channels yet. The default channel will appear here."
+          title={selectedServer?.name ?? t("channels")}
+          subtitle={t("noChannels")}
         />
       </div>
     );
@@ -85,9 +87,7 @@ export function SidebarChannelsContent() {
     e.stopPropagation();
     if (
       !canDeleteChannels ||
-      !window.confirm(
-        `Supprimer le canal « ${channelName} » ? Cette action est irréversible.`,
-      )
+      !window.confirm(t("deleteChannelConfirm", { name: channelName }))
     ) {
       return;
     }
@@ -131,8 +131,8 @@ export function SidebarChannelsContent() {
                       type="button"
                       className={channelStyles.deleteChannelButton}
                       onClick={(e) => handleDeleteChannel(e, channel.id, channel.name)}
-                      aria-label={`Supprimer le canal ${channel.name}`}
-                      title="Supprimer le canal"
+                      aria-label={t("deleteChannel", { name: channel.name })}
+                      title={t("deleteChannelTitle")}
                     >
                       <FiTrash2 size={14} aria-hidden />
                     </button>

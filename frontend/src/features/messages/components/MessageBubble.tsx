@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "../styles/MessageBubble.module.css";
 import type { ChatMessage } from "@/src/features/messages/messages.mock";
@@ -24,6 +25,7 @@ export function MessageBubble({
   onDelete,
   isDeleting = false,
 }: Props) {
+  const t = useTranslations("messages");
   const isMe = message.isMe ?? false;
   const [showDelete, setShowDelete] = React.useState(false);
 
@@ -37,7 +39,7 @@ export function MessageBubble({
       <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : ""}`}>
         <div className={styles.bubbleMeta}>
           <span className={styles.author}>
-            {isMe ? "You" : message.author}
+            {isMe ? t("you") : message.author}
           </span>
           <span className={styles.time}>
             {formatTime(message.createdAtIso)}
@@ -51,12 +53,12 @@ export function MessageBubble({
                 onDelete();
               }}
               disabled={isDeleting}
-              aria-label="Supprimer le message"
-              title="Supprimer le message"
+              aria-label={t("deleteMessage")}
+              title={t("deleteMessage")}
             >
               <FiTrash2 size={14} aria-hidden />
               {isDeleting ? (
-                <span className={styles.deletingLabel}>…</span>
+                <span className={styles.deletingLabel}>{t("deleting")}</span>
               ) : null}
             </button>
           )}

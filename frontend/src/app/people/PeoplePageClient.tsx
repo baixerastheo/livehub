@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SocialMenu, type SocialTab } from "@/src/features/friends/components/SocialMenu";
 import { UserDirectory } from "@/src/features/users/components/UserDirectory";
 import { FriendsPanel } from "@/src/features/friends/components/FriendsPanel";
@@ -22,6 +23,7 @@ function parseTab(value: string | null): SocialTab {
 
 export function PeoplePageClient() {
   const router = useRouter();
+  const t = useTranslations("friends");
   const searchParams = useSearchParams();
   const tab = parseTab(searchParams.get("tab"));
   const { toast } = useToast();
@@ -53,12 +55,12 @@ export function PeoplePageClient() {
     async (user: UtilisateurDto) => {
       try {
         await sendRequest.mutateAsync(user.id);
-        toast.success("Demande d'ami envoyée.");
+        toast.success(t("friendRequestSent"));
       } catch {
-        toast.error("Impossible d'envoyer la demande.");
+        toast.error(t("friendRequestFailed"));
       }
     },
-    [sendRequest, toast],
+    [sendRequest, t, toast],
   );
 
   if (isLoading || !isAuthenticated) return null;

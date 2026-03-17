@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { NavbarLogo } from "@/src/features/shared/components/navbar/NavbarLogo";
 import { BiArrowFromLeft } from "react-icons/bi";
@@ -9,6 +12,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ children }: NavbarProps) {
+  const t = useTranslations("nav");
   const toggleMobileSidebars = useAppStore((state) => state.toggleMobileSidebars);
 
   return (
@@ -17,7 +21,7 @@ export function Navbar({ children }: NavbarProps) {
         <button
           type="button"
           className={styles.menuButton}
-          aria-label="Toggle conversation list"
+          aria-label={t("toggleConversationList")}
           onClick={toggleMobileSidebars}
         >
           <span aria-hidden="true">

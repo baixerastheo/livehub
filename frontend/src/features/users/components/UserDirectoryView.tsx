@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/UserDirectory.module.css";
 import type { UtilisateurDto } from "@/src/features/users/users.types";
 import { UserDirectoryRow } from "@/src/features/users/components/UserDirectoryRow";
@@ -28,20 +29,21 @@ export function UserDirectoryView({
   pendingAddFriendUserIds,
 }: UserDirectoryViewProps) {
   const pending = new Set(pendingAddFriendUserIds ?? []);
+  const t = useTranslations("people");
 
   return (
     <section className={styles.container} aria-label="User directory">
       <header className={styles.header}>
         <div>
-          <div className={styles.title}>People</div>
-          <div className={styles.subtle}>Search users and start a conversation.</div>
+          <div className={styles.title}>{t("title")}</div>
+          <div className={styles.subtle}>{t("subtitle")}</div>
         </div>
         <div className={styles.searchWrap}>
           <input
             id="user-search"
             className={styles.searchInput}
             type="search"
-            placeholder="Search by username…"
+            placeholder={t("searchPlaceholder")}
             value={q}
             onChange={(e) => onQueryChange(e.target.value)}
           />
@@ -50,16 +52,16 @@ export function UserDirectoryView({
 
       {notice && <div className={styles.notice}>{notice}</div>}
 
-      {isLoading && <div className={styles.state}>Loading users…</div>}
+      {isLoading && <div className={styles.state}>{t("loadingUsers")}</div>}
 
       {isError && (
         <div className={styles.stateError}>
-          Failed to load users. Please try again.
+          {t("failedToLoadUsers")}
         </div>
       )}
 
       {!isLoading && !isError && users.length === 0 && (
-        <div className={styles.state}>No users found.</div>
+        <div className={styles.state}>{t("noUsersFound")}</div>
       )}
 
       {!isLoading && !isError && users.length > 0 && (

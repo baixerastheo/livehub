@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import styles from "../styles/ConversationDetailsPanel.module.css";
 
 type Props = {
@@ -8,27 +9,22 @@ type Props = {
   onClose?: () => void;
 };
 
-export function ConversationDetailsPanel({ mode, activeTitle, onClose }: Props) {
+export function ConversationDetailsPanel({ mode, activeTitle }: Props) {
+  const t = useTranslations("messages");
+
   return (
     <aside className={styles.rightPanel} aria-label="Conversation details">
-      <div className={styles.panelHeader}>
-        <div className={styles.panelTitle}>Details</div>
-        {onClose && (
-          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Fermer">
-            ×
-          </button>
-        )}
-      </div>
+      <div className={styles.panelTitle}>{t("details")}</div>
       <div className={styles.panelCard}>
         <div className={styles.panelRow}>
-          <div className={styles.panelLabel}>Mode</div>
+          <div className={styles.panelLabel}>{t("mode")}</div>
           <div className={styles.panelValue}>{mode}</div>
         </div>
       </div>
 
       <div className={styles.panelCard}>
         <div className={styles.panelRow}>
-          <div className={styles.panelLabel}>Active</div>
+          <div className={styles.panelLabel}>{t("active")}</div>
           <div className={styles.panelValue}>{activeTitle}</div>
         </div>
       </div>

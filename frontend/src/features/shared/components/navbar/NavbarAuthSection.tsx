@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useAuth } from "@/src/core/store/auth/useAuth";
@@ -12,6 +13,8 @@ import { NavbarModalProfile } from "./NavbarModalProfile";
 
 export function NavbarAuthSection() {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tNav = useTranslations("nav");
   const { user, isAuthenticated, isLoading } = useAuth();
   const logoutMutation = useLogoutMutation();
   const { toast } = useToast();
@@ -48,12 +51,12 @@ export function NavbarAuthSection() {
     closeProfileMenu();
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.info("Logged out successfully");
+        toast.info(t("loggedOutSuccess"));
         router.push("/");
         router.refresh();
       },
       onError: (err) => {
-        toast.error(err.message || "Logout failed");
+        toast.error(err.message || t("logoutFailed"));
       },
     });
   };
@@ -70,7 +73,7 @@ export function NavbarAuthSection() {
           className={styles.profileButton}
           aria-haspopup="menu"
           aria-expanded={isOpen}
-          aria-label="Open profile menu"
+          aria-label={tNav("openProfileMenu")}
           onClick={toggleProfileMenu}
         >
           <span className={styles.profileAvatar} aria-hidden="true">

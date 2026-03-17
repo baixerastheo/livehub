@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import styles from "../styles/modalAddChannel.module.css";
 import { useCreateChannelMutation } from "../server.hooks";
 
@@ -15,6 +16,8 @@ export function ModalAddChannel({
   onClose,
   serverId,
 }: ModalAddChannelProps) {
+  const t = useTranslations("server");
+  const tAuth = useTranslations("auth");
   const [name, setName] = React.useState("");
   const createChannelMutation = useCreateChannelMutation();
 
@@ -55,21 +58,21 @@ export function ModalAddChannel({
       >
         <div className={styles.header}>
           <h2 id="modal-add-channel-title" className={styles.title}>
-            Add a channel
+            {t("addChannel")}
           </h2>
           <button
             type="button"
             className={styles.closeButton}
             onClick={handleClose}
             disabled={createChannelMutation.isPending}
-            aria-label="Close"
+            aria-label={tAuth("closeModal")}
           >
             ×
           </button>
         </div>
         <form onSubmit={handleSubmit}>
           <label htmlFor="channel-name" className={styles.label}>
-            Channel name
+            {t("channelName")}
           </label>
           <input
             id="channel-name"
@@ -77,7 +80,7 @@ export function ModalAddChannel({
             className={styles.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. general"
+            placeholder={t("channelNamePlaceholder")}
             maxLength={100}
             autoFocus
             disabled={createChannelMutation.isPending}
@@ -89,14 +92,14 @@ export function ModalAddChannel({
               onClick={handleClose}
               disabled={createChannelMutation.isPending}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="submit"
               className={`${styles.button} ${styles.buttonPrimary}`}
               disabled={!name.trim() || createChannelMutation.isPending}
             >
-              {createChannelMutation.isPending ? "Creating…" : "Create"}
+              {createChannelMutation.isPending ? t("creating") : t("create")}
             </button>
           </div>
         </form>

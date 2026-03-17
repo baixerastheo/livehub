@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import styles from "../styles/modalAddMembers.module.css";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useFriendsQuery } from "@/src/features/friends/friends.hooks";
@@ -27,6 +28,8 @@ export function ModalAddMembers({
   onClose,
   serverId,
 }: ModalAddMembersProps) {
+  const t = useTranslations("server");
+  const tAuth = useTranslations("auth");
   const { user: currentUser, isAuthenticated } = useAuth();
   const { data: friends = [], isLoading: friendsLoading } = useFriendsQuery();
   const { data: conversations = [], isLoading: convLoading } =
@@ -105,12 +108,12 @@ export function ModalAddMembers({
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 id="modal-add-members-title" className={styles.title}>
-            Add members
+            {t("addMembers")}
           </h2>
           <button
             type="button"
             onClick={handleClose}
-            aria-label="Close modal"
+            aria-label={tAuth("closeModal")}
             className={styles.closeButton}
           >
             ×
@@ -119,13 +122,13 @@ export function ModalAddMembers({
 
         <div className={styles.listWrapper}>
           {isLoading ? (
-            <div className={styles.loading}>Loading…</div>
+            <div className={styles.loading}>{t("loadingMembers")}</div>
           ) : (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>Friends</div>
+                <div className={styles.sectionTitle}>{t("friendsSection")}</div>
                 {friendsList.length === 0 ? (
-                  <div className={styles.empty}>No friends to add</div>
+                  <div className={styles.empty}>{t("noFriendsToAdd")}</div>
                 ) : (
                   friendsList.map((u) => (
                     <button
@@ -158,10 +161,10 @@ export function ModalAddMembers({
               </div>
 
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>Private messages</div>
+                <div className={styles.sectionTitle}>{t("privateMessagesSection")}</div>
                 {privateMessagesList.length === 0 ? (
                   <div className={styles.empty}>
-                    No other users from conversations to add
+                    {t("noUsersToAdd")}
                   </div>
                 ) : (
                   privateMessagesList.map((u) => (
@@ -203,7 +206,7 @@ export function ModalAddMembers({
             onClick={handleClose}
             className={`${styles.button} ${styles.buttonSecondary}`}
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -220,8 +223,8 @@ export function ModalAddMembers({
             }}
           >
             {addMemberMutation.isPending
-              ? "Adding…"
-              : `Add (${selectedIds.size})`}
+              ? t("adding")
+              : t("addCount", { count: selectedIds.size })}
           </button>
         </div>
       </div>

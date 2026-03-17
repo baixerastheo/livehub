@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import styles from "../styles/MessagesScreen.module.css";
 import type { ChatMessage, ConversationHeader as ConversationHeaderType } from "@/src/features/messages/messages.mock";
 import { ParticlesBackground } from "@/src/features/shared/components/particles/ParticlesBackground";
@@ -27,11 +28,11 @@ import type { ServerRole } from "@/src/features/server/server.types";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
-function buildChannelHeader(channelName: string): ConversationHeaderType {
+function buildChannelHeader(channelName: string, subtitle: string): ConversationHeaderType {
   const initial = channelName.slice(0, 1).toUpperCase() || "#";
   return {
     title: channelName,
-    subtitle: "Channel",
+    subtitle,
     avatarText: initial,
     avatarColor: CHANNEL_AVATAR_COLOR,
     showAvatar: false,
@@ -39,6 +40,7 @@ function buildChannelHeader(channelName: string): ConversationHeaderType {
 }
 
 export function ChannelMessagesScreen() {
+  const t = useTranslations("messages");
   const params = useParams();
   const channelIdParam = params?.channelId;
   const channelId =
@@ -118,10 +120,8 @@ export function ChannelMessagesScreen() {
     return (
       <main className={styles.root}>
         <div className={styles.emptyState}>
-          <p className={styles.emptyStateTitle}>No channel selected</p>
-          <p className={styles.emptyStateSubtitle}>
-            Select a channel from the sidebar.
-          </p>
+          <p className={styles.emptyStateTitle}>{t("noChannelSelected")}</p>
+          <p className={styles.emptyStateSubtitle}>{t("selectChannel")}</p>
         </div>
       </main>
     );
@@ -131,13 +131,13 @@ export function ChannelMessagesScreen() {
     return (
       <main className={styles.root}>
         <div className={styles.emptyState}>
-          <p className={styles.emptyStateTitle}>Loading channel…</p>
+          <p className={styles.emptyStateTitle}>{t("loadingChannel")}</p>
         </div>
       </main>
     );
   }
 
-  const conversationHeader = buildChannelHeader(channel.name);
+  const conversationHeader = buildChannelHeader(channel.name, t("channel"));
 
   return (
     <main className={styles.root}>
@@ -151,7 +151,7 @@ export function ChannelMessagesScreen() {
           <ParticlesBackground tone="black" />
           {messagesLoading ? (
             <div className={styles.emptyState}>
-              <p className={styles.emptyStateSubtitle}>Loading messages…</p>
+              <p className={styles.emptyStateSubtitle}>{t("loadingMessages")}</p>
             </div>
           ) : (
             <>
@@ -171,30 +171,10 @@ export function ChannelMessagesScreen() {
               {typingUsers.length > 0 && (
                 <p className={styles.typingIndicator} aria-live="polite">
                   {typingUsers.length === 1
-                    ? (
-                        <>
-                          <strong>{typingUsers[0].userName}</strong> is typing…
-                        </>
-                      )
+                    ? t("isTyping", { name: typingUsers[0].userName })
                     : typingUsers.length === 2
-                      ? (
-                          <>
-                            <strong>{typingUsers[0].userName}</strong> and{" "}
-                            <strong>{typingUsers[1].userName}</strong> are
-                            typing…
-                          </>
-                        )
-                      : (
-                          <>
-                            {typingUsers.map((u, i) => (
-                              <span key={u.userId}>
-                                {i > 0 && ", "}
-                                <strong>{u.userName}</strong>
-                              </span>
-                            ))}{" "}
-                            are typing…
-                          </>
-                        )}
+                      ? t("twoTyping", { name: typingUsers[0].userName, name2: typingUsers[1].userName })
+                      : t("manyTyping", { names: typingUsers.map((u) => u.userName).join(", ") })}
                 </p>
               )}
               <MessageComposer

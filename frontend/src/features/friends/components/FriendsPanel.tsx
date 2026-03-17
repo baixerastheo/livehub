@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import styles from "./FriendsPanels.module.css";
 import { useFriendsQuery } from "@/src/features/friends/friends.hooks";
 import { useAuthModal } from "@/src/features/modalAuth/store/useAuthModal";
@@ -16,6 +17,9 @@ export function FriendsPanel() {
   const openLogin = useAuthModal((s) => s.openLogin);
   const { isAuthenticated } = useAuth();
   const friendsQuery = useFriendsQuery();
+  const t = useTranslations("friends");
+  const tAuth = useTranslations("auth");
+  const tCommon = useTranslations("common");
 
   const handleMessage = React.useCallback(
     (user: FriendDto) => {
@@ -31,25 +35,25 @@ export function FriendsPanel() {
   if (!isAuthenticated) {
     return (
       <div className={styles.state}>
-        <div className={styles.stateTitle}>You&apos;re not logged in.</div>
+        <div className={styles.stateTitle}>{tAuth("notLoggedIn")}</div>
         <button
           type="button"
           className={styles.primaryButton}
           onClick={() => openLogin()}
         >
-          Sign in
+          {tAuth("signIn")}
         </button>
       </div>
     );
   }
 
   if (friendsQuery.isLoading)
-    return <div className={styles.state}>Loading friends…</div>;
+    return <div className={styles.state}>{t("loadingFriends")}</div>;
   if (friendsQuery.isError) {
     const message =
       friendsQuery.error instanceof Error
         ? friendsQuery.error.message
-        : "Failed to load friends.";
+        : t("failedToLoadFriends");
     return (
       <div className={styles.stateError}>
         {message}{" "}
@@ -58,7 +62,7 @@ export function FriendsPanel() {
           className={styles.retryButton}
           onClick={() => friendsQuery.refetch()}
         >
-          Retry
+          {tCommon("retry")}
         </button>
       </div>
     );
@@ -66,7 +70,7 @@ export function FriendsPanel() {
 
   const friends = friendsQuery.data ?? [];
   if (friends.length === 0)
-    return <div className={styles.state}>No friends yet.</div>;
+    return <div className={styles.state}>{t("noFriendsYet")}</div>;
 
   return (
     <ul className={styles.list}>
@@ -91,14 +95,14 @@ export function FriendsPanel() {
             <button
               type="button"
               className={styles.iconButton}
-              aria-label="Message"
+              aria-label={t("sendMessage")}
               onClick={() => handleMessage(u)}
             >
               <FiMessageSquare
                 className={styles.buttonIcon}
                 aria-hidden="true"
               />
-              <span className={styles.srOnly}>Message</span>
+              <span className={styles.srOnly}>{t("sendMessage")}</span>
             </button>
           </div>
         </li>

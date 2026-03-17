@@ -1,5 +1,7 @@
- "use client";
+"use client";
 
+import React from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { CurrentUserAvatar } from "@/src/features/shared/components/avatar/CurrentUserAvatar";
 import footerStyles from "../../styles/sidebar/SidebarUserFooter.module.css";
@@ -8,6 +10,8 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { useAppStore } from "@/src/core/store/appStore";
 
 export function SidebarUserFooter() {
+  const t = useTranslations("sidebar");
+  const tCommon = useTranslations("common");
   const { user } = useAuth();
   const openAccountModal = useAppStore((state) => state.openAccountModal);
   const displayName =
@@ -16,7 +20,7 @@ export function SidebarUserFooter() {
           name: user.name ?? undefined,
           email: user.email ?? undefined,
         })
-      : "Invité";
+      : t("guest");
 
   return (
     <div className={footerStyles.footer}>
@@ -28,19 +32,16 @@ export function SidebarUserFooter() {
             {user ? (
               <>
                 <span className={footerStyles.onlineDot} />
-                Online
+                {tCommon("online")}
               </>
-            ) : "Offline"}
+            ) : tCommon("offline")}
           </div>
         </div>
       </div>
       <button
         type="button"
         className={footerStyles.actionButton}
-        aria-label="Ouvrir les paramètres du compte"
-        onClick={() => {
-          openAccountModal("profile");
-        }}
+        aria-label={t("openAccountSettings")}
       >
         <IoSettingsOutline />
       </button>

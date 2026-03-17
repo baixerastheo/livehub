@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { FiChevronDown } from "react-icons/fi";
 import styles from "../styles/ServerHeaderMenu.module.css";
 import type { ServerRole } from "../server.types";
@@ -22,6 +23,7 @@ export function ServerHeaderMenu({
   currentUserRole,
 }: Props) {
   const router = useRouter();
+  const t = useTranslations("server");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -62,7 +64,7 @@ export function ServerHeaderMenu({
         onClick={() => setMenuOpen((o) => !o)}
         aria-expanded={menuOpen}
         aria-haspopup="true"
-        aria-label="Options du serveur"
+        aria-label={t("serverOptions")}
       >
         <FiChevronDown size={18} aria-hidden />
       </button>
@@ -78,7 +80,7 @@ export function ServerHeaderMenu({
                 setDeleteModalOpen(true);
               }}
             >
-              Supprimer le serveur
+              {t("deleteServerTitle")}
             </button>
           )}
           {canLeave && (
@@ -89,7 +91,7 @@ export function ServerHeaderMenu({
               onClick={handleLeave}
               disabled={leaveMutation.isPending}
             >
-              {leaveMutation.isPending ? "En cours…" : "Quitter le serveur"}
+              {leaveMutation.isPending ? t("deleting") : t("leaveServer")}
             </button>
           )}
         </div>

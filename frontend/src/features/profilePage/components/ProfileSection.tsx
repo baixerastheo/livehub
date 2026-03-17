@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { FiCamera } from "react-icons/fi";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useProfile, useUploadAvatarMutation } from "../profile.hooks";
@@ -12,6 +13,7 @@ import styles from "../styles/ProfileSection.module.css";
 const DEFAULT_AVATAR_SRC = "/icons/avatar-default.svg";
 
 export function ProfileSection() {
+  const t = useTranslations("profile");
   const { user } = useAuth();
   const userId = user?.id;
   const { data: profile, isLoading: profileLoading } = useProfile(userId);
@@ -45,10 +47,8 @@ export function ProfileSection() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <div className={styles.cardTitle}>Profile</div>
-            <div className={styles.cardSubtle}>
-              Basic information people see about you.
-            </div>
+            <div className={styles.cardTitle}>{t("profile")}</div>
+            <div className={styles.cardSubtle}>{t("profileSubtitle")}</div>
           </div>
           <button
             type="button"
@@ -60,7 +60,7 @@ export function ProfileSection() {
                 // TODO -> Save profile
             }}
           >
-            Save
+            {t("save")}
           </button>
         </div>
 
@@ -102,11 +102,11 @@ export function ProfileSection() {
                     aria-hidden="true"
                   />
                   <span className={styles.avatarOverlayText}>
-                    Change avatar
+                    {t("changeAvatar")}
                   </span>
                 </>
               ) : (
-                <span className={styles.avatarOverlayText}>Uploading…</span>
+                <span className={styles.avatarOverlayText}>{t("uploading")}</span>
               )}
             </div>
           </div>
@@ -123,40 +123,40 @@ export function ProfileSection() {
         <div className={styles.formGrid}>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-name">
-              Name
+              {t("name")}
             </label>
             <input
               id="profile-name"
               className={styles.input}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder={t("namePlaceholder")}
             />
           </div>
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-email">
-              Email
+              {t("email")}
             </label>
             <input
               id="profile-email"
               className={styles.input}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your email"
+              placeholder={t("emailPlaceholder")}
             />
           </div>
 
           <div className={styles.fieldWide}>
             <label className={styles.label} htmlFor="profile-bio">
-              Bio (optional)
+              {t("bio")}
             </label>
             <textarea
               id="profile-bio"
               className={styles.textarea}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell people a little bit about you…"
+              placeholder={t("bioPlaceholder")}
               rows={4}
             />
           </div>
@@ -166,22 +166,18 @@ export function ProfileSection() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <div className={styles.cardTitle}>Danger zone</div>
-            <div className={styles.cardSubtle}>
-              Sensitive actions (you can implement later).
-            </div>
+            <div className={styles.cardTitle}>{t("dangerZone")}</div>
+            <div className={styles.cardSubtle}>{t("dangerZoneSubtitle")}</div>
           </div>
         </div>
 
         <div className={styles.dangerRow}>
           <div>
-            <div className={styles.dangerTitle}>Delete account</div>
-            <div className={styles.cardSubtle}>
-              This action is irreversible.
-            </div>
+            <div className={styles.dangerTitle}>{t("deleteAccount")}</div>
+            <div className={styles.cardSubtle}>{t("deleteAccountSubtitle")}</div>
           </div>
           <button type="button" className={styles.dangerButton}>
-            Delete
+            {t("delete")}
           </button>
         </div>
       </div>

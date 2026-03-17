@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import styles from "../styles/AuthModal.module.css";
@@ -8,6 +9,7 @@ import { useAuthModal } from "../store/useAuthModal";
 export function AuthModal() {
   const { isOpen, mode } = useAuthModal();
   const closeAuthModal = useAuthModal().close;
+  const t = useTranslations("auth");
 
   if (!isOpen) return null;
 
@@ -25,14 +27,12 @@ export function AuthModal() {
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            {isLogin
-              ? "Sign in to get started"
-              : "Create your LiveHub account"}
+            {isLogin ? t("loginTitle") : t("registerTitle")}
           </h2>
           <button
             type="button"
             onClick={closeAuthModal}
-            aria-label="Close modal"
+            aria-label={t("closeModal")}
             className={styles.closeButton}
           >
             ×

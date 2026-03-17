@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import {
   SidebarContext,
@@ -47,11 +47,12 @@ function SidebarRoot({ children, isOpen, onClose }: SidebarRootProps) {
 
 function SidebarCloseButton() {
   const { onClose } = useSidebarContext();
+  const t = useTranslations("nav");
   return (
     <button
       type="button"
       className={rootStyles.closeButton}
-      aria-label="Close conversation list"
+      aria-label={t("closeConversationList")}
       onClick={onClose}
     >
       ×
