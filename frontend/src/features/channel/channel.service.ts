@@ -40,6 +40,7 @@ export type ChannelMessageBackendDto = {
   creeLe: string;
   auteurId: string;
   auteur: { id: string; name: string | null; email: string };
+  reactions?: { emoji: string; count: number; userIds: string[] }[];
 };
 
 export async function getChannelMessages(

@@ -20,9 +20,11 @@ import {
 } from "@/src/features/channel/channel.hooks";
 import {
   useChannelMessagesRealtime,
+  useChannelReactionRealtime,
   useChannelTyping,
   useChannelTypingEmitter,
 } from "@/src/features/channel/channelRealtime.hooks";
+import { useToggleChannelReactionMutation } from "@/src/features/messages/reaction.hooks";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
 import type { ServerRole } from "@/src/features/server/server.types";
 
@@ -55,12 +57,14 @@ export function ChannelMessagesScreen() {
   const { data: userServers } = useUserServersQuery();
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
   const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
+  const toggleReactionMutation = useToggleChannelReactionMutation(channelId);
   const [rightPanelOpen, setRightPanelOpen] = React.useState(
     () => typeof window !== "undefined" && window.innerWidth > 980,
   );
   const [composerValue, setComposerValue] = React.useState("");
 
   useChannelMessagesRealtime(channelId);
+  useChannelReactionRealtime(channelId);
 
   const typingUsers = useChannelTyping(channelId, user?.id ?? null);
   useChannelTypingEmitter(
@@ -93,6 +97,7 @@ export function ChannelMessagesScreen() {
       content: m.contenu,
       createdAtIso: m.creeLe,
       isMe: m.auteurId === user.id,
+      reactions: m.reactions,
     }));
   }, [messagesData, user]);
 
@@ -159,6 +164,7 @@ export function ChannelMessagesScreen() {
             <>
               <MessageList
                 messages={messages}
+                currentUserId={user?.id ?? null}
                 canDeleteMessages={canDeleteMessages}
                 onDeleteMessage={(messageId) =>
                   deleteMessageMutation.mutate(messageId)
@@ -168,6 +174,9 @@ export function ChannelMessagesScreen() {
                   deleteMessageMutation.variables !== undefined
                     ? deleteMessageMutation.variables
                     : null
+                }
+                onToggleReaction={(messageId, emoji) =>
+                  toggleReactionMutation.mutate({ messageId, emoji })
                 }
               />
               {typingUsers.length > 0 && (

@@ -9,6 +9,21 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+
+function aggregateReactions(
+  reactions: { emoji: string; userId: string }[],
+): { emoji: string; count: number; userIds: string[] }[] {
+  const map = new Map<string, string[]>();
+  for (const r of reactions) {
+    if (!map.has(r.emoji)) map.set(r.emoji, []);
+    map.get(r.emoji)!.push(r.userId);
+  }
+  return Array.from(map.entries()).map(([emoji, userIds]) => ({
+    emoji,
+    count: userIds.length,
+    userIds,
+  }));
+}
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { MessageService } from './message.service';
@@ -70,6 +85,7 @@ export class MessageController {
         createdAtIso: m.creeLe.toISOString(),
         isMe: m.expediteurId === req.user.id,
         read: m.lu,
+        reactions: aggregateReactions(m.reactions),
       })),
     };
   }
@@ -110,7 +126,11 @@ export class MessageController {
    */
   @Get('channels/:id/messages')
   async getChannelMessages(@Param('id', ParseIntPipe) id: number) {
-    return this.messageService.getHistoryMessageByChannel(id);
+    const messages = await this.messageService.getHistoryMessageByChannel(id);
+    return messages.map((m) => ({
+      ...m,
+      reactions: aggregateReactions(m.reactions),
+    }));
   }
 
   /**

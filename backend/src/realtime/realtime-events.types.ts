@@ -126,3 +126,11 @@ export type ServerMemberKickedEvent = {
   kickedUserId: string;
   kickedByUserId: string;
 };
+
+/**
+ * Payload for event message:reaction-updated - sent when a reaction is toggled on a message.
+ */
+export type MessageReactionUpdatedEvent = {
+  messageId: number;
+  reactions: { emoji: string; count: number; userIds: string[] }[];
+};

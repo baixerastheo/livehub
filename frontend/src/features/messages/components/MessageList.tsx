@@ -9,16 +9,20 @@ import { FiChevronDown } from "react-icons/fi";
 
 type Props = {
   messages: ChatMessage[];
+  currentUserId?: string | null;
   canDeleteMessages?: boolean;
   onDeleteMessage?: (messageId: number) => void;
   isDeletingMessageId?: number | null;
+  onToggleReaction?: (messageId: number, emoji: string) => void;
 };
 
 export function MessageList({
   messages,
+  currentUserId = null,
   canDeleteMessages = false,
   onDeleteMessage,
   isDeletingMessageId = null,
+  onToggleReaction,
 }: Props) {
   const t = useTranslations("messages");
   const bottomRef = React.useRef<HTMLDivElement>(null);
@@ -39,6 +43,7 @@ export function MessageList({
           <MessageBubble
             key={m.id}
             message={m}
+            currentUserId={currentUserId}
             canDelete={canDeleteMessages}
             onDelete={
               onDeleteMessage
@@ -46,6 +51,7 @@ export function MessageList({
                 : undefined
             }
             isDeleting={isDeletingMessageId === Number(m.id)}
+            onToggleReaction={onToggleReaction}
           />
         ))
       )}

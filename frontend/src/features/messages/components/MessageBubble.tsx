@@ -1,10 +1,18 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { FiTrash2 } from "react-icons/fi";
+import { FiMoreHorizontal, FiTrash2, FiSmile } from "react-icons/fi";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import styles from "../styles/MessageBubble.module.css";
 import type { ChatMessage } from "@/src/features/messages/messages.mock";
+import { ReactionBar } from "@/src/features/messages/components/ReactionBar";
+
+const PICKER_WIDTH = 352;
+const PICKER_HEIGHT = 440;
+const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 
 function formatTime(iso: string) {
   const d = new Date(iso);
@@ -12,21 +20,114 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function getFixedStyle(
+  anchor: DOMRect,
+  contentWidth: number,
+  contentHeight: number,
+): React.CSSProperties {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const spaceBelow = vh - anchor.bottom - 8;
+  const spaceAbove = anchor.top - 8;
+
+  const top =
+    spaceBelow >= contentHeight || spaceBelow >= spaceAbove
+      ? anchor.bottom + 4
+      : anchor.top - contentHeight - 4;
+
+  // right-align to the anchor, but don't overflow left edge
+  const rightFromEdge = vw - anchor.right;
+  const leftEdge = anchor.right - contentWidth;
+  const left = leftEdge < 8 ? 8 : undefined;
+  const right = leftEdge < 8 ? undefined : rightFromEdge;
+
+  return { position: "fixed", top, left, right, zIndex: 9999 };
+}
+
+type MenuState = "closed" | "menu" | "picker";
+
 type Props = {
   message: ChatMessage;
+  currentUserId?: string | null;
   canDelete?: boolean;
   onDelete?: () => void;
   isDeleting?: boolean;
+  onToggleReaction?: (messageId: number, emoji: string) => void;
 };
 
 export function MessageBubble({
   message,
+  currentUserId = null,
   canDelete = false,
   onDelete,
   isDeleting = false,
+  onToggleReaction,
 }: Props) {
   const t = useTranslations("messages");
   const isMe = message.isMe ?? false;
+  const reactions = message.reactions ?? [];
+
+  const [menuState, setMenuState] = React.useState<MenuState>("closed");
+  const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
+  const [quickHover, setQuickHover] = React.useState(false);
+
+  const dotsRef = React.useRef<HTMLButtonElement>(null);
+  const portalRef = React.useRef<HTMLDivElement>(null);
+
+  const hasActions = onToggleReaction || (canDelete && onDelete);
+
+  const openMenu = () => {
+    if (menuState !== "closed") {
+      setMenuState("closed");
+      return;
+    }
+    if (dotsRef.current) {
+      setAnchorRect(dotsRef.current.getBoundingClientRect());
+    }
+    setMenuState("menu");
+  };
+
+  React.useEffect(() => {
+    if (menuState === "closed") {
+      setQuickHover(false);
+      return;
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (
+        dotsRef.current?.contains(target) ||
+        portalRef.current?.contains(target)
+      )
+        return;
+      setMenuState("closed");
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [menuState]);
+
+  // Recalculate anchor on scroll/resize while open
+  React.useEffect(() => {
+    if (menuState === "closed" || !dotsRef.current) return;
+    const update = () => {
+      if (dotsRef.current) setAnchorRect(dotsRef.current.getBoundingClientRect());
+    };
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [menuState]);
+
+  const dropdownStyle = anchorRect
+    ? getFixedStyle(anchorRect, 180, 120)
+    : undefined;
+
+  const pickerStyle = anchorRect
+    ? getFixedStyle(anchorRect, PICKER_WIDTH, PICKER_HEIGHT)
+    : undefined;
+
   return (
     <div
       className={`${styles.bubbleRow} ${isMe ? styles.bubbleRowMe : ""}`}
@@ -40,25 +141,21 @@ export function MessageBubble({
           <span className={styles.time}>
             {formatTime(message.createdAtIso)}
           </span>
-          {canDelete && onDelete && (
+
+          {hasActions && (
             <button
+              ref={dotsRef}
               type="button"
-              className={`${styles.deleteButton} ${isDeleting ? styles.deleteButtonVisible : ""}`}
-              onClick={(e) => {
-                e.preventDefault();
-                onDelete();
-              }}
-              disabled={isDeleting}
-              aria-label={t("deleteMessage")}
-              title={t("deleteMessage")}
+              className={styles.dotsButton}
+              onClick={openMenu}
+              aria-label="Message actions"
+              title="Message actions"
             >
-              <FiTrash2 size={14} aria-hidden />
-              {isDeleting ? (
-                <span className={styles.deletingLabel}>{t("deleting")}</span>
-              ) : null}
+              <FiMoreHorizontal size={15} aria-hidden />
             </button>
           )}
         </div>
+
         <div className={styles.text}>
           {message.content.startsWith("[gif]") ? (
             <img
@@ -70,7 +167,105 @@ export function MessageBubble({
             message.content
           )}
         </div>
+
+        {reactions.length > 0 && (
+          <ReactionBar
+            reactions={reactions}
+            currentUserId={currentUserId}
+            onToggle={(emoji) => onToggleReaction?.(Number(message.id), emoji)}
+          />
+        )}
       </div>
+
+      {menuState === "menu" && anchorRect &&
+        createPortal(
+          <div ref={portalRef} style={dropdownStyle} className={styles.dropdown}>
+            {onToggleReaction && (
+              <div
+                className={styles.dropdownItem}
+                onMouseEnter={() => setQuickHover(true)}
+                onMouseLeave={() => setQuickHover(false)}
+                onClick={() => {
+                  if (!quickHover) {
+                    if (dotsRef.current) {
+                      setAnchorRect(dotsRef.current.getBoundingClientRect());
+                    }
+                    setMenuState("picker");
+                  }
+                }}
+              >
+                {quickHover ? (
+                  <div className={styles.quickEmojiRow}>
+                    {QUICK_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className={styles.quickEmojiBtn}
+                        onClick={() => {
+                          onToggleReaction(Number(message.id), emoji);
+                          setMenuState("closed");
+                          setQuickHover(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={styles.quickEmojiBtn}
+                      title={t("addReaction")}
+                      onClick={() => {
+                        if (dotsRef.current) {
+                          setAnchorRect(dotsRef.current.getBoundingClientRect());
+                        }
+                        setMenuState("picker");
+                        setQuickHover(false);
+                      }}
+                    >
+                      <FiSmile size={13} aria-hidden />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <FiSmile size={14} aria-hidden />
+                    {t("addReaction")}
+                  </>
+                )}
+              </div>
+            )}
+            {canDelete && onDelete && (
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                onClick={() => {
+                  setMenuState("closed");
+                  onDelete();
+                }}
+                disabled={isDeleting}
+              >
+                <FiTrash2 size={14} aria-hidden />
+                {isDeleting ? t("deleting") : t("deleteMessage")}
+              </button>
+            )}
+          </div>,
+          document.body,
+        )}
+
+      {menuState === "picker" && anchorRect &&
+        createPortal(
+          <div ref={portalRef} style={pickerStyle}>
+            <Picker
+              data={data}
+              onEmojiSelect={(e: { native: string }) => {
+                onToggleReaction?.(Number(message.id), e.native);
+                setMenuState("closed");
+              }}
+              theme="light"
+              previewPosition="none"
+            />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -142,6 +142,7 @@ export class MessageService {
       orderBy: { creeLe: 'asc' },
       include: {
         expediteur: { select: { id: true, name: true, email: true } },
+        reactions: { select: { emoji: true, userId: true } },
       },
     });
 
@@ -215,7 +216,10 @@ export class MessageService {
     return this.prisma.message.findMany({
       where: { canalId: id },
       orderBy: { creeLe: 'asc' },
-      include: { auteur: true },
+      include: {
+        auteur: true,
+        reactions: { select: { emoji: true, userId: true } },
+      },
     });
   }
 

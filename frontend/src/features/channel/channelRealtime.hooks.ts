@@ -6,6 +6,7 @@ import { getSocket } from "@/src/lib/realtime/socketClient";
 import { channelsKeys } from "./channel.hooks";
 import type { ChannelMessageBackendDto } from "./channel.service";
 import { useAuth } from "@/src/core/store/auth/useAuth";
+import type { ReactionDto } from "@/src/features/messages/messages.types";
 
 type ChannelMessageCreatedEvent = {
   channelId: number;
@@ -62,6 +63,38 @@ export function useChannelMessagesRealtime(channelId: number | null) {
       socket.emit("channel:unsubscribe", { channelId });
     };
   }, [channelId, currentUserId, queryClient]);
+}
+
+type MessageReactionUpdatedEvent = {
+  messageId: number;
+  reactions: ReactionDto[];
+};
+
+export function useChannelReactionRealtime(channelId: number | null) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (channelId == null) return;
+
+    const socket = getSocket();
+
+    const handler = (event: MessageReactionUpdatedEvent) => {
+      queryClient.setQueryData<ChannelMessageBackendDto[]>(
+        channelsKeys.messages(channelId),
+        (old) => {
+          if (!old) return old;
+          return old.map((m) =>
+            m.id === event.messageId ? { ...m, reactions: event.reactions } : m,
+          );
+        },
+      );
+    };
+
+    socket.on("message:reaction-updated", handler);
+    return () => {
+      socket.off("message:reaction-updated", handler);
+    };
+  }, [channelId, queryClient]);
 }
 
 const TYPING_EXPIRY_MS = 5000;

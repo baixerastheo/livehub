@@ -5,6 +5,12 @@ export type PrivateConversationPeerDto = {
   avatarUrl?: string | null;
 };
 
+export type ReactionDto = {
+  emoji: string;
+  count: number;
+  userIds: string[];
+};
+
 export type PrivateMessageDto = {
   id: string;
   content: string;
@@ -13,6 +19,7 @@ export type PrivateMessageDto = {
   createdAtIso: string;
   isMe: boolean;
   read: boolean;
+  reactions?: ReactionDto[];
 };
 
 export type GetPrivateConversationResponseDto = {

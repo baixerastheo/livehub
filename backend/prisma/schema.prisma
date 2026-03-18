@@ -124,10 +124,24 @@ model Message {
   creeLe    DateTime @default(now())
   modifieLe DateTime @updatedAt
   editeLe   DateTime?
+  reactions ReactionMessage[]
 
   @@index([canalId])
   @@index([canalId, creeLe])
   @@index([auteurId])
+}
+
+model ReactionMessage {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  creeLe    DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 model Invitation {
@@ -156,10 +170,24 @@ model MessagePrive {
   creeLe         DateTime @default(now())
   modifieLe      DateTime @updatedAt
   editeLe        DateTime?
+  reactions      ReactionMessagePrive[]
 
   @@index([expediteurId, destinataireId])
   @@index([destinataireId])
   @@index([expediteurId])
+}
+
+model ReactionMessagePrive {
+  id        Int          @id @default(autoincrement())
+  messageId Int
+  message   MessagePrive @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  creeLe    DateTime     @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 model User {
@@ -184,8 +212,10 @@ model User {
   amitiesCommeB       Amitie[]         @relation("Amitie_userBIdToUser")
   demandesEnvoyees    DemandeAmitie[]  @relation("DemandeAmitie_fromUser")
   demandesRecues      DemandeAmitie[]  @relation("DemandeAmitie_toUser")
-  bansRecus           BanServeur[]     @relation("BansRecus")
-  bansEmis            BanServeur[]     @relation("BansEmis")
+  bansRecus                BanServeur[]           @relation("BansRecus")
+  bansEmis                 BanServeur[]           @relation("BansEmis")
+  reactionsMessage         ReactionMessage[]
+  reactionsMessagePrive    ReactionMessagePrive[]
 
   @@unique([email])
   @@index([name])

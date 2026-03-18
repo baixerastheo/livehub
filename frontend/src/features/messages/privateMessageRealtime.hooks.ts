@@ -12,6 +12,7 @@ import type {
   GetPrivateConversationResponseDto,
   ListPrivateConversationsResponseDto,
   PrivateMessageDto,
+  ReactionDto,
 } from "@/src/features/messages/messages.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 
@@ -24,6 +25,41 @@ type PrivateMessageCreatedEvent = {
   read: boolean;
   peerUserId: string;
 };
+
+type MessageReactionUpdatedEvent = {
+  messageId: number;
+  reactions: ReactionDto[];
+};
+
+export function usePrivateReactionRealtime(peerUserId: string | null) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!peerUserId) return;
+
+    const socket = getSocket();
+
+    const handler = (event: MessageReactionUpdatedEvent) => {
+      const key = privateConversationKey(peerUserId);
+      queryClient.setQueryData<GetPrivateConversationResponseDto>(key, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          messages: old.messages.map((m) =>
+            m.id === String(event.messageId)
+              ? { ...m, reactions: event.reactions }
+              : m,
+          ),
+        };
+      });
+    };
+
+    socket.on("message:reaction-updated", handler);
+    return () => {
+      socket.off("message:reaction-updated", handler);
+    };
+  }, [peerUserId, queryClient]);
+}
 
 export function usePrivateMessagesRealtime(peerUserId: string | null) {
   const queryClient = useQueryClient();

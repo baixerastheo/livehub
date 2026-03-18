@@ -1,9 +1,12 @@
+import type { ReactionDto } from "@/src/features/messages/messages.types";
+
 export type ChatMessage = {
   id: string;
   author: string;
   content: string;
   createdAtIso: string;
   isMe?: boolean;
+  reactions?: ReactionDto[];
 };
 
 export type ConversationHeader = {

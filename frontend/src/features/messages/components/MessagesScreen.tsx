@@ -19,7 +19,12 @@ import {
   usePrivateConversationQuery,
   useSendPrivateMessageMutation,
 } from "@/src/features/messages/privateMessage.hooks";
-import { usePrivateMessagesRealtime } from "@/src/features/messages/privateMessageRealtime.hooks";
+import {
+  usePrivateMessagesRealtime,
+  usePrivateReactionRealtime,
+} from "@/src/features/messages/privateMessageRealtime.hooks";
+import { useTogglePrivateReactionMutation } from "@/src/features/messages/reaction.hooks";
+import { useAuth } from "@/src/core/store/auth/useAuth";
 
 const AVATAR_COLORS = [
   "#7c3aed",
@@ -58,11 +63,14 @@ export function MessagesScreen() {
     ? decodeURIComponent(peerNameFromUrl)
     : null;
 
+  const { user } = useAuth();
   const { data: peerUser } = useUserQuery(peerUserId ?? undefined);
   const { data: conversationData } = usePrivateConversationQuery(peerUserId);
   const sendMessageMutation = useSendPrivateMessageMutation();
+  const toggleReactionMutation = useTogglePrivateReactionMutation(peerUserId);
 
   usePrivateMessagesRealtime(peerUserId);
+  usePrivateReactionRealtime(peerUserId);
 
   const displayName =
     peerUser?.name ?? peerUser?.email ?? decodedPeerName ?? "User";
@@ -75,6 +83,7 @@ export function MessagesScreen() {
       content: m.content,
       createdAtIso: m.createdAtIso,
       isMe: m.isMe,
+      reactions: m.reactions,
     }));
   }, [conversationData?.messages]);
 
@@ -138,7 +147,13 @@ export function MessagesScreen() {
       <div className={styles.content}>
         <section className={styles.thread} aria-label="Message thread">
           <ParticlesBackground tone="black" />
-          <MessageList messages={messages} />
+          <MessageList
+            messages={messages}
+            currentUserId={user?.id ?? null}
+            onToggleReaction={(messageId, emoji) =>
+              toggleReactionMutation.mutate({ messageId, emoji })
+            }
+          />
           <MessageComposer
             value={composerValue}
             onChange={setComposerValue}
