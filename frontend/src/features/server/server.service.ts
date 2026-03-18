@@ -17,6 +17,8 @@ import type {
   CreateChannelPayload,
   ListServerChannelsResponseDto,
   ChannelDto,
+  BanMemberBody,
+  BanDto,
 } from "./server.types";
 
 function mapServer(dto: ServerBackendDto): ServerDto {
@@ -157,6 +159,38 @@ export async function createChannel(
     method: "POST",
     body: payload,
   });
+}
+
+export async function kickMember(
+  serverId: ServerId,
+  userId: string,
+): Promise<void> {
+  await fetchJson<void>(`/servers/${serverId}/members/${userId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function banMember(
+  serverId: ServerId,
+  body: BanMemberBody,
+): Promise<BanDto> {
+  return fetchJson<BanDto>(`/servers/${serverId}/bans`, {
+    method: "POST",
+    body,
+  });
+}
+
+export async function unbanMember(
+  serverId: ServerId,
+  userId: string,
+): Promise<void> {
+  await fetchJson<void>(`/servers/${serverId}/bans/${userId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getBans(serverId: ServerId): Promise<BanDto[]> {
+  return fetchJson<BanDto[]>(`/servers/${serverId}/bans`, { method: "GET" });
 }
 
 export async function transferOwnership(

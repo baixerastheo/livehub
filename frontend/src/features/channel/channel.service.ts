@@ -39,7 +39,7 @@ export type ChannelMessageBackendDto = {
   contenu: string;
   creeLe: string;
   auteurId: string;
-  auteur: { id: string; name: string | null; email: string };
+  auteur: { id: string; name: string | null; email: string; avatarUrl?: string | null };
   reactions?: { emoji: string; count: number; userIds: string[] }[];
 };
 

@@ -39,21 +39,26 @@ export function MessageList({
           <FiChevronDown className={styles.threadEmptyArrow} aria-hidden />
         </div>
       ) : (
-        messages.map((m) => (
-          <MessageBubble
-            key={m.id}
-            message={m}
-            currentUserId={currentUserId}
-            canDelete={canDeleteMessages}
-            onDelete={
-              onDeleteMessage
-                ? () => onDeleteMessage(Number(m.id))
-                : undefined
-            }
-            isDeleting={isDeletingMessageId === Number(m.id)}
-            onToggleReaction={onToggleReaction}
-          />
-        ))
+        messages.map((m, i) => {
+          const prev = messages[i - 1];
+          const showAvatar = !prev || prev.author !== m.author || prev.isMe !== m.isMe;
+          return (
+            <MessageBubble
+              key={m.id}
+              message={m}
+              showAvatar={showAvatar}
+              currentUserId={currentUserId}
+              canDelete={canDeleteMessages}
+              onDelete={
+                onDeleteMessage
+                  ? () => onDeleteMessage(Number(m.id))
+                  : undefined
+              }
+              isDeleting={isDeletingMessageId === Number(m.id)}
+              onToggleReaction={onToggleReaction}
+            />
+          );
+        })
       )}
       <div ref={bottomRef} />
     </div>

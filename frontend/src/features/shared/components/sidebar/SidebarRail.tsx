@@ -28,8 +28,29 @@ export function SidebarRail() {
   const closeMobileSidebars = useAppStore((state) => state.closeMobileSidebars);
 
   const [isServerMenuOpen, setIsServerMenuOpen] = React.useState(false);
+
+  const serverColor = React.useCallback((name: string, id: number): string => {
+    const PALETTE = [
+      ["#6366f1", "#818cf8"], // indigo
+      ["#8b5cf6", "#a78bfa"], // violet
+      ["#ec4899", "#f472b6"], // pink
+      ["#f59e0b", "#fbbf24"], // amber
+      ["#10b981", "#34d399"], // emerald
+      ["#3b82f6", "#60a5fa"], // blue
+      ["#ef4444", "#f87171"], // red
+      ["#14b8a6", "#2dd4bf"], // teal
+      ["#f97316", "#fb923c"], // orange
+      ["#a855f7", "#c084fc"], // purple
+    ];
+    const hash = (name + id)
+      .split("")
+      .reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 0);
+    const [from, to] = PALETTE[Math.abs(hash) % PALETTE.length];
+    return `linear-gradient(135deg, ${from}, ${to})`;
+  }, []);
   const [isCreateServerOpen, setIsCreateServerOpen] = React.useState(false);
   const { data: userServers } = useUserServersQuery();
+  const selectedServerId = useAppStore((state) => state.selectedServerId);
 
   const activate = (item: RailItem) => {
     setSidebarSection(item);
@@ -115,18 +136,20 @@ export function SidebarRail() {
             {userServers && userServers.length > 0 && (
               <div className={styles.serverList}>
                 {userServers.map(({ server }) => {
-                  const initials = server.name
-                    .trim()
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map((word) => word[0]?.toUpperCase() ?? "")
-                    .join("");
+                  const words = server.name.trim().split(/\s+/);
+                  const raw = words.length === 1
+                    ? words[0].slice(0, 3)
+                    : words.slice(0, 4).map((w) => w[0] ?? "").join("");
+                  const initials = raw.length > 0
+                    ? raw[0].toUpperCase() + raw.slice(1).toLowerCase()
+                    : "S";
 
+                  const isActive = selectedServerId === server.id;
                   return (
                     <button
                       key={server.id}
                       type="button"
-                      className={styles.serverAvatarButton}
+                      className={`${styles.serverAvatarButton} ${isActive ? styles.serverAvatarActive : ""}`}
                       onClick={() => {
                         setSelectedServerId(server.id);
                         setSidebarSection("teams");
@@ -134,7 +157,10 @@ export function SidebarRail() {
                       }}
                       aria-label={`Open server ${server.name}`}
                     >
-                      <span className={styles.serverAvatar}>
+                      <span
+                        className={styles.serverAvatar}
+                        style={{ background: serverColor(server.name, server.id) }}
+                      >
                         {initials || "S"}
                       </span>
                       <span className={styles.railTooltip}>{server.name}</span>

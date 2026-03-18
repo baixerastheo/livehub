@@ -3,6 +3,7 @@ import type { ReactionDto } from "@/src/features/messages/messages.types";
 export type ChatMessage = {
   id: string;
   author: string;
+  authorAvatarUrl?: string | null;
   content: string;
   createdAtIso: string;
   isMe?: boolean;

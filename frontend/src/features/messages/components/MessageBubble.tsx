@@ -9,6 +9,7 @@ import Picker from "@emoji-mart/react";
 import styles from "../styles/MessageBubble.module.css";
 import type { ChatMessage } from "@/src/features/messages/messages.mock";
 import { ReactionBar } from "@/src/features/messages/components/ReactionBar";
+import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
 
 const PICKER_WIDTH = 352;
 const PICKER_HEIGHT = 440;
@@ -49,6 +50,7 @@ type MenuState = "closed" | "menu" | "picker";
 
 type Props = {
   message: ChatMessage;
+  showAvatar?: boolean;
   currentUserId?: string | null;
   canDelete?: boolean;
   onDelete?: () => void;
@@ -58,6 +60,7 @@ type Props = {
 
 export function MessageBubble({
   message,
+  showAvatar = true,
   currentUserId = null,
   canDelete = false,
   onDelete,
@@ -133,15 +136,32 @@ export function MessageBubble({
       className={`${styles.bubbleRow} ${isMe ? styles.bubbleRowMe : ""}`}
       role="listitem"
     >
-      <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : ""}`}>
-        <div className={styles.bubbleMeta}>
-          <span className={styles.author}>
-            {isMe ? t("you") : message.author}
-          </span>
-          <span className={styles.time}>
-            {formatTime(message.createdAtIso)}
-          </span>
-
+      {!isMe && (
+        <div className={styles.avatarCol}>
+          {showAvatar ? (
+            <UserAvatar
+              avatarUrl={message.authorAvatarUrl}
+              displayName={message.author}
+              size="sm"
+              aria-hidden
+            />
+          ) : (
+            <div className={styles.avatarPlaceholder} />
+          )}
+        </div>
+      )}
+      <div className={styles.bubbleWrapper}>
+        {showAvatar && (
+          <div className={`${styles.bubbleMeta} ${isMe ? styles.bubbleMetaMe : ""}`}>
+            <span className={styles.author}>
+              {isMe ? t("you") : message.author}
+            </span>
+            <span className={styles.time}>
+              {formatTime(message.createdAtIso)}
+            </span>
+          </div>
+        )}
+        <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : ""}`}>
           {hasActions && (
             <button
               ref={dotsRef}
@@ -154,27 +174,26 @@ export function MessageBubble({
               <FiMoreHorizontal size={15} aria-hidden />
             </button>
           )}
-        </div>
+          <div className={styles.text}>
+            {message.content.startsWith("[gif]") ? (
+              <img
+                src={message.content.slice(5)}
+                alt="GIF"
+                className={styles.gifImage}
+              />
+            ) : (
+              message.content
+            )}
+          </div>
 
-        <div className={styles.text}>
-          {message.content.startsWith("[gif]") ? (
-            <img
-              src={message.content.slice(5)}
-              alt="GIF"
-              className={styles.gifImage}
+          {reactions.length > 0 && (
+            <ReactionBar
+              reactions={reactions}
+              currentUserId={currentUserId}
+              onToggle={(emoji) => onToggleReaction?.(Number(message.id), emoji)}
             />
-          ) : (
-            message.content
           )}
         </div>
-
-        {reactions.length > 0 && (
-          <ReactionBar
-            reactions={reactions}
-            currentUserId={currentUserId}
-            onToggle={(emoji) => onToggleReaction?.(Number(message.id), emoji)}
-          />
-        )}
       </div>
 
       {menuState === "menu" && anchorRect &&

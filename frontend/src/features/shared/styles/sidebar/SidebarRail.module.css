@@ -186,6 +186,32 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
+  border-radius: 14px;
+  transition: transform 0.12s ease;
+}
+
+.serverAvatarButton:hover {
+  transform: scale(1.08);
+}
+
+.serverAvatarButton:hover .serverAvatar {
+  border-radius: 10px;
+}
+
+.serverAvatarActive .serverAvatar {
+  border-radius: 10px;
+}
+
+.serverAvatarActive::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--text-primary);
 }
 
 .serverAvatar {
@@ -195,11 +221,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #111827;
-  color: #f9fafb;
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  transition: border-radius 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
 }
 
 .serverArrow {

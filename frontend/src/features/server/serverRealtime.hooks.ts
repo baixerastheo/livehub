@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSocket } from "@/src/lib/realtime/socketClient";
-import { serversKeys } from "./server.hooks";
+import { serversKeys, serverBansKey } from "./server.hooks";
 import { channelsKeys } from "@/src/features/channel/channel.hooks";
 import type { ChannelDto } from "@/src/features/channel/channel.types";
 import type { ServerMemberDto } from "./server.types";
+import { useAuth } from "@/src/core/store/auth/useAuth";
+import { useAppStore } from "@/src/core/store/appStore";
 
 type ServerChannelCreatedEvent = {
   serverId: number;
@@ -60,6 +62,9 @@ function mapRealtimeMemberToDto(m: ServerMemberJoinedEvent["member"]): ServerMem
 
 export function useServerRealtime(serverId: number | null) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
+  const setSelectedServerId = useAppStore((s) => s.setSelectedServerId);
 
   useEffect(() => {
     if (serverId == null) return;
@@ -129,6 +134,36 @@ export function useServerRealtime(serverId: number | null) {
       });
     };
 
+    const onMemberKicked = (event: { serverId: number; kickedUserId: string }) => {
+      if (event.serverId !== serverId) return;
+      queryClient.setQueryData<ServerMemberDto[]>(
+        serversKeys.members(serverId),
+        (old) => old?.filter((m) => m.userId !== event.kickedUserId) ?? old,
+      );
+      if (event.kickedUserId === currentUserId) {
+        queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+        setSelectedServerId(null);
+      }
+    };
+
+    const onMemberBanned = (event: { serverId: number; bannedUserId: string }) => {
+      if (event.serverId !== serverId) return;
+      queryClient.setQueryData<ServerMemberDto[]>(
+        serversKeys.members(serverId),
+        (old) => old?.filter((m) => m.userId !== event.bannedUserId) ?? old,
+      );
+      queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
+      if (event.bannedUserId === currentUserId) {
+        queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+        setSelectedServerId(null);
+      }
+    };
+
+    const onMemberUnbanned = (event: { serverId: number }) => {
+      if (event.serverId !== serverId) return;
+      queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
+    };
+
     const onOwnershipTransferred = (event: ServerOwnershipTransferredEvent) => {
       if (event.serverId !== serverId) return;
       // Invalidate members and user's own server list to reflect the new roles.
@@ -144,6 +179,9 @@ export function useServerRealtime(serverId: number | null) {
     socket.on("server-member:joined", onMemberJoined);
     socket.on("server-member:online", onMemberOnline);
     socket.on("server-member:offline", onMemberOffline);
+    socket.on("server-member:kicked", onMemberKicked);
+    socket.on("server-member:banned", onMemberBanned);
+    socket.on("server-member:unbanned", onMemberUnbanned);
     socket.on("server-ownership:transferred", onOwnershipTransferred);
 
     return () => {
@@ -153,10 +191,13 @@ export function useServerRealtime(serverId: number | null) {
       socket.off("server-member:joined", onMemberJoined);
       socket.off("server-member:online", onMemberOnline);
       socket.off("server-member:offline", onMemberOffline);
+      socket.off("server-member:kicked", onMemberKicked);
+      socket.off("server-member:banned", onMemberBanned);
+      socket.off("server-member:unbanned", onMemberUnbanned);
       socket.off("server-ownership:transferred", onOwnershipTransferred);
       socket.emit("server:unsubscribe", { serverId });
     };
-  }, [serverId, queryClient]);
+  }, [serverId, currentUserId, queryClient, setSelectedServerId]);
 }
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { createServer } from "../server.service";
+import { useCreateServerMutation } from "../server.hooks";
 import { useToast } from "@/src/core/store/toast/useToastStore";
 import styles from "../styles/modalCreateServer.module.css";
 
@@ -12,9 +12,10 @@ type ModalCreateServerProps = {
 
 export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
   const { toast } = useToast();
+  const createServerMutation = useCreateServerMutation();
   const [name, setName] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const isSubmitting = createServerMutation.isPending;
 
   if (!isOpen) return null;
 
@@ -39,10 +40,9 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
       return;
     }
 
-    setIsSubmitting(true);
     setError(null);
     try {
-      await createServer({ name: trimmed });
+      await createServerMutation.mutateAsync({ name: trimmed });
       toast.success("Server created successfully.");
       handleClose();
     } catch (err) {
@@ -50,8 +50,6 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
         err instanceof Error ? err.message : "Failed to create server.";
       setError(message);
       toast.error(message);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

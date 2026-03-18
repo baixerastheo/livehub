@@ -213,7 +213,7 @@ export class MessageService {
       throw new NotFoundException(`No channel found for ID ${id}`);
     }
 
-    return this.prisma.message.findMany({
+    const messages = await this.prisma.message.findMany({
       where: { canalId: id },
       orderBy: { creeLe: 'asc' },
       include: {
@@ -221,6 +221,21 @@ export class MessageService {
         reactions: { select: { emoji: true, userId: true } },
       },
     });
+
+    return Promise.all(
+      messages.map(async (m) => {
+        let avatarUrl: string | null = null;
+        if (m.auteur.avatarPath) {
+          try {
+            avatarUrl = await this.supabaseStorage.publicUrl(m.auteur.avatarPath);
+          } catch {
+            avatarUrl = null;
+          }
+        }
+        const { avatarPath: _avatarPath, ...auteurRest } = m.auteur;
+        return { ...m, auteur: { ...auteurRest, avatarUrl } };
+      }),
+    );
   }
 
   /**
