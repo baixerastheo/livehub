@@ -21,6 +21,7 @@ import type {
   ServerMemberBannedEvent,
   ServerMemberUnbannedEvent,
   ServerMemberKickedEvent,
+  MessageReactionUpdatedEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
@@ -531,5 +532,51 @@ export class MessageGateway
     this.server
       .to('server:' + serverId)
       .emit('server-member:unbanned', eventPayload);
+  }
+
+  /**
+   * Émet `message:reaction-updated` à la room appropriée selon le type de message.
+   * Pour les messages de canal, émet à `channel:<channelId>`.
+   * Pour les messages privés, émet aux rooms des deux participants.
+   * @param type - Type de message : 'channel' ou 'private'
+   * @param target - channelId pour les canaux, ou { expediteurId, destinataireId } pour les MP
+   * @param messageId - Identifiant du message concerné
+   * @param reactions - Réactions agrégées
+   */
+  emitReactionUpdated(
+    type: 'channel',
+    target: number,
+    messageId: number,
+    reactions: MessageReactionUpdatedEvent['reactions'],
+  ): void;
+  emitReactionUpdated(
+    type: 'private',
+    target: { expediteurId: string; destinataireId: string },
+    messageId: number,
+    reactions: MessageReactionUpdatedEvent['reactions'],
+  ): void;
+  emitReactionUpdated(
+    type: 'channel' | 'private',
+    target: number | { expediteurId: string; destinataireId: string },
+    messageId: number,
+    reactions: MessageReactionUpdatedEvent['reactions'],
+  ) {
+    const eventPayload: MessageReactionUpdatedEvent = { messageId, reactions };
+    if (type === 'channel') {
+      this.server
+        .to('channel:' + (target as number))
+        .emit('message:reaction-updated', eventPayload);
+    } else {
+      const { expediteurId, destinataireId } = target as {
+        expediteurId: string;
+        destinataireId: string;
+      };
+      this.server
+        .to('user:' + expediteurId)
+        .emit('message:reaction-updated', eventPayload);
+      this.server
+        .to('user:' + destinataireId)
+        .emit('message:reaction-updated', eventPayload);
+    }
   }
 }

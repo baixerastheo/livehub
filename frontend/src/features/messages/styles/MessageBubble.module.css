@@ -10,7 +10,7 @@
 
 .bubbleMeta {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
   margin-bottom: 3px;
 }
@@ -25,12 +25,14 @@
   color: var(--text-muted);
 }
 
-.deleteButton {
+/* ─── Three-dots button ───────────────────────────────────────────────────── */
+
+.dotsButton {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px 6px;
+  justify-content: center;
+  padding: 2px 4px;
   border: none;
   background: transparent;
   border-radius: var(--radius-sm);
@@ -38,24 +40,97 @@
   color: var(--text-muted);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.1s;
+  transition: opacity 0.1s, background 0.1s;
 }
 
-.bubbleRow:hover .deleteButton,
-.deleteButtonVisible {
+.bubbleRow:hover .dotsButton,
+.dotsButton:focus-visible {
   opacity: 1;
   pointer-events: auto;
 }
 
-.deleteButton:hover:not(:disabled) {
+.dotsButton:hover {
   background: rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
+}
+
+/* ─── Dropdown (rendered in portal) ──────────────────────────────────────── */
+
+.dropdown {
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.dropdownItem:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.dropdownItem:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.dropdownItemDanger {
   color: #dc2626;
 }
 
-.deleteButton:disabled {
-  opacity: 0.7;
-  cursor: default;
+.dropdownItemDanger:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08);
 }
+
+/* ─── Quick emoji row (on hover of "Add reaction") ───────────────────────── */
+
+.quickEmojiRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.quickEmojiBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.1s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.quickEmojiBtn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.2);
+}
+
+/* ─── Bubble body ─────────────────────────────────────────────────────────── */
 
 .deletingLabel {
   font-size: var(--font-size-xs);

@@ -99,6 +99,13 @@
   background: rgba(15, 23, 42, 0.05);
 }
 
+.emojiPickerPopover {
+  position: absolute;
+  right: 60px;
+  bottom: 64px;
+  z-index: 20;
+}
+
 .gifPickerPopover {
   position: absolute;
   right: 18px;
