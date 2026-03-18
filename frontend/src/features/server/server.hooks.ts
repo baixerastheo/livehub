@@ -15,8 +15,13 @@ import {
   updateServer,
   updateMemberRole,
   transferOwnership,
+  kickMember,
+  banMember,
+  unbanMember,
+  getBans,
   serverService,
 } from "./server.service";
+import type { BanDto, BanMemberBody } from "./server.types";
 import type {
   ServerMemberDto,
   UserServerDto,
@@ -186,6 +191,69 @@ export function useLeaveServerMutation() {
         useAppStore.getState().setSelectedServerId(null);
       }
     },
+  });
+}
+
+export const serverBansKey = (serverId: number) =>
+  ["servers", "bans", serverId] as const;
+
+export function useKickMemberMutation(serverId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => {
+      if (serverId == null) throw new Error("No server selected");
+      return kickMember(serverId, userId);
+    },
+    onSuccess: () => {
+      if (serverId != null)
+        queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+    },
+  });
+}
+
+export function useBanMemberMutation(serverId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: BanMemberBody) => {
+      if (serverId == null) throw new Error("No server selected");
+      return banMember(serverId, body);
+    },
+    onSuccess: () => {
+      if (serverId != null) {
+        queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+        queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
+      }
+    },
+    onError: (error: Error) => {
+      // 409 = already banned — invalidate cache to sync UI and swallow the error
+      if (error.message?.includes("already banned") && serverId != null) {
+        queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+        queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
+      }
+    },
+  });
+}
+
+export function useUnbanMemberMutation(serverId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => {
+      if (serverId == null) throw new Error("No server selected");
+      return unbanMember(serverId, userId);
+    },
+    onSuccess: () => {
+      if (serverId != null)
+        queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
+    },
+  });
+}
+
+export function useBansQuery(serverId: number | null) {
+  return useQuery<BanDto[]>({
+    queryKey: serverId != null ? serverBansKey(serverId) : ["servers", "bans", 0],
+    queryFn: () => getBans(serverId!),
+    enabled: serverId != null,
+    retry: false,
   });
 }
 

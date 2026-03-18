@@ -80,12 +80,13 @@ export function MessagesScreen() {
     return list.map((m) => ({
       id: m.id,
       author: m.authorName,
+      authorAvatarUrl: m.isMe ? null : peerUser?.avatarUrl,
       content: m.content,
       createdAtIso: m.createdAtIso,
       isMe: m.isMe,
       reactions: m.reactions,
     }));
-  }, [conversationData?.messages]);
+  }, [conversationData?.messages, peerUser]);
 
   const [rightPanelOpen, setRightPanelOpen] = React.useState(
     () => typeof window !== "undefined" && window.innerWidth > 980,

@@ -108,6 +108,24 @@ export type CreateChannelPayload = { name: string };
 
 export type ListServerChannelsResponseDto = ChannelDto[];
 
+export type BanMemberBody = {
+  userId: string;
+  raison?: string;
+  expireLe?: string;
+};
+
+export type BanDto = {
+  id: number;
+  serverId: number;
+  userId: string;
+  bannedById: string;
+  raison: string | null;
+  expireLe: string | null;
+  createdAtIso: string;
+  user: { id: string; name: string; email: string; avatarUrl?: string | null };
+  bannedBy: { id: string; name: string; email: string };
+};
+
 export type ServerKeysInput = { userId?: string | null };
 
 export const serverKeys = {

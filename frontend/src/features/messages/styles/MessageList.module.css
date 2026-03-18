@@ -8,6 +8,31 @@
   background: transparent;
   position: relative;
   z-index: 1;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages::-webkit-scrollbar-button {
+  display: none;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 99px;
+  transition: background 0.2s;
+}
+
+.messages:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
 }
 
 .threadEmpty {

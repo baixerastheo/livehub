@@ -8,8 +8,10 @@ import styles from "../styles/ServerHeaderMenu.module.css";
 import type { ServerRole } from "../server.types";
 import { useDeleteServerMutation, useLeaveServerMutation } from "../server.hooks";
 import { ConfirmDeleteServerModal } from "./ConfirmDeleteServerModal";
+import { BansModal } from "./BansModal";
 
 const ROLE_PROPRIETAIRE: ServerRole = "PROPRIETAIRE";
+const ROLE_ADMINISTRATEUR: ServerRole = "ADMINISTRATEUR";
 
 type Props = {
   serverId: number;
@@ -26,12 +28,16 @@ export function ServerHeaderMenu({
   const t = useTranslations("server");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [bansModalOpen, setBansModalOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
   const deleteMutation = useDeleteServerMutation();
   const leaveMutation = useLeaveServerMutation();
 
   const isOwner = currentUserRole === ROLE_PROPRIETAIRE;
+  const canManageBans =
+    currentUserRole === ROLE_PROPRIETAIRE ||
+    currentUserRole === ROLE_ADMINISTRATEUR;
   const canLeave = !isOwner;
 
   React.useEffect(() => {
@@ -70,6 +76,19 @@ export function ServerHeaderMenu({
       </button>
       {menuOpen && (
         <div className={styles.dropdown} role="menu">
+          {canManageBans && (
+            <button
+              type="button"
+              role="menuitem"
+              className={styles.menuItem}
+              onClick={() => {
+                setMenuOpen(false);
+                setBansModalOpen(true);
+              }}
+            >
+              {t("bans")}
+            </button>
+          )}
           {isOwner && (
             <button
               type="button"
@@ -101,6 +120,11 @@ export function ServerHeaderMenu({
         onClose={() => setDeleteModalOpen(false)}
         serverId={serverId}
         serverName={serverName}
+      />
+      <BansModal
+        isOpen={bansModalOpen}
+        onClose={() => setBansModalOpen(false)}
+        serverId={serverId}
       />
     </div>
   );

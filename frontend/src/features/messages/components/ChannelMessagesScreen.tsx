@@ -94,6 +94,7 @@ export function ChannelMessagesScreen() {
     return messagesData.map((m) => ({
       id: String(m.id),
       author: m.auteur?.name ?? m.auteur?.email ?? "?",
+      authorAvatarUrl: m.auteur?.avatarUrl,
       content: m.contenu,
       createdAtIso: m.creeLe,
       isMe: m.auteurId === user.id,

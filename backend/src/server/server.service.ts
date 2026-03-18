@@ -213,6 +213,11 @@ export class ServerService {
       );
     }
 
+    // Auto-unban if the user was previously banned
+    await this.prisma.banServeur.deleteMany({
+      where: { userId: targetUserId, serveurId: serverId },
+    });
+
     const newMember = await this.prisma.membreServeur.create({
       data: { serveurId: serverId, userId: targetUserId, role: Role.MEMBRE },
       include: { user: true, serveur: true },
@@ -537,10 +542,27 @@ export class ServerService {
     const actingMember = await this.assertServerMember(actingUserId, serverId);
     this.assertAdminRole(actingMember.role);
 
-    return this.prisma.banServeur.findMany({
+    const bans = await this.prisma.banServeur.findMany({
       where: { serveurId: serverId },
       include: { user: true, banneur: true },
     });
+
+    return Promise.all(
+      bans.map(async (ban) => {
+        let avatarUrl: string | null = null;
+        if (ban.user.avatarPath) {
+          try {
+            avatarUrl = await this.supabaseStorage.publicUrl(
+              ban.user.avatarPath,
+            );
+          } catch {
+            avatarUrl = null;
+          }
+        }
+        const { avatarPath: _avatarPath, ...userRest } = ban.user;
+        return { ...ban, user: { ...userRest, avatarUrl } };
+      }),
+    );
   }
 
   async kickMember(
