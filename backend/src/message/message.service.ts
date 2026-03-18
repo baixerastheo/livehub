@@ -227,7 +227,9 @@ export class MessageService {
         let avatarUrl: string | null = null;
         if (m.auteur.avatarPath) {
           try {
-            avatarUrl = await this.supabaseStorage.publicUrl(m.auteur.avatarPath);
+            avatarUrl = await this.supabaseStorage.publicUrl(
+              m.auteur.avatarPath,
+            );
           } catch {
             avatarUrl = null;
           }

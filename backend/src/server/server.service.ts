@@ -552,7 +552,9 @@ export class ServerService {
         let avatarUrl: string | null = null;
         if (ban.user.avatarPath) {
           try {
-            avatarUrl = await this.supabaseStorage.publicUrl(ban.user.avatarPath);
+            avatarUrl = await this.supabaseStorage.publicUrl(
+              ban.user.avatarPath,
+            );
           } catch {
             avatarUrl = null;
           }
