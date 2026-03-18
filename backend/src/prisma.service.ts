@@ -8,11 +8,10 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    // Use DIRECT_URL for direct connection (not pgbouncer)
-    const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+    const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error(
-        'DATABASE_URL or DIRECT_URL is missing. Check `backend/.env` or your process environment.',
+        'DATABASE_URL is missing. Check `backend/.env` or your process environment.',
       );
     }
 

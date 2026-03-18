@@ -358,11 +358,6 @@ export class MessageGateway
     }
   }
 
-  /**
-   * Émet l'événement `private-message:created` aux deux participants d'une conversation.
-   * Chaque participant reçoit un payload avec le peerUserId de l'autre.
-   * @param payload - Données du message privé incluant senderId et recipientId
-   */
   emitPrivateMessageCreated(payload: {
     id: string;
     content: string;
