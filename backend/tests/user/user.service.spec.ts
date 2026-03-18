@@ -135,7 +135,7 @@ describe('UserService', () => {
   // ─── createUser ──────────────────────────────────────────────────────────────
 
   describe('createUser', () => {
-    const dto = { name: 'New User', email: 'new@test.com', statut: undefined };
+    const dto = { name: 'New User', email: 'new@test.com', password: 'secret', statut: undefined };
 
     it('should create a user when email and name are available', async () => {
       prismaMock.user.findUnique.mockResolvedValue(null); // email check

@@ -7,7 +7,11 @@ import {
 import { PrismaService } from '../prisma.service.js';
 import { MessageGateway } from '../realtime/message.gateway.js';
 
-export type ReactionAggregate = { emoji: string; count: number; userIds: string[] };
+export type ReactionAggregate = {
+  emoji: string;
+  count: number;
+  userIds: string[];
+};
 
 /**
  * Aggregates raw reactions by emoji into { emoji, count, userIds } entries.
@@ -90,7 +94,12 @@ export class ReactionService {
     });
 
     const aggregated = aggregate(all);
-    this.gateway.emitReactionUpdated('channel', message.canalId, messageId, aggregated);
+    this.gateway.emitReactionUpdated(
+      'channel',
+      message.canalId,
+      messageId,
+      aggregated,
+    );
     return aggregated;
   }
 
@@ -144,7 +153,10 @@ export class ReactionService {
     const aggregated = aggregate(all);
     this.gateway.emitReactionUpdated(
       'private',
-      { expediteurId: message.expediteurId, destinataireId: message.destinataireId },
+      {
+        expediteurId: message.expediteurId,
+        destinataireId: message.destinataireId,
+      },
       messageId,
       aggregated,
     );
