@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from 'src/realtime/message.gateway';
+import { AiBotService } from './ai-bot.service';
 
 const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
 
@@ -31,6 +32,7 @@ export class MessageService {
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
     private readonly messageGateway: MessageGateway,
+    private readonly aiBotService: AiBotService,
   ) {}
 
   /**
@@ -66,7 +68,6 @@ export class MessageService {
     }
 
     const peerIds = Array.from(peerIdToLast.keys());
-    if (peerIds.length === 0) return [];
 
     const users = await this.prisma.user.findMany({
       where: { id: { in: peerIds } },
@@ -110,10 +111,29 @@ export class MessageService {
         }),
     );
 
-    return listWithAvatars.sort(
+    const sorted = listWithAvatars.sort(
       (a, b) =>
         (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
     );
+
+    // afficher le bot en premier s'il n'est pas déjà dans la liste des conversations
+    const botId = this.aiBotService.getBotUserId();
+    if (!sorted.some((item) => item.peer.id === botId)) {
+      const botUser = await this.prisma.user.findUnique({
+        where: { id: botId },
+        select: { id: true, name: true, email: true, avatarPath: true },
+      });
+      if (botUser) {
+        const { avatarPath: _avatarPath, ...botPeer } = botUser;
+        sorted.unshift({
+          peer: { ...botPeer, avatarUrl: null },
+          lastMessageAt: undefined,
+          lastMessageContent: undefined,
+        });
+      }
+    }
+
+    return sorted;
   }
 
   /**
@@ -197,7 +217,55 @@ export class MessageService {
       recipientId,
     });
 
+    if (recipientId === this.aiBotService.getBotUserId()) {
+      void this.EnvoyerBotResponse(senderId);
+    }
+
     return message;
+  }
+
+  private async EnvoyerBotResponse(userId: string) {
+    const botId = this.aiBotService.getBotUserId();
+
+    const history = await this.prisma.messagePrive.findMany({
+      where: {
+        OR: [
+          { expediteurId: userId, destinataireId: botId },
+          { expediteurId: botId, destinataireId: userId },
+        ],
+      },
+      orderBy: { creeLe: 'asc' },
+      select: { contenu: true, expediteurId: true },
+    });
+
+    const messages = history.map((m) => ({
+      role: m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
+      content: m.contenu,
+    }));
+
+    const aiResponse = await this.aiBotService.generateResponse(messages);
+
+    const botMessage = await this.prisma.messagePrive.create({
+      data: {
+        expediteurId: botId,
+        destinataireId: userId,
+        contenu: aiResponse,
+      },
+      include: {
+        expediteur: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    this.messageGateway.emitPrivateMessageCreated({
+      id: String(botMessage.id),
+      content: botMessage.contenu,
+      authorId: botMessage.expediteurId,
+      authorName: botMessage.expediteur.name ?? botMessage.expediteur.email,
+      createdAtIso: botMessage.creeLe.toISOString(),
+      read: botMessage.lu,
+      senderId: botId,
+      recipientId: userId,
+    });
   }
 
   /**
