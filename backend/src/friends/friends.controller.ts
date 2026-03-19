@@ -1,21 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import {Body,Controller,Get,Param,Post,Req,UseGuards} from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { FriendsService } from './friends.service.js';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto.js';
 
-const FRIEND_REQUEST_STATUS_MAP: Record<
-  string,
-  'pending' | 'accepted' | 'declined'
-> = {
+const FRIEND_REQUEST_STATUS_MAP: Record<string, 'pending' | 'accepted' | 'declined'> = {
   EN_ATTENTE: 'pending',
   ACCEPTEE: 'accepted',
   REFUSEE: 'declined',
