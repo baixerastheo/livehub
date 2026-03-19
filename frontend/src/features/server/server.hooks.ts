@@ -19,6 +19,7 @@ import {
   banMember,
   unbanMember,
   getBans,
+  uploadServerAvatar,
   serverService,
 } from "./server.service";
 import type { BanDto, BanMemberBody } from "./server.types";
@@ -254,6 +255,17 @@ export function useBansQuery(serverId: number | null) {
     queryFn: () => getBans(serverId!),
     enabled: serverId != null,
     retry: false,
+  });
+}
+
+export function useUploadServerAvatarMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ serverId, file }: { serverId: number; file: File }) =>
+      uploadServerAvatar(serverId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+    },
   });
 }
 

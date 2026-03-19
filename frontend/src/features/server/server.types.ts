@@ -17,6 +17,7 @@ export type UpdateMemberRoleBody = {
 export type ServerBackendDto = {
   id: ServerId;
   nom: string;
+  avatarUrl?: string | null;
   creeLe: string;
   modifieLe: string;
 };
@@ -50,6 +51,7 @@ export type ServerMemberBackendDto = {
 export type ServerDto = {
   id: ServerId;
   name: string;
+  avatarUrl?: string | null;
   createdAtIso: string;
   updatedAtIso: string;
 };

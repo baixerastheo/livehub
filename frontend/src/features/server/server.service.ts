@@ -1,4 +1,4 @@
-import { fetchJson } from "@/src/lib/apiClient";
+import { fetchJson, fetchFormData } from "@/src/lib/apiClient";
 import type {
   CreateServerBody,
   UpdateServerBody,
@@ -25,6 +25,7 @@ function mapServer(dto: ServerBackendDto): ServerDto {
   return {
     id: dto.id,
     name: dto.nom,
+    avatarUrl: dto.avatarUrl ?? null,
     createdAtIso: dto.creeLe,
     updatedAtIso: dto.modifieLe,
   };
@@ -201,6 +202,15 @@ export async function transferOwnership(
     `/servers/${serverId}/transfer-ownership/${newOwnerId}`,
     { method: "POST" },
   );
+}
+
+export async function uploadServerAvatar(
+  serverId: ServerId,
+  file: File,
+): Promise<{ path: string; avatarUrl: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  return fetchFormData(`/servers/${serverId}/avatar`, form, "PATCH");
 }
 
 export const serverService = {
