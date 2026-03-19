@@ -59,6 +59,7 @@ model DemandeAmitie {
 model Serveur {
   id          Int             @id @default(autoincrement())
   nom         String
+  avatarPath  String?
   membres     MembreServeur[]
   canaux      Canal[]
   invitations Invitation[]

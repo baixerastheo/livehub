@@ -4,7 +4,9 @@ import {
   ForbiddenException,
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
@@ -78,10 +80,27 @@ export class ServerService {
    * @returns Liste des appartenances avec les infos du serveur
    */
   async getUserServers(userId: string) {
-    return this.prisma.membreServeur.findMany({
+    const memberships = await this.prisma.membreServeur.findMany({
       where: { userId },
       include: { serveur: true },
     });
+
+    return Promise.all(
+      memberships.map(async (m) => {
+        let avatarUrl: string | null = null;
+        if (m.serveur.avatarPath) {
+          try {
+            avatarUrl = await this.supabaseStorage.publicUrl(
+              m.serveur.avatarPath,
+            );
+          } catch {
+            avatarUrl = null;
+          }
+        }
+        const { avatarPath: _avatarPath, ...serveurRest } = m.serveur;
+        return { ...m, serveur: { ...serveurRest, avatarUrl } };
+      }),
+    );
   }
 
   /**
@@ -91,7 +110,17 @@ export class ServerService {
    * @throws NotFoundException si le serveur n'existe pas
    */
   async getServerById(id: number) {
-    return this.assertServerExists(id);
+    const server = await this.assertServerExists(id);
+    let avatarUrl: string | null = null;
+    if (server.avatarPath) {
+      try {
+        avatarUrl = await this.supabaseStorage.publicUrl(server.avatarPath);
+      } catch {
+        avatarUrl = null;
+      }
+    }
+    const { avatarPath: _avatarPath, ...serverRest } = server;
+    return { ...serverRest, avatarUrl };
   }
 
   /**
@@ -563,6 +592,51 @@ export class ServerService {
         return { ...ban, user: { ...userRest, avatarUrl } };
       }),
     );
+  }
+
+  async replaceServerAvatar(
+    serverId: number,
+    actingUserId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
+    const server = await this.assertServerExists(serverId);
+
+    const actingMember = await this.assertServerMember(actingUserId, serverId);
+    if (actingMember.role !== Role.PROPRIETAIRE) {
+      throw new ForbiddenException(
+        'Only the server owner can change the server avatar',
+      );
+    }
+
+    const oldAvatarPath = server.avatarPath ?? null;
+    const newPath = `server-${serverId}/${randomUUID()}.${ext}`;
+
+    await this.supabaseStorage.upload(newPath, buffer, contentType);
+
+    await this.prisma.serveur.update({
+      where: { id: serverId },
+      data: { avatarPath: newPath },
+    });
+
+    if (oldAvatarPath) {
+      try {
+        await this.supabaseStorage.removeObjects([oldAvatarPath]);
+      } catch {
+        await this.prisma.serveur.update({
+          where: { id: serverId },
+          data: { avatarPath: oldAvatarPath },
+        });
+        await this.supabaseStorage.removeObjects([newPath]);
+        throw new InternalServerErrorException(
+          'Failed to remove old server avatar from storage',
+        );
+      }
+    }
+
+    const avatarUrl = await this.supabaseStorage.publicUrl(newPath);
+    return { path: newPath, avatarUrl };
   }
 
   async kickMember(

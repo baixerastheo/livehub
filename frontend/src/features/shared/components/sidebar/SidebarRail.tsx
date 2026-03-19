@@ -157,12 +157,22 @@ export function SidebarRail() {
                       }}
                       aria-label={`Open server ${server.name}`}
                     >
-                      <span
-                        className={styles.serverAvatar}
-                        style={{ background: serverColor(server.name, server.id) }}
-                      >
-                        {initials || "S"}
-                      </span>
+                      {server.avatarUrl ? (
+                        <span className={styles.serverAvatar}>
+                          <img
+                            src={server.avatarUrl}
+                            alt={server.name}
+                            className={styles.serverAvatarImg}
+                          />
+                        </span>
+                      ) : (
+                        <span
+                          className={styles.serverAvatar}
+                          style={{ background: serverColor(server.name, server.id) }}
+                        >
+                          {initials || "S"}
+                        </span>
+                      )}
                       <span className={styles.railTooltip}>{server.name}</span>
                     </button>
                   );
