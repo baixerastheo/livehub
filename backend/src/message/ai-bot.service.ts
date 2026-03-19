@@ -2,6 +2,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PresenceService } from '../realtime/presence.service';
 
+/**
+ * Prompt système définissant la personnalité et les règles de comportement de BOBY.
+ * Injecté en tête de chaque requête envoyée au modèle.
+ */
 const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
 
     Tu es comme un pote : tu parles franchement, t'es drôle, direct, un peu bof sur les bords.
@@ -18,13 +22,18 @@ const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
 
 @Injectable()
 export class AiBotService implements OnModuleInit {
+
+  /** ID de l'utilisateur bot en base de données */
   private botUserId: string;
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly presenceService: PresenceService,
-  ) {}
+    private readonly prisma: PrismaService, private readonly presenceService: PresenceService) {}
 
+  /**
+   * Initialisation du service au démarrage du module.
+   * Récupère l'ID du compte bot depuis la BDD et le marque comme présent.
+   * Si le compte bot n'existe pas, le service s'arrête silencieusement.
+   */
   async onModuleInit() {
     const bot = await this.prisma.user.findUnique({
       where: { email: 'agent@gmail.com' },
@@ -35,11 +44,23 @@ export class AiBotService implements OnModuleInit {
     this.presenceService.increment(this.botUserId);
   }
 
+  /**
+   * Retourne l'ID de l'utilisateur bot.
+   * Utilisé pour identifier BOBY dans les conversations.
+   * @returns L'ID du bot
+   */
   getBotUserId(): string {
     return this.botUserId;
   }
 
-  async generateResponse(messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
+  /**
+   * Génère une réponse de BOBY à partir d'un historique de messages.
+   * Appelle l'API OpenRouter avec le modèle configuré et le system prompt de BOBY.
+   * @param messages - Historique de la conversation (rôles user/assistant + contenu)
+   * @returns La réponse générée par le modèle, ou un message d'erreur fallback
+   */
+  async generateResponse(
+    messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
