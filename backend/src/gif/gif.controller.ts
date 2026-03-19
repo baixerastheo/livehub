@@ -2,9 +2,10 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { GifService } from './gif.service';
 import { AuthGuard } from '../auth/auth.guard';
 
+
 /**
- * Contrôleur gérant les endpoints liés aux GIFs.
- * Toutes les routes sont protégées par l'AuthGuard.
+ * Controller de gestion des GIFs.
+ * Gère les requêtes liées aux GIFs, telles que la récupération des GIFs tendance, la recherche de GIFs, etc.
  */
 @UseGuards(AuthGuard)
 @Controller('gifs')
@@ -12,7 +13,7 @@ export class GifController {
   constructor(private readonly gifService: GifService) {}
 
   /**
-   * Récupère les GIFs tendance du moment.
+   * 
    * @returns Liste des GIFs tendance
    */
   @Get('trending')
@@ -20,20 +21,22 @@ export class GifController {
     return this.gifService.getTrending();
   }
 
+
   /**
-   * Recherche des GIFs selon un mot-clé.
-   * @param q - Le terme de recherche
-   * @returns Liste des GIFs correspondant à la recherche
+   * Recherche des GIFs en fonction d'une requête de recherche.
+   * @param q - Requête de recherche
+   * @returns Liste des GIFs correspondant à la requête
    */
   @Get('search')
   search(@Query('q') q: string) {
     return this.gifService.search(q);
   }
 
+
   /**
-   * Récupère un GIF spécifique par son identifiant.
-   * @param id - L'identifiant unique du GIF
-   * @returns Le GIF correspondant à l'ID
+   * Récupère un GIF par son identifiant.
+   * @param id - Identifiant du GIF
+   * @returns Détails du GIF correspondant à l'identifiant
    */
   @Get(':id')
   getById(@Param('id') id: string) {

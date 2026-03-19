@@ -1,17 +1,2 @@
-import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
-
-export class UpdateCanal {
-  @IsNotEmpty({
-    message: "The 'name' field is required!",
-  })
-  @IsString({
-    message: "The 'name' field must be a string!",
-  })
-  @MinLength(1, {
-    message: "The 'name' field must contain at least 1 character!",
-  })
-  @MaxLength(100, {
-    message: "The 'name' field must not exceed 100 characters!",
-  })
-  name: string;
-}
+import { CreateCanal } from './create-canal.dto';
+export class UpdateCanal extends CreateCanal {}

@@ -1,23 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Put,
-  Req,
-  UploadedFile,
-  UseGuards,
-  UseInterceptors,
-  ParseFilePipe,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,ParseIntPipe,Patch,Post,Put,Req,UploadedFile,UseGuards,UseInterceptors,ParseFilePipe,FileTypeValidator,MaxFileSizeValidator} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ServerService } from './server.service';
+import { ServerMemberService } from './server-member.service';
+import { ServerBanService } from './server-ban.service';
 import { UpdateServer } from './dto/update-server.dto';
 import { UpdateMemberRole } from './dto/update-member-role.dto';
 import { CreateServer } from './dto/create-server.dto';
@@ -33,7 +18,12 @@ import type { RequestWithAuth } from '../lib/request-with-auth';
 @Controller('servers')
 @UseGuards(AuthGuard)
 export class ServerController {
-  constructor(private readonly serverService: ServerService) {}
+  constructor(
+    private readonly serverService: ServerService,
+    private readonly serverMemberService: ServerMemberService,
+    private readonly serverBanService: ServerBanService,
+  ) {}
+
 
   /**
    * Crée un nouveau serveur avec l'utilisateur connecté comme propriétaire.
@@ -73,10 +63,7 @@ export class ServerController {
    * @returns Le serveur mis à jour
    */
   @Put('/:id')
-  async updateServer(
-    @Body() data: UpdateServer,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async updateServer(@Body() data: UpdateServer,@Param('id', ParseIntPipe) id: number) {
     return this.serverService.updateServer(id, data);
   }
 
@@ -91,126 +78,12 @@ export class ServerController {
   }
 
   /**
-   * Permet à l'utilisateur connecté de rejoindre un serveur.
-   * @param serverId - Identifiant du serveur à rejoindre
-   * @param req - Requête authentifiée contenant l'utilisateur courant
-   * @returns Le nouveau membre
-   */
-  @Post('/:id/join')
-  async joinServer(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.joinServer(serverId, req.user.id);
-  }
-
-  /**
-   * Ajoute un utilisateur à un serveur (action réservée aux admins/proprio).
-   * @param serverId - Identifiant du serveur cible
-   * @param data - Données contenant l'identifiant de l'utilisateur à ajouter
-   * @param req - Requête authentifiée contenant l'utilisateur qui effectue l'action
-   * @returns Le nouveau membre
-   */
-  @Post('/:id/members')
-  async addMember(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Body() data: AddMember,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.addMember(serverId, req.user.id, data);
-  }
-
-  /**
-   * Permet à l'utilisateur connecté de quitter un serveur.
-   * @param serverId - Identifiant du serveur à quitter
-   * @param req - Requête authentifiée contenant l'utilisateur courant
-   * @returns Le membre supprimé
-   */
-  @Delete('/:id/leave')
-  async leaveServer(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.leaveServer(serverId, req.user.id);
-  }
-
-  /**
-   * Récupère tous les membres d'un serveur avec leur statut de présence.
+   * Remplace l'avatar d'un serveur (propriétaire uniquement).
    * @param serverId - Identifiant du serveur
-   * @returns Liste des membres avec leurs infos utilisateur
+   * @param req - Requête authentifiée contenant le propriétaire
+   * @param file - Fichier image uploadé (jpeg, png ou webp, max 5 Mo)
+   * @returns Le nouveau path et l'URL publique de l'avatar
    */
-  @Get('/:id/members')
-  async getServerMembers(@Param('id', ParseIntPipe) serverId: number) {
-    return this.serverService.getServerMembers(serverId);
-  }
-
-  /**
-   * Transfère la propriété du serveur à un autre membre.
-   * @param serverId - Identifiant du serveur
-   * @param userId - Identifiant du futur propriétaire
-   * @param req - Requête authentifiée contenant l'actuel propriétaire
-   * @returns Les identifiants du nouveau et de l'ancien propriétaire
-   */
-  @Post('/:id/transfer-ownership/:userId')
-  async transferOwnership(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Param('userId') userId: string,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.transferOwnership(serverId, userId, req.user.id);
-  }
-
-  /**
-   * Met à jour le rôle d'un membre dans un serveur.
-   * Seul le propriétaire du serveur peut modifier les rôles.
-   * @param serverId - Identifiant du serveur
-   * @param userId - Identifiant du membre dont on change le rôle
-   * @param data - Nouveau rôle à attribuer
-   * @param req - Requête authentifiée contenant le propriétaire qui effectue l'action
-   * @returns Le membre mis à jour
-   */
-  @Put('/:id/members/:userId')
-  async updateMemberRole(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Param('userId') userId: string,
-    @Body() data: UpdateMemberRole,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.updateMemberRole(
-      serverId,
-      userId,
-      data.role,
-      req.user.id,
-    );
-  }
-
-  @Delete('/:id/members/:userId')
-  async kickMember(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Param('userId') userId: string,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.kickMember(serverId, req.user.id, userId);
-  }
-
-  @Post('/:id/bans')
-  async banMember(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Body() data: BanMember,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.banMember(serverId, req.user.id, data);
-  }
-
-  @Delete('/:id/bans/:userId')
-  async unbanMember(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Param('userId') userId: string,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.unbanMember(serverId, req.user.id, userId);
-  }
-
   @Patch('/:id/avatar')
   @UseInterceptors(FileInterceptor('file'))
   async uploadServerAvatar(
@@ -242,11 +115,119 @@ export class ServerController {
     );
   }
 
+  /**
+   * Permet à l'utilisateur connecté de rejoindre un serveur.
+   * @param serverId - Identifiant du serveur à rejoindre
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Le nouveau membre
+   */
+  @Post('/:id/join')
+  async joinServer(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+    return this.serverMemberService.joinServer(serverId, req.user.id);
+  }
+
+  /**
+   * Ajoute un utilisateur à un serveur (action réservée aux admins/proprio).
+   * @param serverId - Identifiant du serveur cible
+   * @param data - Données contenant l'identifiant de l'utilisateur à ajouter
+   * @param req - Requête authentifiée contenant l'utilisateur qui effectue l'action
+   * @returns Le nouveau membre
+   */
+  @Post('/:id/members')
+  async addMember(@Param('id', ParseIntPipe) serverId: number,@Body() data: AddMember,@Req() req: RequestWithAuth) {
+    return this.serverMemberService.addMember(serverId, req.user.id, data);
+  }
+
+  /**
+   * Permet à l'utilisateur connecté de quitter un serveur.
+   * @param serverId - Identifiant du serveur à quitter
+   * @param req - Requête authentifiée contenant l'utilisateur courant
+   * @returns Le membre supprimé
+   */
+  @Delete('/:id/leave')
+  async leaveServer(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+    return this.serverMemberService.leaveServer(serverId, req.user.id);
+  }
+
+  /**
+   * Récupère tous les membres d'un serveur avec leur statut de présence.
+   * @param serverId - Identifiant du serveur
+   * @returns Liste des membres avec leurs infos utilisateur
+   */
+  @Get('/:id/members')
+  async getServerMembers(@Param('id', ParseIntPipe) serverId: number) {
+    return this.serverMemberService.getServerMembers(serverId);
+  }
+
+  /**
+   * Transfère la propriété du serveur à un autre membre.
+   * @param serverId - Identifiant du serveur
+   * @param userId - Identifiant du futur propriétaire
+   * @param req - Requête authentifiée contenant l'actuel propriétaire
+   * @returns Les identifiants du nouveau et de l'ancien propriétaire
+   */
+  @Post('/:id/transfer-ownership/:userId')
+  async transferOwnership(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
+    return this.serverMemberService.transferOwnership(serverId, userId, req.user.id);
+  }
+
+  /**
+   * Met à jour le rôle d'un membre dans un serveur.
+   * Seul le propriétaire du serveur peut modifier les rôles.
+   * @param serverId - Identifiant du serveur
+   * @param userId - Identifiant du membre dont on change le rôle
+   * @param data - Nouveau rôle à attribuer
+   * @param req - Requête authentifiée contenant le propriétaire qui effectue l'action
+   * @returns Le membre mis à jour
+   */
+  @Put('/:id/members/:userId')
+  async updateMemberRole(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Body() data: UpdateMemberRole,@Req() req: RequestWithAuth) {
+    return this.serverMemberService.updateMemberRole(serverId, userId, data.role, req.user.id);
+  }
+
+  /**
+   * Expulse un membre du serveur sans le bannir.
+   * @param serverId - Identifiant du serveur
+   * @param userId - Identifiant du membre à expulser
+   * @param req - Requête authentifiée contenant l'admin/proprio qui effectue l'action
+   */
+  @Delete('/:id/members/:userId')
+  async kickMember(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
+    return this.serverBanService.kickMember(serverId, req.user.id, userId);
+  }
+
+  /**
+   * Bannit un membre du serveur.
+   * @param serverId - Identifiant du serveur
+   * @param data - Données du ban (userId cible, raison, expiration)
+   * @param req - Requête authentifiée contenant l'admin/proprio qui effectue l'action
+   * @returns Le ban créé
+   */
+  @Post('/:id/bans')
+  async banMember(@Param('id', ParseIntPipe) serverId: number,@Body() data: BanMember,@Req() req: RequestWithAuth) {
+    return this.serverBanService.banMember(serverId, req.user.id, data);
+  }
+
+  /**
+   * Lève le ban d'un utilisateur sur le serveur.
+   * @param serverId - Identifiant du serveur
+   * @param userId - Identifiant de l'utilisateur à débannir
+   * @param req - Requête authentifiée contenant l'admin/proprio qui effectue l'action
+   * @returns Le ban supprimé
+   */
+  @Delete('/:id/bans/:userId')
+  async unbanMember(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
+    return this.serverBanService.unbanMember(serverId, req.user.id, userId);
+  }
+
+  /**
+   * Récupère la liste des bans actifs d'un serveur.
+   * @param serverId - Identifiant du serveur
+   * @param req - Requête authentifiée contenant l'admin/proprio qui effectue la requête
+   * @returns Liste des bans avec les infos des utilisateurs bannis
+   */
   @Get('/:id/bans')
-  async getBans(
-    @Param('id', ParseIntPipe) serverId: number,
-    @Req() req: RequestWithAuth,
-  ) {
-    return this.serverService.getBans(serverId, req.user.id);
+  async getBans(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+    return this.serverBanService.getBans(serverId, req.user.id);
   }
 }

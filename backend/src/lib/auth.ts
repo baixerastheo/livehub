@@ -14,15 +14,14 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:4001',
+  baseURL: process.env.BETTER_AUTH_URL,
 
-  // Session configuration
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Update session every 24 hours
+    expiresIn: 60 * 60 * 24 * 7, 
+    updateAge: 60 * 60 * 24, 
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, // 5 minutes cache
+      maxAge: 60 * 5, 
     },
   },
 
@@ -58,7 +57,7 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
-  // Origines autorisées pour login/logout/register. Toujours inclure localhost pour éviter "Invalid origin".
+
   trustedOrigins: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',

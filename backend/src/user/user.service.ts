@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ConflictException,InternalServerErrorException} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { PresenceService } from '../realtime/presence.service.js';
 import { CreateUser } from './dto/create-user.dto';
@@ -25,32 +20,8 @@ export class UserService {
     private readonly presence: PresenceService,
   ) {}
 
-  /**
-   * Enrichit un utilisateur avec l'URL publique de son avatar.
-   * En cas d'échec de la génération de l'URL, avatarUrl est null.
-   * @param user - Utilisateur à enrichir
-   * @returns Utilisateur avec avatarUrl ajouté
-   */
-  private async addAvatarUrl(user: User) {
-    if (!user.avatarPath) {
-      return { ...user, avatarUrl: null };
-    }
-    try {
-      const avatarUrl = await this.supabaseStorage.publicUrl(user.avatarPath);
-      return { ...user, avatarUrl };
-    } catch {
-      return { ...user, avatarUrl: null };
-    }
-  }
-
-  /**
-   * Enrichit une liste d'utilisateurs avec les URLs de leurs avatars.
-   * @param users - Liste d'utilisateurs à enrichir
-   * @returns Liste d'utilisateurs avec avatarUrl ajouté
-   */
-  private async enrichUsersWithAvatarUrl(users: User[]) {
-    if (users.length === 0) return [];
-    return Promise.all(users.map((user) => this.addAvatarUrl(user)));
+  private async withAvatarUrl(user: User) {
+    return { ...user, avatarUrl: await this.supabaseStorage.resolveAvatarUrl(user.avatarPath) };
   }
 
   /**
@@ -59,12 +30,9 @@ export class UserService {
    */
   async getAllUsers() {
     const users = await this.prisma.user.findMany();
-    const enriched = await this.enrichUsersWithAvatarUrl(users);
+    const enriched = await Promise.all(users.map((u) => this.withAvatarUrl(u)));
     return enriched.map((u) => ({
-      ...u,
-      statut: this.presence.isOnline(u.id)
-        ? StatutUtilisateur.EN_LIGNE
-        : StatutUtilisateur.HORS_LIGNE,
+      ...u,statut: this.presence.isOnline(u.id)
     }));
   }
 
@@ -77,12 +45,10 @@ export class UserService {
   async getUserById(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException('User with ID ' + id + ' not found');
     }
-    const withAvatar = await this.addAvatarUrl(user);
+    const withAvatar = await this.withAvatarUrl(user);
     const statut = this.presence.isOnline(id)
-      ? StatutUtilisateur.EN_LIGNE
-      : StatutUtilisateur.HORS_LIGNE;
     return { ...withAvatar, statut };
   }
 
@@ -95,7 +61,7 @@ export class UserService {
   async getUserByEmail(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
+      throw new NotFoundException('User with email ' + email + ' not found');
     }
     return user;
   }
@@ -109,9 +75,9 @@ export class UserService {
   async getUserByName(name: string) {
     const user = await this.prisma.user.findFirst({ where: { name } });
     if (!user) {
-      throw new NotFoundException(`User with name ${name} not found`);
+      throw new NotFoundException('User with name ' + name + ' not found');
     }
-    return this.addAvatarUrl(user);
+    return this.withAvatarUrl(user);
   }
 
   /**
@@ -165,7 +131,7 @@ export class UserService {
   async deleteUser(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException('User with ID ' + id + ' not found');
     }
     return this.prisma.user.delete({ where: { id } });
   }
@@ -181,7 +147,7 @@ export class UserService {
   async updateUser(id: string, data: UpdateUser) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException('User with ID ' + id + ' not found');
     }
 
     if (data.name != null && data.name !== user.name) {
@@ -198,7 +164,7 @@ export class UserService {
       data: { name: data.name, statut: data.statut },
     });
 
-    return this.addAvatarUrl(updatedUser);
+    return this.withAvatarUrl(updatedUser);
   }
 
   /**
@@ -221,16 +187,12 @@ export class UserService {
   ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      throw new NotFoundException('User with ID ' + userId + ' not found');
     }
 
     const oldAvatarPath = user.avatarPath ?? null;
-    const newPath = await this.supabaseStorage.uploadAvatar(
-      userId,
-      buffer,
-      contentType,
-      ext,
-    );
+    const newPath = this.supabaseStorage.buildPath('user', userId, ext);
+    await this.supabaseStorage.upload(newPath, buffer, contentType);
 
     await this.prisma.user.update({
       where: { id: userId },
