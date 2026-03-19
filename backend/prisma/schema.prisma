@@ -8,36 +8,17 @@ datasource db {
   provider = "postgresql"
 }
 
-enum StatutUtilisateur {
-  EN_LIGNE
-  ABSENT
-  INVISIBLE
-  HORS_LIGNE
-}
-
-enum Role {
-  PROPRIETAIRE
-  ADMINISTRATEUR
-  MEMBRE
-}
-
 model Amitie {
-  id        String   @id
-  userAId   String
-  userBId   String
-  userA     User     @relation("Amitie_userAIdToUser", fields: [userAId], references: [id], onDelete: Cascade)
-  userB     User     @relation("Amitie_userBIdToUser", fields: [userBId], references: [id], onDelete: Cascade)
-  creeLe    DateTime @default(now())
+  id      String   @id
+  creeLe  DateTime @default(now())
+  userAId String
+  userBId String
+  userA   User     @relation("Amitie_userAIdToUser", fields: [userAId], references: [id], onDelete: Cascade)
+  userB   User     @relation("Amitie_userBIdToUser", fields: [userBId], references: [id], onDelete: Cascade)
 
   @@unique([userAId, userBId])
   @@index([userAId])
   @@index([userBId])
-}
-
-enum StatutDemandeAmitie {
-  EN_ATTENTE
-  ACCEPTEE
-  REFUSEE
 }
 
 model DemandeAmitie {
@@ -54,10 +35,7 @@ model DemandeAmitie {
   @@index([toUserId])
 }
 
-
-
 model Serveur {
-  id          Int             @id @default(autoincrement())
   nom         String
   avatarPath  String?
   membres     MembreServeur[]
@@ -66,6 +44,12 @@ model Serveur {
   bans        BanServeur[]
   creeLe      DateTime        @default(now())
   modifieLe   DateTime        @updatedAt
+  id          Int             @id @default(autoincrement())
+  avatarPath  String?
+  bans        BanServeur[]
+  canaux      Canal[]
+  invitations Invitation[]
+  membres     MembreServeur[]
 
   @@index([nom])
 }
@@ -73,14 +57,14 @@ model Serveur {
 model BanServeur {
   id        Int       @id @default(autoincrement())
   serveurId Int
-  serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   userId    String
-  user      User      @relation("BansRecus", fields: [userId], references: [id], onDelete: Cascade)
   bannePar  String
-  banneur   User      @relation("BansEmis", fields: [bannePar], references: [id], onDelete: Cascade)
   raison    String?
   expireLe  DateTime?
   creeLe    DateTime  @default(now())
+  banneur   User      @relation("BansEmis", fields: [bannePar], references: [id], onDelete: Cascade)
+  serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  user      User      @relation("BansRecus", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, serveurId])
   @@index([serveurId])
@@ -88,13 +72,13 @@ model BanServeur {
 }
 
 model MembreServeur {
-  id        Int     @id @default(autoincrement())
-  serveurId Int
-  serveur   Serveur @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role    @default(MEMBRE)
+  role      Role     @default(MEMBRE)
   rejointLe DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  serveurId Int
+  userId    String
+  serveur   Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, serveurId])
   @@index([serveurId])
@@ -102,29 +86,28 @@ model MembreServeur {
   @@index([serveurId, role])
 }
 
-
 model Canal {
+  nom       String
+  creeLe    DateTime  @default(now())
+  modifieLe DateTime  @updatedAt
   id        Int       @id @default(autoincrement())
   serveurId Int
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  nom       String
   messages  Message[]
-  creeLe    DateTime  @default(now())
-  modifieLe DateTime  @updatedAt
 
   @@index([serveurId])
 }
 
 model Message {
-  id        Int    @id @default(autoincrement())
-  canalId   Int
-  canal     Canal  @relation(fields: [canalId], references: [id], onDelete: Cascade)
-  auteurId  String
-  auteur    User   @relation(fields: [auteurId], references: [id], onDelete: Cascade)
   contenu   String
-  creeLe    DateTime @default(now())
-  modifieLe DateTime @updatedAt
+  creeLe    DateTime          @default(now())
+  modifieLe DateTime          @updatedAt
   editeLe   DateTime?
+  id        Int               @id @default(autoincrement())
+  canalId   Int
+  auteurId  String
+  auteur    User              @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  canal     Canal             @relation(fields: [canalId], references: [id], onDelete: Cascade)
   reactions ReactionMessage[]
 
   @@index([canalId])
@@ -135,25 +118,25 @@ model Message {
 model ReactionMessage {
   id        Int      @id @default(autoincrement())
   messageId Int
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   emoji     String
   creeLe    DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId, emoji])
   @@index([messageId])
 }
 
 model Invitation {
-  id        String   @id @default(uuid())
-  code      String   @unique
-  serveurId Int
-  serveur   Serveur  @relation(fields: [serveurId], references: [id], onDelete: Cascade)
-  creeParId String
-  creePar   User     @relation(fields: [creeParId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  code      String    @unique
   expireLe  DateTime?
-  creeLe    DateTime @default(now())
+  creeLe    DateTime  @default(now())
+  serveurId Int
+  creeParId String
+  creePar   User      @relation(fields: [creeParId], references: [id], onDelete: Cascade)
+  serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
 
   @@index([code])
   @@index([serveurId])
@@ -161,16 +144,16 @@ model Invitation {
 }
 
 model MessagePrive {
-  id             Int      @id @default(autoincrement())
-  expediteurId   String
-  expediteur     User     @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
-  destinataireId String
-  destinataire   User     @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
   contenu        String
-  lu             Boolean  @default(false)
-  creeLe         DateTime @default(now())
-  modifieLe      DateTime @updatedAt
+  lu             Boolean                @default(false)
+  creeLe         DateTime               @default(now())
+  modifieLe      DateTime               @updatedAt
   editeLe        DateTime?
+  id             Int                    @id @default(autoincrement())
+  expediteurId   String
+  destinataireId String
+  destinataire   User                   @relation("MessagesRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
+  expediteur     User                   @relation("MessagesEnvoyes", fields: [expediteurId], references: [id], onDelete: Cascade)
   reactions      ReactionMessagePrive[]
 
   @@index([expediteurId, destinataireId])
@@ -181,44 +164,43 @@ model MessagePrive {
 model ReactionMessagePrive {
   id        Int          @id @default(autoincrement())
   messageId Int
-  message   MessagePrive @relation(fields: [messageId], references: [id], onDelete: Cascade)
   userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   emoji     String
   creeLe    DateTime     @default(now())
+  message   MessagePrive @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId, emoji])
   @@index([messageId])
 }
 
 model User {
-  id               String          @id
-  name             String
-  email            String
-  emailVerified    Boolean         @default(false)
-  image            String?
-  statut           StatutUtilisateur @default(EN_LIGNE)
-  avatarPath       String?
-  avatarUpdatedAt  DateTime?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  sessions         Session[]
-  accounts         Account[]
-  membres          MembreServeur[]
-  messages         Message[]
-  invitations      Invitation[]
-  messagesEnvoyes  MessagePrive[]  @relation("MessagesEnvoyes")
-  messagesRecus    MessagePrive[]  @relation("MessagesRecus")
-  amitiesCommeA       Amitie[]         @relation("Amitie_userAIdToUser")
-  amitiesCommeB       Amitie[]         @relation("Amitie_userBIdToUser")
-  demandesEnvoyees    DemandeAmitie[]  @relation("DemandeAmitie_fromUser")
-  demandesRecues      DemandeAmitie[]  @relation("DemandeAmitie_toUser")
-  bansRecus                BanServeur[]           @relation("BansRecus")
-  bansEmis                 BanServeur[]           @relation("BansEmis")
-  reactionsMessage         ReactionMessage[]
-  reactionsMessagePrive    ReactionMessagePrive[]
+  id                    String                 @id
+  name                  String
+  email                 String                 @unique
+  emailVerified         Boolean                @default(false)
+  image                 String?
+  statut                StatutUtilisateur      @default(EN_LIGNE)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  avatarPath            String?
+  avatarUpdatedAt       DateTime?
+  amitiesCommeA         Amitie[]               @relation("Amitie_userAIdToUser")
+  amitiesCommeB         Amitie[]               @relation("Amitie_userBIdToUser")
+  bansEmis              BanServeur[]           @relation("BansEmis")
+  bansRecus             BanServeur[]           @relation("BansRecus")
+  demandesEnvoyees      DemandeAmitie[]        @relation("DemandeAmitie_fromUser")
+  demandesRecues        DemandeAmitie[]        @relation("DemandeAmitie_toUser")
+  invitations           Invitation[]
+  membres               MembreServeur[]
+  messages              Message[]
+  messagesRecus         MessagePrive[]         @relation("MessagesRecus")
+  messagesEnvoyes       MessagePrive[]         @relation("MessagesEnvoyes")
+  reactionsMessage      ReactionMessage[]
+  reactionsMessagePrive ReactionMessagePrive[]
+  accounts              Account[]
+  sessions              Session[]
 
-  @@unique([email])
   @@index([name])
   @@index([email])
   @@map("user")
@@ -227,7 +209,7 @@ model User {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -235,7 +217,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -245,7 +226,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -255,6 +235,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -270,4 +251,23 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum StatutUtilisateur {
+  EN_LIGNE
+  ABSENT
+  INVISIBLE
+  HORS_LIGNE
+}
+
+enum Role {
+  PROPRIETAIRE
+  ADMINISTRATEUR
+  MEMBRE
+}
+
+enum StatutDemandeAmitie {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
 }
