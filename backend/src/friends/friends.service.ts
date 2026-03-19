@@ -1,23 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ForbiddenException,BadRequestException,} from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from '../realtime/presence.service.js';
 
-/**
- * Ordonne une paire d'IDs utilisateurs de manière déterministe.
- * Utilisé pour garantir l'unicité des relations d'amitié bidirectionnelles.
- * @param a - Premier ID utilisateur
- * @param b - Second ID utilisateur
- * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
- */
-function orderPair(a: string, b: string): { userAId: string; userBId: string } {
-  return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
-}
 
 /**
  * Service de gestion des amis.
@@ -25,10 +10,20 @@ function orderPair(a: string, b: string): { userAId: string; userBId: string } {
  */
 @Injectable()
 export class FriendsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly presence: PresenceService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly presence: PresenceService) {}
+
+
+
+  /**
+   * Ordonne une paire d'IDs utilisateurs de manière déterministe.
+   * Utilisé pour garantir l'unicité des relations d'amitié bidirectionnelles.
+   * @param a - Premier ID utilisateur
+   * @param b - Second ID utilisateur
+   * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
+   */
+   private orderPair(a: string, b: string): { userAId: string; userBId: string } {
+     return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
+   }
 
   /**
    * Récupère une demande d'amitié par son ID.
@@ -70,7 +65,7 @@ export class FriendsService {
    * @throws BadRequestException si les utilisateurs sont déjà amis
    */
   private async assertNotAlreadyFriends(a: string, b: string) {
-    const { userAId, userBId } = orderPair(a, b);
+    const { userAId, userBId } = this.orderPair(a, b);
     const friendship = await this.prisma.amitie.findUnique({
       where: { userAId_userBId: { userAId, userBId } },
       select: { id: true },
@@ -95,7 +90,7 @@ export class FriendsService {
       const friend = r.userAId === userId ? r.userB : r.userA;
       return {
         ...friend,
-        statut: this.presence.isOnline(friend.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
+        statut: this.presence.isOnline(friend.id)
       };
     });
   }
@@ -170,7 +165,7 @@ export class FriendsService {
       throw new ForbiddenException('Not allowed');
     }
 
-    const { userAId, userBId } = orderPair(
+    const { userAId, userBId } = this.orderPair(
       request.fromUserId,
       request.toUserId,
     );
