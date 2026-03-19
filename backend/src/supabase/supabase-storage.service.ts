@@ -82,6 +82,34 @@ export class SupabaseStorageService {
   }
 
   /**
+   * Upload un fichier vers un chemin arbitraire dans Supabase Storage.
+   * @param path - Chemin de destination dans le bucket
+   * @param buffer - Contenu du fichier
+   * @param contentType - Type MIME du fichier
+   * @returns Chemin du fichier uploadé
+   * @throws InternalServerErrorException si l'upload échoue
+   */
+  async upload(
+    path: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<string> {
+    const client = this.getClient();
+
+    const { data, error } = await client.storage
+      .from(this.getBucket())
+      .upload(path, buffer, { contentType, upsert: true });
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `Supabase Storage upload failed: ${error.message}`,
+      );
+    }
+
+    return data.path;
+  }
+
+  /**
    * Supprime des fichiers du stockage Supabase.
    * @param paths - Liste des chemins à supprimer
    * @throws InternalServerErrorException si la suppression échoue

@@ -19,7 +19,6 @@ const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
 
     Tu t'appelles BOBY. C'est comme ça, c'est tout.`;
 
-
 @Injectable()
 export class AiBotService implements OnModuleInit {
 
@@ -53,14 +52,9 @@ export class AiBotService implements OnModuleInit {
     return this.botUserId;
   }
 
-  /**
-   * Génère une réponse de BOBY à partir d'un historique de messages.
-   * Appelle l'API OpenRouter avec le modèle configuré et le system prompt de BOBY.
-   * @param messages - Historique de la conversation (rôles user/assistant + contenu)
-   * @returns La réponse générée par le modèle, ou un message d'erreur fallback
-   */
   async generateResponse(
-    messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
+    messages: { role: 'user' | 'assistant'; content: string }[],
+  ): Promise<string> {
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -72,10 +66,14 @@ export class AiBotService implements OnModuleInit {
           messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
         }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as {
+        choices?: { message?: { content?: unknown } }[];
+      };
       const content = data.choices?.[0]?.message?.content;
-      return typeof content === 'string' ? content.trim() : 'Oops, réponse vide';
-    } catch (err) {
+      return typeof content === 'string'
+        ? content.trim()
+        : 'Oops, réponse vide';
+    } catch {
       return 'Oops, je suis HS là';
     }
   }

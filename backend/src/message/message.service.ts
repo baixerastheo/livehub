@@ -240,7 +240,8 @@ export class MessageService {
     });
 
     const messages = history.map((m) => ({
-      role: m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
+      role:
+        m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
       content: m.contenu,
     }));
 

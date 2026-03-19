@@ -5,11 +5,18 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ServerService } from './server.service';
 import { UpdateServer } from './dto/update-server.dto';
 import { UpdateMemberRole } from './dto/update-member-role.dto';
@@ -202,6 +209,37 @@ export class ServerController {
     @Req() req: RequestWithAuth,
   ) {
     return this.serverService.unbanMember(serverId, req.user.id, userId);
+  }
+
+  @Patch('/:id/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadServerAvatar(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ }),
+        ],
+      }),
+    )
+    file: {
+      buffer: Buffer;
+      mimetype: string;
+      originalname: string;
+      size: number;
+    },
+  ) {
+    const ext = file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
+    return this.serverService.replaceServerAvatar(
+      serverId,
+      req.user.id,
+      file.buffer,
+      file.mimetype,
+      normalizedExt,
+    );
   }
 
   @Get('/:id/bans')

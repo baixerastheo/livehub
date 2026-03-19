@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { useCreateServerMutation } from "../server.hooks";
+import { useCreateServerMutation, useUploadServerAvatarMutation } from "../server.hooks";
 import { useToast } from "@/src/core/store/toast/useToastStore";
+import { AvatarCropModal } from "./AvatarCropModal";
 import styles from "../styles/modalCreateServer.module.css";
 
 type ModalCreateServerProps = {
@@ -13,9 +14,15 @@ type ModalCreateServerProps = {
 export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
   const { toast } = useToast();
   const createServerMutation = useCreateServerMutation();
+  const uploadAvatarMutation = useUploadServerAvatarMutation();
   const [name, setName] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
-  const isSubmitting = createServerMutation.isPending;
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+  const [cropSrc, setCropSrc] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const isSubmitting = createServerMutation.isPending || uploadAvatarMutation.isPending;
 
   if (!isOpen) return null;
 
@@ -24,6 +31,22 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
     onClose();
     setName("");
     setError(null);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setCropSrc(null);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setCropSrc(URL.createObjectURL(file));
+  };
+
+  const handleCropConfirm = (croppedFile: File) => {
+    setAvatarFile(croppedFile);
+    setAvatarPreview(URL.createObjectURL(croppedFile));
+    setCropSrc(null);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -42,7 +65,10 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
 
     setError(null);
     try {
-      await createServerMutation.mutateAsync({ name: trimmed });
+      const server = await createServerMutation.mutateAsync({ name: trimmed });
+      if (avatarFile) {
+        await uploadAvatarMutation.mutateAsync({ serverId: server.id, file: avatarFile });
+      }
       toast.success("Server created successfully.");
       handleClose();
     } catch (err) {
@@ -52,6 +78,16 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
       toast.error(message);
     }
   };
+
+  if (cropSrc) {
+    return (
+      <AvatarCropModal
+        src={cropSrc}
+        onConfirm={handleCropConfirm}
+        onClose={() => setCropSrc(null)}
+      />
+    );
+  }
 
   return (
     <div
@@ -81,6 +117,30 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
               {error}
             </p>
           )}
+
+          <div className={styles.avatarPicker}>
+            <button
+              type="button"
+              className={styles.avatarButton}
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Choose server avatar"
+            >
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Server avatar preview" className={styles.avatarPreview} />
+              ) : (
+                <span className={styles.avatarPlaceholder}>+</span>
+              )}
+            </button>
+            <span className={styles.avatarHint}>Server icon (optional)</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className={styles.fileInput}
+              onChange={handleAvatarChange}
+            />
+          </div>
+
           <div className={styles.field}>
             <label htmlFor="create-server-name" className={styles.label}>
               Server name

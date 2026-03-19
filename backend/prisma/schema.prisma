@@ -37,6 +37,11 @@ model DemandeAmitie {
 
 model Serveur {
   nom         String
+  avatarPath  String?
+  membres     MembreServeur[]
+  canaux      Canal[]
+  invitations Invitation[]
+  bans        BanServeur[]
   creeLe      DateTime        @default(now())
   modifieLe   DateTime        @updatedAt
   id          Int             @id @default(autoincrement())
