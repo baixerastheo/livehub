@@ -27,7 +27,6 @@ const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
 @Injectable()
 export class AiBotService implements OnModuleInit {
 
-<<<<<<< HEAD
   constructor(private readonly prisma: PrismaService, private readonly presenceService: PresenceService) {}
   private botUserId: string;
 
@@ -35,18 +34,6 @@ export class AiBotService implements OnModuleInit {
    * Initialise le bot BOBY au démarrage du module.
    * Récupère l'ID du compte bot depuis la base de données
    * et le marque comme présent (en ligne) dès le lancement de l'application.
-=======
-  /** ID de l'utilisateur bot en base de données */
-  private botUserId: string;
-
-  constructor(
-    private readonly prisma: PrismaService, private readonly presenceService: PresenceService) {}
-
-  /**
-   * Initialisation du service au démarrage du module.
-   * Récupère l'ID du compte bot depuis la BDD et le marque comme présent.
-   * Si le compte bot n'existe pas, le service s'arrête silencieusement.
->>>>>>> 872a2521374710a0f1fb3bf9b03a5cc16606310a
    */
   async onModuleInit() {
     const bot = await this.prisma.user.findUnique({
@@ -56,17 +43,14 @@ export class AiBotService implements OnModuleInit {
     if (!bot) return;
     this.botUserId = bot.id;
     this.presenceService.increment(this.botUserId);
+    await this.prisma.user.update({
+      where: { id: this.botUserId },
+      data: { statut: 'EN_LIGNE' },
+    });
   }
 
-<<<<<<< HEAD
   /** 
    * @returns L'ID du bot BOBY.
-=======
-  /**
-   * Retourne l'ID de l'utilisateur bot.
-   * Utilisé pour identifier BOBY dans les conversations.
-   * @returns L'ID du bot
->>>>>>> 872a2521374710a0f1fb3bf9b03a5cc16606310a
    */
   getBotUserId(): string {
     return this.botUserId;

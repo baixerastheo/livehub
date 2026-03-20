@@ -90,7 +90,7 @@ export class FriendsService {
       const friend = r.userAId === userId ? r.userB : r.userA;
       return {
         ...friend,
-        statut: this.presence.isOnline(friend.id)
+        statut: this.presence.isOnline(friend.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
       };
     });
   }
