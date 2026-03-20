@@ -32,7 +32,7 @@ export class UserService {
     const users = await this.prisma.user.findMany();
     const enriched = await Promise.all(users.map((u) => this.withAvatarUrl(u)));
     return enriched.map((u) => ({
-      ...u,statut: this.presence.isOnline(u.id)
+      ...u, statut: this.presence.isOnline(u.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
     }));
   }
 
@@ -48,7 +48,7 @@ export class UserService {
       throw new NotFoundException('User with ID ' + id + ' not found');
     }
     const withAvatar = await this.withAvatarUrl(user);
-    const statut = this.presence.isOnline(id)
+    const statut = this.presence.isOnline(id) ? 'EN_LIGNE' : 'HORS_LIGNE';
     return { ...withAvatar, statut };
   }
 

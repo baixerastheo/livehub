@@ -42,11 +42,7 @@ export class AiBotService implements OnModuleInit {
     });
     if (!bot) return;
     this.botUserId = bot.id;
-    this.presenceService.increment(this.botUserId);
-    await this.prisma.user.update({
-      where: { id: this.botUserId },
-      data: { statut: 'EN_LIGNE' },
-    });
+    this.presenceService.increment(bot.id);
   }
 
   /** 
