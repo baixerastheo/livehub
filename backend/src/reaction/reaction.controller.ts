@@ -1,4 +1,12 @@
-import {Controller,Post,Body,Param,ParseIntPipe,Req,UseGuards,} from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  ParseIntPipe,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { ReactionService } from './reaction.service.js';
@@ -20,8 +28,16 @@ export class ReactionController {
    * @returns Les réactions agrégées du message
    */
   @Post('messages/channel/:messageId/reactions')
-  async toggleChannelReaction(@Param('messageId', ParseIntPipe) messageId: number,@Body() body: ToggleReactionDto,@Req() req: RequestWithAuth) {
-    return this.reactionService.toggleChannelReaction(messageId,req.user.id,body.emoji);
+  async toggleChannelReaction(
+    @Param('messageId', ParseIntPipe) messageId: number,
+    @Body() body: ToggleReactionDto,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.reactionService.toggleChannelReaction(
+      messageId,
+      req.user.id,
+      body.emoji,
+    );
   }
 
   /**
@@ -32,7 +48,15 @@ export class ReactionController {
    * @returns Les réactions agrégées du message
    */
   @Post('messages/private/:messageId/reactions')
-  async togglePrivateReaction(@Param('messageId', ParseIntPipe) messageId: number,@Body() body: ToggleReactionDto,@Req() req: RequestWithAuth) {
-    return this.reactionService.togglePrivateReaction(messageId,req.user.id,body.emoji);
+  async togglePrivateReaction(
+    @Param('messageId', ParseIntPipe) messageId: number,
+    @Body() body: ToggleReactionDto,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.reactionService.togglePrivateReaction(
+      messageId,
+      req.user.id,
+      body.emoji,
+    );
   }
 }

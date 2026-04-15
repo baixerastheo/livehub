@@ -1,4 +1,9 @@
-import {Injectable,NotFoundException,ConflictException,InternalServerErrorException} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
@@ -6,7 +11,6 @@ import { PresenceService } from '../realtime/presence.service.js';
 import { CreateUser } from './dto/create-user.dto';
 import { UpdateUser } from './dto/update-user.dto';
 import { User } from '../../generated/prisma/client';
-import { StatutUtilisateur } from '../../generated/prisma/enums';
 
 /**
  * Service de gestion des utilisateurs.
@@ -21,7 +25,10 @@ export class UserService {
   ) {}
 
   private async withAvatarUrl(user: User) {
-    return { ...user, avatarUrl: await this.supabaseStorage.resolveAvatarUrl(user.avatarPath) };
+    return {
+      ...user,
+      avatarUrl: await this.supabaseStorage.resolveAvatarUrl(user.avatarPath),
+    };
   }
 
   /**
@@ -32,7 +39,8 @@ export class UserService {
     const users = await this.prisma.user.findMany();
     const enriched = await Promise.all(users.map((u) => this.withAvatarUrl(u)));
     return enriched.map((u) => ({
-      ...u, statut: this.presence.isOnline(u.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
+      ...u,
+      statut: this.presence.isOnline(u.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
     }));
   }
 

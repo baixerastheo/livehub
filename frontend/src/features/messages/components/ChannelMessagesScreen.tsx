@@ -25,8 +25,9 @@ import {
   useChannelTypingEmitter,
 } from "@/src/features/channel/channelRealtime.hooks";
 import { useToggleChannelReactionMutation } from "@/src/features/messages/reaction.hooks";
-import { useUserServersQuery } from "@/src/features/server/server.hooks";
+import { useUserServersQuery, useServerMembersQuery } from "@/src/features/server/server.hooks";
 import type { ServerRole } from "@/src/features/server/server.types";
+import type { MentionMember } from "./MessageComposer";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
@@ -55,6 +56,7 @@ export function ChannelMessagesScreen() {
   const { data: messagesData, isLoading: messagesLoading } =
     useChannelMessagesQuery(channelId);
   const { data: userServers } = useUserServersQuery();
+  const { data: serverMembers } = useServerMembersQuery(channel?.serverId ?? null);
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
   const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
   const toggleReactionMutation = useToggleChannelReactionMutation(channelId);
@@ -71,6 +73,22 @@ export function ChannelMessagesScreen() {
     channelId,
     composerValue,
     user?.name ?? user?.email ?? "Someone",
+  );
+
+  const mentionMembers = React.useMemo<MentionMember[]>(
+    () =>
+      serverMembers?.map((m) => ({
+        id: m.userId,
+        name: m.user.name,
+        avatarUrl: m.user.avatarUrl,
+      })) ?? [],
+    [serverMembers],
+  );
+
+  const membersById = React.useMemo<Record<string, string>>(
+    () =>
+      Object.fromEntries(mentionMembers.map((m) => [m.id, m.name])),
+    [mentionMembers],
   );
 
   const canDeleteMessages = React.useMemo(() => {
@@ -179,6 +197,7 @@ export function ChannelMessagesScreen() {
                 onToggleReaction={(messageId, emoji) =>
                   toggleReactionMutation.mutate({ messageId, emoji })
                 }
+                membersById={membersById}
               />
               {typingUsers.length > 0 && (
                 <p className={styles.typingIndicator} aria-live="polite">
@@ -194,6 +213,7 @@ export function ChannelMessagesScreen() {
                 onChange={setComposerValue}
                 onSubmit={send}
                 onGifSelect={sendGif}
+                members={mentionMembers}
               />
             </>
           )}

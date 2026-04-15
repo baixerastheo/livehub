@@ -1,4 +1,9 @@
-import {Injectable,NotFoundException,ForbiddenException,BadRequestException} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from 'src/realtime/message.gateway';
@@ -13,7 +18,8 @@ import { Role } from '../../generated/prisma/enums';
 function canDeleteChannelMessage(role: string): boolean {
   if (role === Role.ADMINISTRATEUR) {
     return true;
-  } if (role === Role.PROPRIETAIRE) {
+  }
+  if (role === Role.PROPRIETAIRE) {
     return true;
   }
   return false;
@@ -57,7 +63,8 @@ export class MessageService {
 
     const peerIdToLast = new Map<string, { at: Date; content: string }>();
     for (const m of messages) {
-      const peerId = m.expediteurId === currentUserId ? m.destinataireId : m.expediteurId;
+      const peerId =
+        m.expediteurId === currentUserId ? m.destinataireId : m.expediteurId;
       if (!peerIdToLast.has(peerId)) {
         peerIdToLast.set(peerId, { at: m.creeLe, content: m.contenu });
       }
@@ -174,9 +181,15 @@ export class MessageService {
    * @throws BadRequestException si l'expéditeur et le destinataire sont identiques
    * @throws NotFoundException si le destinataire n'existe pas
    */
-  async createPrivateMessage(senderId: string,recipientId: string,content: string) {
+  async createPrivateMessage(
+    senderId: string,
+    recipientId: string,
+    content: string,
+  ) {
     if (senderId === recipientId) {
-      throw new BadRequestException('Cannot send a private message to yourself');
+      throw new BadRequestException(
+        'Cannot send a private message to yourself',
+      );
     }
 
     const recipient = await this.prisma.user.findUnique({
@@ -235,7 +248,8 @@ export class MessageService {
     });
 
     const messages = history.map((m) => ({
-      role: m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
+      role:
+        m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
       content: m.contenu,
     }));
     const aiResponse = await this.aiBotService.generateResponse(messages);
@@ -339,6 +353,24 @@ export class MessageService {
       authorName: message.auteur.name ?? '',
       createdAtIso: message.creeLe.toISOString(),
     });
+
+    // Notify mentioned users via their personal room
+    const mentionRegex = /@\[([a-z0-9-]+)\]/gi;
+    const mentionedUserIds = new Set<string>();
+    let mentionMatch: RegExpExecArray | null;
+    while ((mentionMatch = mentionRegex.exec(content)) !== null) {
+      if (mentionMatch[1] !== userId) {
+        mentionedUserIds.add(mentionMatch[1]);
+      }
+    }
+    for (const mentionedUserId of mentionedUserIds) {
+      this.messageGateway.emitMessageMention(mentionedUserId, {
+        channelId,
+        serverId: channel.serveur.id,
+        authorName: message.auteur.name ?? '',
+        messagePreview: content.slice(0, 100),
+      });
+    }
 
     return message;
   }

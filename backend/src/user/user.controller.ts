@@ -1,4 +1,19 @@
-import {Body,Controller,Delete,Get,Param,Post,Put,Req,UseGuards,UseInterceptors,UploadedFile,ParseFilePipe,FileTypeValidator,MaxFileSizeValidator} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { UpdateUser } from './dto/update-user.dto';

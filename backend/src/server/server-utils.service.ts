@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Role } from '../../generated/prisma/enums';
 
@@ -52,6 +56,4 @@ export class ServerUtilsService {
       );
     }
   }
-
-
 }

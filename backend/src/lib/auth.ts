@@ -17,11 +17,11 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, 
-    updateAge: 60 * 60 * 24, 
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, 
+      maxAge: 60 * 5,
     },
   },
 
@@ -56,7 +56,6 @@ export const auth = betterAuth({
     cookiePrefix: 'livehub',
     useSecureCookies: process.env.NODE_ENV === 'production',
   },
-
 
   trustedOrigins: [
     'http://localhost:3000',

@@ -59,7 +59,11 @@ export class SupabaseStorageService {
    * @returns Chemin du fichier uploadé
    * @throws InternalServerErrorException si l'upload échoue
    */
-  async upload(path: string,buffer: Buffer,contentType: string): Promise<string> {
+  async upload(
+    path: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<string> {
     const client = this.getClient();
 
     const { data, error } = await client.storage

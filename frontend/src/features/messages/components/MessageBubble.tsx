@@ -56,7 +56,32 @@ type Props = {
   onDelete?: () => void;
   isDeleting?: boolean;
   onToggleReaction?: (messageId: number, emoji: string) => void;
+  membersById?: Record<string, string>;
 };
+
+function renderContent(
+  content: string,
+  membersById: Record<string, string>,
+  currentUserId: string | null,
+  mentionStyle: string,
+  mentionMeStyle: string,
+): React.ReactNode {
+  const parts = content.split(/(@\[[a-z0-9-]+\])/gi);
+  return parts.map((part, i) => {
+    const match = /^@\[([a-z0-9-]+)\]$/i.exec(part);
+    if (match) {
+      const userId = match[1];
+      const name = membersById[userId] ?? "unknown";
+      const isMe = userId === currentUserId;
+      return (
+        <span key={i} className={`${mentionStyle} ${isMe ? mentionMeStyle : ""}`}>
+          @{name}
+        </span>
+      );
+    }
+    return part;
+  });
+}
 
 export function MessageBubble({
   message,
@@ -66,6 +91,7 @@ export function MessageBubble({
   onDelete,
   isDeleting = false,
   onToggleReaction,
+  membersById = {},
 }: Props) {
   const t = useTranslations("messages");
   const isMe = message.isMe ?? false;
@@ -182,7 +208,7 @@ export function MessageBubble({
                 className={styles.gifImage}
               />
             ) : (
-              message.content
+              renderContent(message.content, membersById, currentUserId, styles.mention, styles.mentionMe)
             )}
           </div>
 

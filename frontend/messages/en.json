@@ -104,6 +104,9 @@
     "friendRequestSent": "Friend request sent.",
     "friendRequestFailed": "Failed to send friend request."
   },
+  "mentions": {
+    "mentioned": "{author} mentioned you in #{channel}"
+  },
   "people": {
     "title": "People",
     "subtitle": "Search users and start a conversation.",

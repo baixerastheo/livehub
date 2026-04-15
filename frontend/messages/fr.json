@@ -104,6 +104,9 @@
     "friendRequestSent": "Demande d'ami envoyée.",
     "friendRequestFailed": "Impossible d'envoyer la demande."
   },
+  "mentions": {
+    "mentioned": "{author} vous a mentionné dans #{channel}"
+  },
   "people": {
     "title": "Personnes",
     "subtitle": "Recherchez des utilisateurs et démarrez une conversation.",
