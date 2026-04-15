@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import styles from "../styles/modalAddChannel.module.css";
 import { useCreateChannelMutation } from "../server.hooks";
 
+type ChannelType = "TEXTE" | "VOCAL";
+
 type ModalAddChannelProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +21,7 @@ export function ModalAddChannel({
   const t = useTranslations("server");
   const tAuth = useTranslations("auth");
   const [name, setName] = React.useState("");
+  const [type, setType] = React.useState<ChannelType>("TEXTE");
   const createChannelMutation = useCreateChannelMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,8 +29,9 @@ export function ModalAddChannel({
     const trimmed = name.trim();
     if (!trimmed || serverId == null) return;
     try {
-      await createChannelMutation.mutateAsync({ serverId, name: trimmed });
+      await createChannelMutation.mutateAsync({ serverId, name: trimmed, type });
       setName("");
+      setType("TEXTE");
       onClose();
     } catch {
       // Error handled by mutation / UI if needed
@@ -37,6 +41,7 @@ export function ModalAddChannel({
   const handleClose = () => {
     if (!createChannelMutation.isPending) {
       setName("");
+      setType("TEXTE");
       onClose();
     }
   };
@@ -71,6 +76,28 @@ export function ModalAddChannel({
           </button>
         </div>
         <form onSubmit={handleSubmit}>
+          <p className={styles.label}>{t("channelType")}</p>
+          <div className={styles.typeSelector}>
+            <button
+              type="button"
+              className={`${styles.typeOption} ${type === "TEXTE" ? styles.typeOptionActive : ""}`}
+              onClick={() => setType("TEXTE")}
+              disabled={createChannelMutation.isPending}
+            >
+              <span className={styles.typeIcon}>#</span>
+              {t("channelTypeText")}
+            </button>
+            <button
+              type="button"
+              className={`${styles.typeOption} ${type === "VOCAL" ? styles.typeOptionActive : ""}`}
+              onClick={() => setType("VOCAL")}
+              disabled={createChannelMutation.isPending}
+            >
+              <span className={styles.typeIcon}>🔊</span>
+              {t("channelTypeVoice")}
+            </button>
+          </div>
+
           <label htmlFor="channel-name" className={styles.label}>
             {t("channelName")}
           </label>

@@ -49,6 +49,12 @@
   min-width: 0;
   text-decoration: none;
   color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
 }
 
 .deleteChannelButton {
@@ -68,4 +74,231 @@
 .deleteChannelButton:hover {
   background: rgba(0, 0, 0, 0.08);
   color: #dc2626;
+}
+
+.sectionDivider {
+  padding: 0.75rem 0.5rem 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.35);
+  list-style: none;
+  user-select: none;
+}
+
+.voiceLiveBars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.voiceLiveBars span {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: #16a34a;
+  animation: voiceBar 1s ease-in-out infinite;
+}
+
+.voiceLiveBars span:nth-child(1) {
+  height: 5px;
+  animation-delay: 0s;
+}
+
+.voiceLiveBars span:nth-child(2) {
+  height: 9px;
+  animation-delay: 0.2s;
+}
+
+.voiceLiveBars span:nth-child(3) {
+  height: 6px;
+  animation-delay: 0.4s;
+}
+
+@keyframes voiceBar {
+  0%, 100% { opacity: 0.5; transform: scaleY(0.6); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+.voicePresenceList {
+  list-style: none;
+  margin: 1px 0 3px;
+  padding: 0 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  position: relative;
+}
+
+.voicePresenceList::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 1px;
+}
+
+.voicePresenceItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.voicePresenceItem:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.voicePresenceAvatarWrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  border-radius: 50%;
+  transition: box-shadow 0.1s ease;
+}
+
+.voicePresenceAvatarSpeaking {
+  box-shadow: 0 0 0 2px #4ade80, 0 0 8px 3px rgba(74, 222, 128, 0.4);
+}
+
+.muteBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--surface, #fff);
+}
+
+.voicePresenceOverflow {
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+}
+
+.voicePresenceName {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Local mute badge (volume cut by self) ── */
+.localMuteBadge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--surface, #fff);
+}
+
+/* ── Voice context menu ── */
+.voiceContextMenu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 210px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08), 0 16px 32px -4px rgba(0,0,0,0.14);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.voiceContextMenuTitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 8px 12px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.voiceContextMenuDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 2px 0;
+}
+
+.voiceContextMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.voiceContextMenuItem:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.voiceContextMenuItemDanger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.voiceContextMenuVolumeLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 6px 12px 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.voiceContextMenuSliderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 10px;
+  color: var(--text-secondary);
+}
+
+.voiceContextMenuSlider {
+  flex: 1;
+  accent-color: var(--primary);
+  cursor: pointer;
+  height: 4px;
+}
+
+.voiceContextMenuSliderValue {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 34px;
+  text-align: right;
 }

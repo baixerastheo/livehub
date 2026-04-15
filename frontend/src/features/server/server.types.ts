@@ -106,7 +106,7 @@ export type ChannelDto = {
   modifieLe: string;
 };
 
-export type CreateChannelPayload = { name: string };
+export type CreateChannelPayload = { name: string; type?: "TEXTE" | "VOCAL" };
 
 export type ListServerChannelsResponseDto = ChannelDto[];
 

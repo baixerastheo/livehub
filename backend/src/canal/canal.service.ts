@@ -125,6 +125,7 @@ export class CanalService {
       data: {
         nom: data.name,
         serveurId: serverId,
+        type: data.type,
       },
     });
 
@@ -132,6 +133,7 @@ export class CanalService {
       id: canal.id,
       serverId: canal.serveurId,
       name: canal.nom,
+      type: canal.type,
       createdAtIso: canal.creeLe.toISOString(),
       updatedAtIso: canal.modifieLe.toISOString(),
     });

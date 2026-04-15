@@ -103,11 +103,17 @@ model MembreServeur {
 }
 
 
+enum TypeCanal {
+  TEXTE
+  VOCAL
+}
+
 model Canal {
   id        Int       @id @default(autoincrement())
   serveurId Int
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   nom       String
+  type      TypeCanal @default(TEXTE)
   messages  Message[]
   creeLe    DateTime  @default(now())
   modifieLe DateTime  @updatedAt
