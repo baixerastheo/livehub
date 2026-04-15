@@ -28,6 +28,7 @@ import { useToggleChannelReactionMutation } from "@/src/features/messages/reacti
 import { useUserServersQuery, useServerMembersQuery } from "@/src/features/server/server.hooks";
 import type { ServerRole } from "@/src/features/server/server.types";
 import type { MentionMember } from "./MessageComposer";
+import { VoiceChannelScreen } from "@/src/features/voice/VoiceChannelScreen";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
@@ -161,6 +162,10 @@ export function ChannelMessagesScreen() {
         </div>
       </main>
     );
+  }
+
+  if (channel.type === "VOCAL") {
+    return <VoiceChannelScreen channelId={channelId!} channelName={channel.name} />;
   }
 
   const conversationHeader = buildChannelHeader(channel.name, t("channel"));

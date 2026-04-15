@@ -6,10 +6,11 @@ import { useTranslations } from "next-intl";
 import { getSocket } from "@/src/lib/realtime/socketClient";
 import { serversKeys, serverBansKey } from "./server.hooks";
 import { channelsKeys } from "@/src/features/channel/channel.hooks";
-import type { ChannelDto } from "@/src/features/channel/channel.types";
+import type { ChannelDto, ChannelType } from "@/src/features/channel/channel.types";
 import type { ServerMemberDto } from "./server.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useAppStore } from "@/src/core/store/appStore";
+import { useVoiceStore } from "@/src/features/voice/voice.store";
 import { useToastStore } from "@/src/core/store/toast/useToastStore";
 
 type ServerChannelCreatedEvent = {
@@ -18,6 +19,7 @@ type ServerChannelCreatedEvent = {
     id: number;
     serverId: number;
     name: string;
+    type?: string;
     createdAtIso: string;
     updatedAtIso: string;
   };
@@ -74,13 +76,21 @@ export function useServerRealtime(serverId: number | null) {
   const { user } = useAuth();
   const currentUserId = user?.id ?? null;
   const setSelectedServerId = useAppStore((s) => s.setSelectedServerId);
+  const setVoicePresence = useVoiceStore((s) => s.setVoicePresence);
   const t = useTranslations("mentions");
 
   useEffect(() => {
     if (serverId == null) return;
 
     const socket = getSocket();
-    const subscribe = () => socket.emit("server:subscribe", { serverId });
+    const subscribe = () => {
+      socket.emit("server:subscribe", { serverId });
+      // Re-announce voice presence after a reconnect
+      const { isConnected, currentChannelId, isMuted } = useVoiceStore.getState();
+      if (isConnected && currentChannelId != null) {
+        socket.emit("voice:join", { channelId: currentChannelId, isMuted });
+      }
+    };
     subscribe();
 
     const onChannelCreated = (event: ServerChannelCreatedEvent) => {
@@ -89,6 +99,7 @@ export function useServerRealtime(serverId: number | null) {
         id: event.channel.id,
         serverId: event.channel.serverId,
         name: event.channel.name,
+        type: (event.channel.type ?? "TEXTE") as ChannelType,
         createdAtIso: event.channel.createdAtIso,
         updatedAtIso: event.channel.updatedAtIso,
       };
@@ -179,6 +190,15 @@ export function useServerRealtime(serverId: number | null) {
       queryClient.invalidateQueries({ queryKey: serversKeys.user() });
     };
 
+    const onVoicePresence = (event: {
+      channelId: number;
+      serverId: number;
+      participants: { userId: string; name: string; avatarUrl: string | null; isMuted: boolean }[];
+    }) => {
+      if (event.serverId !== serverId) return;
+      setVoicePresence(event.channelId, event.participants);
+    };
+
     const onMention = (event: MessageMentionEvent) => {
       if (event.serverId !== serverId) return;
       const channels = queryClient.getQueryData<ChannelDto[]>(channelsKeys.byServer(serverId));
@@ -189,7 +209,6 @@ export function useServerRealtime(serverId: number | null) {
       });
     };
 
-    // Re-subscribe after reconnect
     socket.on("connect", subscribe);
     socket.on("server-channel:created", onChannelCreated);
     socket.on("server-channel:deleted", onChannelDeleted);
@@ -200,6 +219,7 @@ export function useServerRealtime(serverId: number | null) {
     socket.on("server-member:banned", onMemberBanned);
     socket.on("server-member:unbanned", onMemberUnbanned);
     socket.on("server-ownership:transferred", onOwnershipTransferred);
+    socket.on("voice-channel:presence", onVoicePresence);
     socket.on("message:mention", onMention);
 
     return () => {
@@ -213,10 +233,11 @@ export function useServerRealtime(serverId: number | null) {
       socket.off("server-member:banned", onMemberBanned);
       socket.off("server-member:unbanned", onMemberUnbanned);
       socket.off("server-ownership:transferred", onOwnershipTransferred);
+      socket.off("voice-channel:presence", onVoicePresence);
       socket.off("message:mention", onMention);
       socket.emit("server:unsubscribe", { serverId });
     };
-  }, [serverId, currentUserId, queryClient, setSelectedServerId, t]);
+  }, [serverId, currentUserId, queryClient, setSelectedServerId, setVoicePresence, t]);
 }
 
 /**

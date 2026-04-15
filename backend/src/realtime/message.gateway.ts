@@ -22,10 +22,14 @@ import type {
   ServerMemberUnbannedEvent,
   ServerMemberKickedEvent,
   MessageReactionUpdatedEvent,
+  VoiceChannelPresenceEvent,
   MessageMentionEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
+import { VoicePresenceService } from './voice-presence.service.js';
+import { SupabaseStorageService } from '../supabase/supabase-storage.service.js';
+import { TypeCanal } from '../../generated/prisma/enums.js';
 
 export type AuthenticatedSocket = Socket & { data: { userId: string } };
 
@@ -51,6 +55,8 @@ export class MessageGateway
   constructor(
     private readonly prisma: PrismaService,
     private readonly presence: PresenceService,
+    private readonly voicePresence: VoicePresenceService,
+    private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
   /**
@@ -100,10 +106,25 @@ export class MessageGateway
     const userId = this.getAuthenticatedUserId(client);
     if (!userId) return;
 
+    this.broadcastVoiceLeave(client.id);
+
     const justWentOffline = this.presence.decrement(userId);
     if (justWentOffline) {
       void this.broadcastPresence(userId, 'offline');
     }
+  }
+
+  private broadcastVoiceLeave(socketId: string): void {
+    const meta = this.voicePresence.leave(socketId);
+    if (!meta) return;
+    const eventPayload: VoiceChannelPresenceEvent = {
+      channelId: meta.channelId,
+      serverId: meta.serverId,
+      participants: this.voicePresence.getParticipants(meta.channelId),
+    };
+    this.server
+      .to('server:' + meta.serverId)
+      .emit('voice-channel:presence', eventPayload);
   }
 
   /**
@@ -357,6 +378,95 @@ export class MessageGateway
     if (serverId != null) {
       void client.leave('server:' + serverId);
     }
+  }
+
+  @SubscribeMessage('voice:join')
+  handleVoiceJoin(
+    @MessageBody() payload: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
+    void this.handleVoiceJoinAsync(
+      payload as { channelId?: number },
+      client,
+    ).catch(() => undefined);
+  }
+
+  private async handleVoiceJoinAsync(
+    payload: { channelId?: number; isMuted?: boolean },
+    client: Socket,
+  ) {
+    const userId = this.getAuthenticatedUserId(client);
+    const channelId =
+      typeof payload?.channelId === 'number' ? payload.channelId : null;
+    if (!userId || channelId == null) return;
+
+    const channel = await this.prisma.canal.findUnique({
+      where: { id: channelId },
+      select: { serveurId: true, type: true },
+    });
+    if (!channel || channel.type !== TypeCanal.VOCAL) return;
+
+    const member = await this.prisma.membreServeur.findUnique({
+      where: { userId_serveurId: { userId, serveurId: channel.serveurId } },
+      include: { user: { select: { name: true, avatarPath: true } } },
+    });
+    if (!member) return;
+
+    let avatarUrl: string | null = null;
+    if (member.user.avatarPath) {
+      try {
+        avatarUrl = await this.supabaseStorage.publicUrl(
+          member.user.avatarPath,
+        );
+      } catch {
+        avatarUrl = null;
+      }
+    }
+
+    const participant = {
+      userId,
+      name: member.user.name ?? userId,
+      avatarUrl,
+      isMuted: payload.isMuted === true,
+    };
+    this.voicePresence.join(
+      channelId,
+      channel.serveurId,
+      client.id,
+      participant,
+    );
+
+    const eventPayload: VoiceChannelPresenceEvent = {
+      channelId,
+      serverId: channel.serveurId,
+      participants: this.voicePresence.getParticipants(channelId),
+    };
+    this.server
+      .to('server:' + channel.serveurId)
+      .emit('voice-channel:presence', eventPayload);
+  }
+
+  @SubscribeMessage('voice:leave')
+  handleVoiceLeave(@ConnectedSocket() client: Socket) {
+    this.broadcastVoiceLeave(client.id);
+  }
+
+  @SubscribeMessage('voice:mute')
+  handleVoiceMute(
+    @MessageBody() payload: unknown,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const isMuted = (payload as { isMuted?: boolean })?.isMuted === true;
+    const meta = this.voicePresence.setMuted(client.id, isMuted);
+    if (!meta) return;
+    const eventPayload: VoiceChannelPresenceEvent = {
+      channelId: meta.channelId,
+      serverId: meta.serverId,
+      participants: this.voicePresence.getParticipants(meta.channelId),
+    };
+    this.server
+      .to('server:' + meta.serverId)
+      .emit('voice-channel:presence', eventPayload);
   }
 
   emitPrivateMessageCreated(payload: {

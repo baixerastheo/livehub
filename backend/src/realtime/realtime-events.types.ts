@@ -32,6 +32,7 @@ export type ServerChannelCreatedEvent = {
     id: number;
     serverId: number;
     name: string;
+    type: string;
     createdAtIso: string;
     updatedAtIso: string;
   };
@@ -133,6 +134,21 @@ export type ServerMemberKickedEvent = {
 export type MessageReactionUpdatedEvent = {
   messageId: number;
   reactions: { emoji: string; count: number; userIds: string[] }[];
+};
+
+/**
+ * Payload for event voice-channel:presence - sent when someone joins or leaves a voice channel.
+ * Broadcast to all members of the server.
+ */
+export type VoiceChannelPresenceEvent = {
+  channelId: number;
+  serverId: number;
+  participants: {
+    userId: string;
+    name: string;
+    avatarUrl: string | null;
+    isMuted: boolean;
+  }[];
 };
 
 /**

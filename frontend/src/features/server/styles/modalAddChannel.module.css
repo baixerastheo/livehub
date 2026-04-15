@@ -56,6 +56,49 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
+.typeSelector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.typeOption {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.65);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.typeOption:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.35);
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.typeOptionActive {
+  border-color: #111827;
+  background: rgba(17, 24, 39, 0.06);
+  color: #111827;
+}
+
+.typeOption:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.typeIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .input {
   width: 100%;
   box-sizing: border-box;

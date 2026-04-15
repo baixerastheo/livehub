@@ -147,10 +147,12 @@ export function useCreateChannelMutation() {
     mutationFn: ({
       serverId,
       name,
+      type,
     }: {
       serverId: number;
       name: string;
-    }) => serverService.createChannel(serverId, { name }),
+      type?: "TEXTE" | "VOCAL";
+    }) => serverService.createChannel(serverId, { name, type }),
     onSuccess: (_, { serverId }) => {
       queryClient.invalidateQueries({ queryKey: serversKeys.user() });
       if (userId != null) {

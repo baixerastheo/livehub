@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
+import { TypeCanal } from '../../../generated/prisma/enums';
 
 export class CreateCanal {
   @IsNotEmpty({
@@ -14,4 +22,8 @@ export class CreateCanal {
     message: "The 'name' field must not exceed 100 characters!",
   })
   name: string;
+
+  @IsOptional()
+  @IsEnum(TypeCanal)
+  type?: TypeCanal;
 }
