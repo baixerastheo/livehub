@@ -1,4 +1,10 @@
-import {Injectable,BadRequestException,ConflictException,ForbiddenException,NotFoundException,} from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
@@ -33,7 +39,10 @@ export class ServerBanService {
    * @throws ConflictException si l'utilisateur est déjà banni
    */
   async banMember(serverId: number, actingUserId: string, payload: BanMember) {
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     this.utils.assertAdminRole(actingMember.role);
 
     if (actingUserId === payload.userId) {
@@ -66,7 +75,9 @@ export class ServerBanService {
       },
     });
     if (existingBan) {
-      throw new ConflictException('This user is already banned from this server');
+      throw new ConflictException(
+        'This user is already banned from this server',
+      );
     }
 
     const ban = await this.prisma.$transaction(async (tx) => {
@@ -102,8 +113,15 @@ export class ServerBanService {
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
    * @throws NotFoundException si l'utilisateur n'est pas banni
    */
-  async unbanMember(serverId: number, actingUserId: string, targetUserId: string) {
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+  async unbanMember(
+    serverId: number,
+    actingUserId: string,
+    targetUserId: string,
+  ) {
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     this.utils.assertAdminRole(actingMember.role);
 
     const ban = await this.prisma.banServeur.findUnique({
@@ -135,7 +153,10 @@ export class ServerBanService {
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
    */
   async getBans(serverId: number, actingUserId: string) {
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     this.utils.assertAdminRole(actingMember.role);
 
     const bans = await this.prisma.banServeur.findMany({
@@ -145,7 +166,9 @@ export class ServerBanService {
 
     return Promise.all(
       bans.map(async (ban) => {
-        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(ban.user.avatarPath);
+        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+          ban.user.avatarPath,
+        );
         const { avatarPath: _avatarPath, ...userRest } = ban.user;
         return { ...ban, user: { ...userRest, avatarUrl } };
       }),
@@ -162,8 +185,15 @@ export class ServerBanService {
    * @throws NotFoundException si le membre cible n'est pas dans le serveur
    * @throws ForbiddenException si on tente de kick le propriétaire
    */
-  async kickMember(serverId: number, actingUserId: string, targetUserId: string) {
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+  async kickMember(
+    serverId: number,
+    actingUserId: string,
+    targetUserId: string,
+  ) {
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     this.utils.assertAdminRole(actingMember.role);
 
     if (actingUserId === targetUserId) {

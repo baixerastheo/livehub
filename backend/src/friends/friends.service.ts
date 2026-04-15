@@ -1,8 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import {Injectable,NotFoundException,ForbiddenException,BadRequestException,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from '../realtime/presence.service.js';
-
 
 /**
  * Service de gestion des amis.
@@ -10,9 +14,10 @@ import { PresenceService } from '../realtime/presence.service.js';
  */
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService, private readonly presence: PresenceService) {}
-
-
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+  ) {}
 
   /**
    * Ordonne une paire d'IDs utilisateurs de manière déterministe.
@@ -21,9 +26,12 @@ export class FriendsService {
    * @param b - Second ID utilisateur
    * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
    */
-   private orderPair(a: string, b: string): { userAId: string; userBId: string } {
-     return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
-   }
+  private orderPair(
+    a: string,
+    b: string,
+  ): { userAId: string; userBId: string } {
+    return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
+  }
 
   /**
    * Récupère une demande d'amitié par son ID.

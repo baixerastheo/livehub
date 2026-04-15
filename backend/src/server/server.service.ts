@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { ServerUtilsService } from './server-utils.service';
@@ -31,7 +35,9 @@ export class ServerService {
 
     return Promise.all(
       memberships.map(async (m) => {
-        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(m.serveur.avatarPath);
+        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+          m.serveur.avatarPath,
+        );
         const { avatarPath: _avatarPath, ...serveurRest } = m.serveur;
         return { ...m, serveur: { ...serveurRest, avatarUrl } };
       }),
@@ -46,7 +52,9 @@ export class ServerService {
    */
   async getServerById(id: number) {
     const server = await this.utils.assertServerExists(id);
-    const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(server.avatarPath);
+    const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+      server.avatarPath,
+    );
     const { avatarPath: _avatarPath, ...serverRest } = server;
     return { ...serverRest, avatarUrl };
   }
@@ -63,7 +71,11 @@ export class ServerService {
     });
 
     await this.prisma.membreServeur.create({
-      data: { serveurId: server.id, userId: creatorId, role: Role.PROPRIETAIRE },
+      data: {
+        serveurId: server.id,
+        userId: creatorId,
+        role: Role.PROPRIETAIRE,
+      },
     });
 
     await this.prisma.canal.create({
@@ -82,7 +94,10 @@ export class ServerService {
    */
   async updateServer(id: number, data: UpdateServer) {
     await this.utils.assertServerExists(id);
-    return this.prisma.serveur.update({ where: { id }, data: { nom: data.name } });
+    return this.prisma.serveur.update({
+      where: { id },
+      data: { nom: data.name },
+    });
   }
 
   /**
@@ -108,16 +123,31 @@ export class ServerService {
    * @throws ForbiddenException si l'utilisateur n'est pas propriétaire
    * @throws InternalServerErrorException si la suppression de l'ancien avatar échoue
    */
-  async replaceServerAvatar(serverId: number,actingUserId: string,buffer: Buffer,contentType: string,ext: string,) {
+  async replaceServerAvatar(
+    serverId: number,
+    actingUserId: string,
+    buffer: Buffer,
+    contentType: string,
+    ext: string,
+  ) {
     const server = await this.utils.assertServerExists(serverId);
 
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can change the server avatar');
+      throw new ForbiddenException(
+        'Only the server owner can change the server avatar',
+      );
     }
 
     const oldAvatarPath = server.avatarPath ?? null;
-    const newPath = this.supabaseStorage.buildPath('server', serverId.toString(), ext);
+    const newPath = this.supabaseStorage.buildPath(
+      'server',
+      serverId.toString(),
+      ext,
+    );
 
     await this.supabaseStorage.upload(newPath, buffer, contentType);
 

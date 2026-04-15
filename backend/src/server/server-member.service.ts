@@ -1,4 +1,10 @@
-import {Injectable,BadRequestException,ConflictException,ForbiddenException,NotFoundException,} from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
@@ -71,7 +77,10 @@ export class ServerMemberService {
   async addMember(serverId: number, currentUserId: string, payload: AddMember) {
     await this.utils.assertServerExists(serverId);
 
-    const actingMember = await this.utils.assertServerMember(currentUserId, serverId);
+    const actingMember = await this.utils.assertServerMember(
+      currentUserId,
+      serverId,
+    );
     this.utils.assertAdminRole(actingMember.role);
 
     const targetUserId = payload.userId;
@@ -80,10 +89,14 @@ export class ServerMemberService {
     }
 
     const existingMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (existingMember) {
-      throw new ConflictException('This user is already a member of the server');
+      throw new ConflictException(
+        'This user is already a member of the server',
+      );
     }
 
     await this.prisma.banServeur.deleteMany({
@@ -95,7 +108,9 @@ export class ServerMemberService {
       include: { user: true, serveur: true },
     });
 
-    const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(newMember.user.avatarPath);
+    const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+      newMember.user.avatarPath,
+    );
     const { avatarPath: _avatarPath, ...userRest } = newMember.user;
 
     this.messageGateway.emitServerMemberJoined(serverId, {
@@ -166,7 +181,9 @@ export class ServerMemberService {
 
     return Promise.all(
       members.map(async (m) => {
-        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(m.user.avatarPath);
+        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+          m.user.avatarPath,
+        );
         const { avatarPath: _avatarPath, ...userRest } = m.user;
         const statut = this.presence.isOnline(m.userId)
           ? StatutUtilisateur.EN_LIGNE
@@ -188,14 +205,26 @@ export class ServerMemberService {
    * @throws NotFoundException si le membre cible n'est pas dans le serveur
    * @throws ForbiddenException si on tente de changer le rôle du propriétaire
    */
-  async updateMemberRole(serverId: number,targetUserId: string,newRole: Role,actingUserId: string) {
-    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
+  async updateMemberRole(
+    serverId: number,
+    targetUserId: string,
+    newRole: Role,
+    actingUserId: string,
+  ) {
+    const actingMember = await this.utils.assertServerMember(
+      actingUserId,
+      serverId,
+    );
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can change member roles');
+      throw new ForbiddenException(
+        'Only the server owner can change member roles',
+      );
     }
 
     const targetMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: targetUserId, serveurId: serverId } },
+      where: {
+        userId_serveurId: { userId: targetUserId, serveurId: serverId },
+      },
     });
     if (!targetMember) {
       throw new NotFoundException('This user is not a member of this server');
@@ -222,11 +251,19 @@ export class ServerMemberService {
    * @throws NotFoundException si le membre cible n'est pas dans le serveur
    * @throws BadRequestException si le transfert est vers soi-même
    */
-  async transferOwnership(serverId: number,newOwnerId: string,currentOwnerId: string) {
-    
-    const actingMember = await this.utils.assertServerMember(currentOwnerId, serverId);
+  async transferOwnership(
+    serverId: number,
+    newOwnerId: string,
+    currentOwnerId: string,
+  ) {
+    const actingMember = await this.utils.assertServerMember(
+      currentOwnerId,
+      serverId,
+    );
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Only the server owner can transfer ownership');
+      throw new ForbiddenException(
+        'Only the server owner can transfer ownership',
+      );
     }
 
     if (newOwnerId === currentOwnerId) {
