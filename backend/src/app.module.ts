@@ -11,6 +11,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { GifModule } from './gif/gif.module';
 import { ReactionModule } from './reaction/reaction.module';
+import { VoiceModule } from './voice/voice.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ReactionModule } from './reaction/reaction.module';
     RealtimeModule,
     GifModule,
     ReactionModule,
+    VoiceModule,
   ],
   controllers: [],
 })

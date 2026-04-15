@@ -45,6 +45,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.6.1",
+    "livekit-server-sdk": "^2.15.0",
     "neverthrow": "^7.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

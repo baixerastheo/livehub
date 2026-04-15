@@ -36,20 +36,15 @@ model DemandeAmitie {
 }
 
 model Serveur {
+  id          Int             @id @default(autoincrement())
   nom         String
   avatarPath  String?
-  membres     MembreServeur[]
-  canaux      Canal[]
-  invitations Invitation[]
-  bans        BanServeur[]
   creeLe      DateTime        @default(now())
   modifieLe   DateTime        @updatedAt
-  id          Int             @id @default(autoincrement())
-  avatarPath  String?
-  bans        BanServeur[]
+  membres     MembreServeur[]
   canaux      Canal[]
   invitations Invitation[]
-  membres     MembreServeur[]
+  bans        BanServeur[]
 
   @@index([nom])
 }
@@ -86,11 +81,17 @@ model MembreServeur {
   @@index([serveurId, role])
 }
 
+enum TypeCanal {
+  TEXTE
+  VOCAL
+}
+
 model Canal {
+  id        Int       @id @default(autoincrement())
   nom       String
+  type      TypeCanal @default(TEXTE)
   creeLe    DateTime  @default(now())
   modifieLe DateTime  @updatedAt
-  id        Int       @id @default(autoincrement())
   serveurId Int
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   messages  Message[]

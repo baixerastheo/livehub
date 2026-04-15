@@ -1,4 +1,21 @@
-import {Body,Controller,Delete,Get,Param,ParseIntPipe,Patch,Post,Put,Req,UploadedFile,UseGuards,UseInterceptors,ParseFilePipe,FileTypeValidator,MaxFileSizeValidator} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Put,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ServerService } from './server.service';
 import { ServerMemberService } from './server-member.service';
@@ -23,7 +40,6 @@ export class ServerController {
     private readonly serverMemberService: ServerMemberService,
     private readonly serverBanService: ServerBanService,
   ) {}
-
 
   /**
    * Crée un nouveau serveur avec l'utilisateur connecté comme propriétaire.
@@ -63,7 +79,10 @@ export class ServerController {
    * @returns Le serveur mis à jour
    */
   @Put('/:id')
-  async updateServer(@Body() data: UpdateServer,@Param('id', ParseIntPipe) id: number) {
+  async updateServer(
+    @Body() data: UpdateServer,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.serverService.updateServer(id, data);
   }
 
@@ -122,7 +141,10 @@ export class ServerController {
    * @returns Le nouveau membre
    */
   @Post('/:id/join')
-  async joinServer(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+  async joinServer(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverMemberService.joinServer(serverId, req.user.id);
   }
 
@@ -134,7 +156,11 @@ export class ServerController {
    * @returns Le nouveau membre
    */
   @Post('/:id/members')
-  async addMember(@Param('id', ParseIntPipe) serverId: number,@Body() data: AddMember,@Req() req: RequestWithAuth) {
+  async addMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Body() data: AddMember,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverMemberService.addMember(serverId, req.user.id, data);
   }
 
@@ -145,7 +171,10 @@ export class ServerController {
    * @returns Le membre supprimé
    */
   @Delete('/:id/leave')
-  async leaveServer(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+  async leaveServer(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverMemberService.leaveServer(serverId, req.user.id);
   }
 
@@ -167,8 +196,16 @@ export class ServerController {
    * @returns Les identifiants du nouveau et de l'ancien propriétaire
    */
   @Post('/:id/transfer-ownership/:userId')
-  async transferOwnership(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
-    return this.serverMemberService.transferOwnership(serverId, userId, req.user.id);
+  async transferOwnership(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverMemberService.transferOwnership(
+      serverId,
+      userId,
+      req.user.id,
+    );
   }
 
   /**
@@ -181,8 +218,18 @@ export class ServerController {
    * @returns Le membre mis à jour
    */
   @Put('/:id/members/:userId')
-  async updateMemberRole(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Body() data: UpdateMemberRole,@Req() req: RequestWithAuth) {
-    return this.serverMemberService.updateMemberRole(serverId, userId, data.role, req.user.id);
+  async updateMemberRole(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Body() data: UpdateMemberRole,
+    @Req() req: RequestWithAuth,
+  ) {
+    return this.serverMemberService.updateMemberRole(
+      serverId,
+      userId,
+      data.role,
+      req.user.id,
+    );
   }
 
   /**
@@ -192,7 +239,11 @@ export class ServerController {
    * @param req - Requête authentifiée contenant l'admin/proprio qui effectue l'action
    */
   @Delete('/:id/members/:userId')
-  async kickMember(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
+  async kickMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverBanService.kickMember(serverId, req.user.id, userId);
   }
 
@@ -204,7 +255,11 @@ export class ServerController {
    * @returns Le ban créé
    */
   @Post('/:id/bans')
-  async banMember(@Param('id', ParseIntPipe) serverId: number,@Body() data: BanMember,@Req() req: RequestWithAuth) {
+  async banMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Body() data: BanMember,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverBanService.banMember(serverId, req.user.id, data);
   }
 
@@ -216,7 +271,11 @@ export class ServerController {
    * @returns Le ban supprimé
    */
   @Delete('/:id/bans/:userId')
-  async unbanMember(@Param('id', ParseIntPipe) serverId: number,@Param('userId') userId: string,@Req() req: RequestWithAuth) {
+  async unbanMember(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Param('userId') userId: string,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverBanService.unbanMember(serverId, req.user.id, userId);
   }
 
@@ -227,7 +286,10 @@ export class ServerController {
    * @returns Liste des bans avec les infos des utilisateurs bannis
    */
   @Get('/:id/bans')
-  async getBans(@Param('id', ParseIntPipe) serverId: number,@Req() req: RequestWithAuth) {
+  async getBans(
+    @Param('id', ParseIntPipe) serverId: number,
+    @Req() req: RequestWithAuth,
+  ) {
     return this.serverBanService.getBans(serverId, req.user.id);
   }
 }

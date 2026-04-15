@@ -19,15 +19,16 @@ const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
 
     Tu t'appelles BOBY. C'est comme ça, c'est tout.`;
 
-
 /**
- * Service qui gère le bot d'assistance dans le chat. 
+ * Service qui gère le bot d'assistance dans le chat.
  * Il utilise l'API d'OpenRouter pour générer des réponses aux questions des utilisateurs sur Livehub.
  */
 @Injectable()
 export class AiBotService implements OnModuleInit {
-
-  constructor(private readonly prisma: PrismaService, private readonly presenceService: PresenceService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presenceService: PresenceService,
+  ) {}
   private botUserId: string;
 
   /**
@@ -45,13 +46,12 @@ export class AiBotService implements OnModuleInit {
     this.presenceService.increment(bot.id);
   }
 
-  /** 
+  /**
    * @returns L'ID du bot BOBY.
    */
   getBotUserId(): string {
     return this.botUserId;
   }
-
 
   /**
    * Génère une réponse du bot BOBY à partir d'une liste de messages (conversation).
@@ -60,7 +60,9 @@ export class AiBotService implements OnModuleInit {
    * @param messages - Liste des messages de la conversation (rôle + contenu)
    * @returns La réponse générée par le bot
    */
-  async generateResponse(messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
+  async generateResponse(
+    messages: { role: 'user' | 'assistant'; content: string }[],
+  ): Promise<string> {
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -76,7 +78,9 @@ export class AiBotService implements OnModuleInit {
         choices?: { message?: { content?: unknown } }[];
       };
       const content = data.choices?.[0]?.message?.content;
-      return typeof content === 'string' ? content.trim(): 'Oops, réponse vide';
+      return typeof content === 'string'
+        ? content.trim()
+        : 'Oops, réponse vide';
     } catch {
       return 'Oops, je suis HS là';
     }

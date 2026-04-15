@@ -6,6 +6,7 @@ function mapChannel(dto: ChannelBackendDto): ChannelDto {
     id: dto.id,
     serverId: dto.serveurId,
     name: dto.nom,
+    type: dto.type ?? "TEXTE",
     createdAtIso: dto.creeLe,
     updatedAtIso: dto.modifieLe,
   };
