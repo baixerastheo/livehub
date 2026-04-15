@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ForbiddenException} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
 import { CreateCanal } from './dto/create-canal.dto';
@@ -15,10 +11,7 @@ import { UpdateCanal } from './dto/update-canal.dto';
  */
 @Injectable()
 export class CanalService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageGateway: MessageGateway,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly messageGateway: MessageGateway) {}
 
   /**
    * Récupère un canal par son ID.
@@ -32,7 +25,7 @@ export class CanalService {
     });
 
     if (!channel) {
-      throw new NotFoundException(`Channel ${id} not found`);
+      throw new NotFoundException('Channel ' + id + ' not found');
     }
     return channel;
   }
@@ -49,7 +42,7 @@ export class CanalService {
     });
 
     if (!server) {
-      throw new NotFoundException(`No server found for ID ${serverId}`);
+      throw new NotFoundException('Server ' + serverId + ' not found');
     }
     return server;
   }
@@ -84,9 +77,7 @@ export class CanalService {
    */
   private assertAdminRole(role: Role) {
     if (role !== Role.PROPRIETAIRE && role !== Role.ADMINISTRATEUR) {
-      throw new ForbiddenException(
-        'Only owners and administrators can perform this action',
-      );
+      throw new ForbiddenException('Only owners and administrators can perform this action');
     }
   }
 
@@ -151,8 +142,8 @@ export class CanalService {
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
    */
   async deleteChannel(id: number, userId: string) {
-    const channel = await this.getChannelById(id);
 
+    const channel = await this.getChannelById(id);
     const member = await this.getServerMember(channel.serveurId, userId);
     this.assertAdminRole(member.role);
 
@@ -161,7 +152,6 @@ export class CanalService {
     });
 
     this.messageGateway.emitServerChannelDeleted(channel.serveurId, id);
-
     return deletedChannel;
   }
 
@@ -176,8 +166,8 @@ export class CanalService {
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
    */
   async updateChannel(id: number, userId: string, data: UpdateCanal) {
-    const channel = await this.getChannelById(id);
 
+    const channel = await this.getChannelById(id);
     const member = await this.getServerMember(channel.serveurId, userId);
     this.assertAdminRole(member.role);
 

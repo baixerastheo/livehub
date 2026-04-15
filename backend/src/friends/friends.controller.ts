@@ -1,26 +1,19 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import {Body,Controller,Get,Param,Post,Req,UseGuards} from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { FriendsService } from './friends.service.js';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto.js';
 
-const FRIEND_REQUEST_STATUS_MAP: Record<
-  string,
-  'pending' | 'accepted' | 'declined'
-> = {
+const FRIEND_REQUEST_STATUS_MAP: Record<string,'pending' | 'accepted' | 'declined'> = {
   EN_ATTENTE: 'pending',
   ACCEPTEE: 'accepted',
   REFUSEE: 'declined',
 };
 
+/**
+ * Contrôleur de gestion des amis.
+ * Gère les requêtes liées aux amis, telles que la liste des amis, les demandes d'amis, etc.
+ */
 @Controller('friends')
 @UseGuards(AuthGuard)
 export class FriendsController {
@@ -61,10 +54,7 @@ export class FriendsController {
    * @returns Confirmation d'envoi de la demande
    */
   @Post('requests')
-  async sendRequest(
-    @Req() req: RequestWithAuth,
-    @Body() dto: SendFriendRequestDto,
-  ) {
+  async sendRequest(@Req() req: RequestWithAuth, @Body() dto: SendFriendRequestDto) {
     await this.friendsService.sendRequest(req.user.id, dto.toUserId);
     return { ok: true };
   }

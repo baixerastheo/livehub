@@ -1,15 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ForbiddenException,BadRequestException} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from 'src/realtime/message.gateway';
 import { AiBotService } from './ai-bot.service';
-
-const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
+import { Role } from '../../generated/prisma/enums';
 
 /**
  * Vérifie si un rôle donné autorise la suppression de messages de canal.
@@ -17,9 +11,12 @@ const ROLES_CAN_DELETE_MESSAGE = ['PROPRIETAIRE', 'ADMINISTRATEUR'] as const;
  * @returns true si le rôle peut supprimer des messages
  */
 function canDeleteChannelMessage(role: string): boolean {
-  return ROLES_CAN_DELETE_MESSAGE.includes(
-    role as (typeof ROLES_CAN_DELETE_MESSAGE)[number],
-  );
+  if (role === Role.ADMINISTRATEUR) {
+    return true;
+  } if (role === Role.PROPRIETAIRE) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -60,8 +57,7 @@ export class MessageService {
 
     const peerIdToLast = new Map<string, { at: Date; content: string }>();
     for (const m of messages) {
-      const peerId =
-        m.expediteurId === currentUserId ? m.destinataireId : m.expediteurId;
+      const peerId = m.expediteurId === currentUserId ? m.destinataireId : m.expediteurId;
       if (!peerIdToLast.has(peerId)) {
         peerIdToLast.set(peerId, { at: m.creeLe, content: m.contenu });
       }
@@ -178,15 +174,9 @@ export class MessageService {
    * @throws BadRequestException si l'expéditeur et le destinataire sont identiques
    * @throws NotFoundException si le destinataire n'existe pas
    */
-  async createPrivateMessage(
-    senderId: string,
-    recipientId: string,
-    content: string,
-  ) {
+  async createPrivateMessage(senderId: string,recipientId: string,content: string) {
     if (senderId === recipientId) {
-      throw new BadRequestException(
-        'Cannot send a private message to yourself',
-      );
+      throw new BadRequestException('Cannot send a private message to yourself');
     }
 
     const recipient = await this.prisma.user.findUnique({
@@ -221,11 +211,16 @@ export class MessageService {
     if (recipientId === this.aiBotService.getBotUserId()) {
       void this.EnvoyerBotResponse(senderId);
     }
-
     return message;
   }
 
-  private async EnvoyerBotResponse(userId: string) {
+  /**
+   * Génère et envoie une réponse du bot IA à un utilisateur.
+   * Récupère l'historique complet de la conversation, l'envoie au service IA,
+   * persiste la réponse en base et la diffuse en temps réel via WebSocket.
+   * @param userId - L'id de l'utilisateur qui a écrit au bot
+   */
+  private async EnvoyerBotResponse(userId: string): Promise<void> {
     const botId = this.aiBotService.getBotUserId();
 
     const history = await this.prisma.messagePrive.findMany({
@@ -240,13 +235,10 @@ export class MessageService {
     });
 
     const messages = history.map((m) => ({
-      role:
-        m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
+      role: m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
       content: m.contenu,
     }));
-
     const aiResponse = await this.aiBotService.generateResponse(messages);
-
     const botMessage = await this.prisma.messagePrive.create({
       data: {
         expediteurId: botId,
@@ -279,7 +271,7 @@ export class MessageService {
   async getHistoryMessageByChannel(id: number) {
     const channel = await this.prisma.canal.findUnique({ where: { id } });
     if (!channel) {
-      throw new NotFoundException(`No channel found for ID ${id}`);
+      throw new NotFoundException('No channel found for ID' + id);
     }
 
     const messages = await this.prisma.message.findMany({
@@ -325,7 +317,7 @@ export class MessageService {
       include: { serveur: true },
     });
     if (!channel) {
-      throw new NotFoundException(`No channel found for ID ${channelId}`);
+      throw new NotFoundException('No channel found for ID' + channelId);
     }
 
     const serverMember = await this.prisma.membreServeur.findUnique({
@@ -366,7 +358,7 @@ export class MessageService {
       include: { auteur: true, canal: true },
     });
     if (!message) {
-      throw new NotFoundException(`No message found for ID ${id}`);
+      throw new NotFoundException('No message found for ID' + id);
     }
     if (!message.canal) {
       throw new NotFoundException('Message is not a channel message');
@@ -385,7 +377,6 @@ export class MessageService {
         'Only the server owner and administrators can delete messages',
       );
     }
-
     return this.prisma.message.delete({ where: { id } });
   }
 }

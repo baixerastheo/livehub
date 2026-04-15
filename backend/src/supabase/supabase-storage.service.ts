@@ -14,7 +14,7 @@ export class SupabaseStorageService {
   constructor(private readonly config: ConfigService) {}
 
   /**
-   * Initialise et retourne le client Supabase (lazy loading).
+   * Initialise et retourne le client Supabase.
    * @returns Le client Supabase
    * @throws InternalServerErrorException si les variables d'environnement sont absentes
    */
@@ -41,59 +41,25 @@ export class SupabaseStorageService {
   }
 
   /**
-   * Génère un chemin unique pour un avatar.
-   * @param userId - Identifiant de l'utilisateur
+   * Génère un chemin unique pour un fichier dans le bucket.
+   * @param prefix - Préfixe du dossier (ex: 'user', 'server')
+   * @param id - Identifiant de la ressource
    * @param ext - Extension du fichier
-   * @returns Chemin au format 'user-userId/uuid.ext'
+   * @returns Chemin au format 'prefix-id/uuid.ext'
    */
-  buildAvatarPath(userId: string, ext: string): string {
-    return `user-${userId}/${randomUUID()}.${ext}`;
+  buildPath(prefix: string, id: string, ext: string): string {
+    return prefix + '-' + id + '/' + randomUUID() + '.' + ext;
   }
 
   /**
-   * Upload un avatar vers Supabase Storage.
-   * @param userId - Identifiant de l'utilisateur
-   * @param buffer - Contenu du fichier
-   * @param contentType - Type MIME du fichier
-   * @param ext - Extension du fichier
-   * @returns Chemin du fichier uploadé
-   * @throws InternalServerErrorException si l'upload échoue
-   */
-  async uploadAvatar(
-    userId: string,
-    buffer: Buffer,
-    contentType: string,
-    ext: string,
-  ): Promise<string> {
-    const path = this.buildAvatarPath(userId, ext);
-    const client = this.getClient();
-
-    const { data, error } = await client.storage
-      .from(this.getBucket())
-      .upload(path, buffer, { contentType, upsert: true });
-
-    if (error) {
-      throw new InternalServerErrorException(
-        `Supabase Storage upload failed: ${error.message}`,
-      );
-    }
-
-    return data.path;
-  }
-
-  /**
-   * Upload un fichier vers un chemin arbitraire dans Supabase Storage.
+   * Upload un fichier vers un chemin dans Supabase Storage.
    * @param path - Chemin de destination dans le bucket
    * @param buffer - Contenu du fichier
    * @param contentType - Type MIME du fichier
    * @returns Chemin du fichier uploadé
    * @throws InternalServerErrorException si l'upload échoue
    */
-  async upload(
-    path: string,
-    buffer: Buffer,
-    contentType: string,
-  ): Promise<string> {
+  async upload(path: string,buffer: Buffer,contentType: string): Promise<string> {
     const client = this.getClient();
 
     const { data, error } = await client.storage
@@ -102,10 +68,9 @@ export class SupabaseStorageService {
 
     if (error) {
       throw new InternalServerErrorException(
-        `Supabase Storage upload failed: ${error.message}`,
+        'Supabase Storage upload failed:' + error.message,
       );
     }
-
     return data.path;
   }
 
@@ -122,7 +87,7 @@ export class SupabaseStorageService {
 
     if (error) {
       throw new InternalServerErrorException(
-        `Supabase Storage remove failed: ${error.message}`,
+        'Supabase Storage remove failed:' + error.message,
       );
     }
   }
@@ -143,10 +108,24 @@ export class SupabaseStorageService {
 
     if (error) {
       throw new InternalServerErrorException(
-        `Supabase Storage signed URL failed: ${error.message}`,
+        'Supabase Storage signed URL failed:' + error.message,
       );
     }
 
     return data.signedUrl;
+  }
+
+  /**
+   * Retourne l'URL publique d'un avatar depuis son path Supabase.
+   * Retourne null si le path est absent ou si la génération échoue.
+   * @param avatarPath - Chemin dans le bucket (ou null)
+   */
+  async resolveAvatarUrl(avatarPath: string | null): Promise<string | null> {
+    if (!avatarPath) return null;
+    try {
+      return await this.publicUrl(avatarPath);
+    } catch {
+      return null;
+    }
   }
 }

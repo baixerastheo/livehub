@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,Req,UseGuards,} from '@nestjs/common';
 import { CanalService } from './canal.service';
 import { CreateCanal } from './dto/create-canal.dto';
 import { UpdateCanal } from './dto/update-canal.dto';
@@ -33,11 +22,7 @@ export class CanalController {
    * @returns Canal créé
    */
   @Post('/servers/:serverId/channels')
-  async createChannel(
-    @Param('serverId', ParseIntPipe) serverId: number,
-    @Body() data: CreateCanal,
-    @Req() req: RequestWithAuth,
-  ) {
+  async createChannel(@Param('serverId', ParseIntPipe) serverId: number,@Body() data: CreateCanal,@Req() req: RequestWithAuth) {
     return this.canalService.createChannel(serverId, req.user.id, data);
   }
 
@@ -47,9 +32,7 @@ export class CanalController {
    * @returns Tous les canaux du serveur
    */
   @Get('/servers/:serverId/channels')
-  async getAllChannelsByServer(
-    @Param('serverId', ParseIntPipe) serverId: number,
-  ) {
+  async getAllChannelsByServer(@Param('serverId', ParseIntPipe) serverId: number) {
     return this.canalService.getAllChannelsByServer(serverId);
   }
 
@@ -70,11 +53,7 @@ export class CanalController {
    * @returns Canal mis à jour
    */
   @Put('/channels/:id')
-  async updateChannel(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() data: UpdateCanal,
-    @Req() req: RequestWithAuth,
-  ) {
+  async updateChannel(@Param('id', ParseIntPipe) id: number,@Body() data: UpdateCanal,@Req() req: RequestWithAuth) {
     return this.canalService.updateChannel(id, req.user.id, data);
   }
 
@@ -86,10 +65,7 @@ export class CanalController {
    * @returns Canal supprimé
    */
   @Delete('/channels/:id')
-  async deleteChannel(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: RequestWithAuth,
-  ) {
+  async deleteChannel(@Param('id', ParseIntPipe) id: number,@Req() req: RequestWithAuth) {
     return this.canalService.deleteChannel(id, req.user.id);
   }
 }

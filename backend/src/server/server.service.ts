@@ -1,78 +1,22 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { Injectable, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
-import { MessageGateway } from '../realtime/message.gateway.js';
-import { PresenceService } from '../realtime/presence.service.js';
+import { ServerUtilsService } from './server-utils.service';
 import { CreateServer } from './dto/create-server.dto';
 import { UpdateServer } from './dto/update-server.dto';
-import { AddMember } from './dto/add-member.dto';
-import { BanMember } from './dto/ban-member.dto';
-import { Role, StatutUtilisateur } from '../../generated/prisma/enums';
+import { Role } from '../../generated/prisma/enums';
 
 /**
  * Service de gestion des serveurs.
- * Gère la création, la suppression, la mise à jour des serveurs et leurs membres.
+ * Gère la création, la suppression, la mise à jour et l'avatar des serveurs.
  */
 @Injectable()
 export class ServerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
-    private readonly messageGateway: MessageGateway,
-    private readonly presence: PresenceService,
+    private readonly utils: ServerUtilsService,
   ) {}
-
-  /**
-   * Récupère un serveur par son ID ou lève une exception s'il n'existe pas.
-   * @param id - Identifiant du serveur
-   * @returns Le serveur correspondant
-   * @throws NotFoundException si le serveur n'existe pas
-   */
-  private async assertServerExists(id: number) {
-    const server = await this.prisma.serveur.findUnique({ where: { id } });
-    if (!server) {
-      throw new NotFoundException('Server with ID ' + id + ' not found');
-    }
-    return server;
-  }
-
-  /**
-   * Récupère un membre d'un serveur ou lève une exception s'il n'existe pas.
-   * @param userId - Identifiant de l'utilisateur
-   * @param serverId - Identifiant du serveur
-   * @returns Le membre correspondant
-   * @throws ForbiddenException si l'utilisateur n'est pas membre
-   */
-  private async assertServerMember(userId: string, serverId: number) {
-    const member = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId, serveurId: serverId } },
-    });
-    if (!member) {
-      throw new ForbiddenException('You are not a member of this server');
-    }
-    return member;
-  }
-
-  /**
-   * Vérifie que le membre est propriétaire ou administrateur.
-   * @param role - Rôle du membre
-   * @throws ForbiddenException si le rôle est insuffisant
-   */
-  private assertAdminRole(role: Role) {
-    if (role !== Role.PROPRIETAIRE && role !== Role.ADMINISTRATEUR) {
-      throw new ForbiddenException(
-        'Only owners and administrators can perform this action',
-      );
-    }
-  }
 
   /**
    * Récupère tous les serveurs auxquels appartient un utilisateur.
@@ -87,16 +31,7 @@ export class ServerService {
 
     return Promise.all(
       memberships.map(async (m) => {
-        let avatarUrl: string | null = null;
-        if (m.serveur.avatarPath) {
-          try {
-            avatarUrl = await this.supabaseStorage.publicUrl(
-              m.serveur.avatarPath,
-            );
-          } catch {
-            avatarUrl = null;
-          }
-        }
+        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(m.serveur.avatarPath);
         const { avatarPath: _avatarPath, ...serveurRest } = m.serveur;
         return { ...m, serveur: { ...serveurRest, avatarUrl } };
       }),
@@ -106,19 +41,12 @@ export class ServerService {
   /**
    * Récupère un serveur par son ID.
    * @param id - Identifiant du serveur
-   * @returns Le serveur correspondant
+   * @returns Le serveur correspondant avec son avatarUrl résolu
    * @throws NotFoundException si le serveur n'existe pas
    */
   async getServerById(id: number) {
-    const server = await this.assertServerExists(id);
-    let avatarUrl: string | null = null;
-    if (server.avatarPath) {
-      try {
-        avatarUrl = await this.supabaseStorage.publicUrl(server.avatarPath);
-      } catch {
-        avatarUrl = null;
-      }
-    }
+    const server = await this.utils.assertServerExists(id);
+    const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(server.avatarPath);
     const { avatarPath: _avatarPath, ...serverRest } = server;
     return { ...serverRest, avatarUrl };
   }
@@ -135,11 +63,7 @@ export class ServerService {
     });
 
     await this.prisma.membreServeur.create({
-      data: {
-        serveurId: server.id,
-        userId: creatorId,
-        role: Role.PROPRIETAIRE,
-      },
+      data: { serveurId: server.id, userId: creatorId, role: Role.PROPRIETAIRE },
     });
 
     await this.prisma.canal.create({
@@ -157,12 +81,8 @@ export class ServerService {
    * @throws NotFoundException si le serveur n'existe pas
    */
   async updateServer(id: number, data: UpdateServer) {
-    await this.assertServerExists(id);
-
-    return this.prisma.serveur.update({
-      where: { id },
-      data: { nom: data.name },
-    });
+    await this.utils.assertServerExists(id);
+    return this.prisma.serveur.update({ where: { id }, data: { nom: data.name } });
   }
 
   /**
@@ -172,446 +92,32 @@ export class ServerService {
    * @throws NotFoundException si le serveur n'existe pas
    */
   async deleteServer(id: number) {
-    await this.assertServerExists(id);
+    await this.utils.assertServerExists(id);
     return this.prisma.serveur.delete({ where: { id } });
   }
 
   /**
-   * Permet à un utilisateur de rejoindre un serveur.
+   * Remplace l'avatar d'un serveur dans Supabase Storage.
+   * En cas d'échec de la suppression de l'ancien avatar, effectue un rollback.
    * @param serverId - Identifiant du serveur
-   * @param userId - Identifiant de l'utilisateur
-   * @returns Le nouveau membre
-   * @throws NotFoundException si le serveur n'existe pas
-   * @throws ConflictException si l'utilisateur est déjà membre
-   */
-  async joinServer(serverId: number, userId: string) {
-    await this.assertServerExists(serverId);
-
-    const existingMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId, serveurId: serverId } },
-    });
-    if (existingMember) {
-      throw new ConflictException('You are already a member of this server');
-    }
-
-    const ban = await this.prisma.banServeur.findUnique({
-      where: { userId_serveurId: { userId, serveurId: serverId } },
-    });
-    if (ban) {
-      if (!ban.expireLe || ban.expireLe > new Date()) {
-        throw new ForbiddenException('You are banned from this server');
-      }
-      await this.prisma.banServeur.delete({ where: { id: ban.id } });
-    }
-
-    return this.prisma.membreServeur.create({
-      data: { serveurId: serverId, userId, role: Role.MEMBRE },
-      include: { serveur: true, user: true },
-    });
-  }
-
-  /**
-   * Ajoute un utilisateur à un serveur (action d'un admin/proprio).
-   * @param serverId - Identifiant du serveur
-   * @param currentUserId - Utilisateur qui effectue l'action
-   * @param payload - Données avec l'identifiant de l'utilisateur à ajouter
-   * @returns Le nouveau membre
-   * @throws NotFoundException si le serveur n'existe pas
-   * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
-   * @throws ConflictException si l'utilisateur cible est déjà membre
-   */
-  async addMember(serverId: number, currentUserId: string, payload: AddMember) {
-    await this.assertServerExists(serverId);
-
-    const actingMember = await this.assertServerMember(currentUserId, serverId);
-    this.assertAdminRole(actingMember.role);
-
-    const targetUserId = payload.userId;
-    if (currentUserId === targetUserId) {
-      throw new BadRequestException('You are already a member of this server');
-    }
-
-    const existingMember = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: targetUserId, serveurId: serverId },
-      },
-    });
-    if (existingMember) {
-      throw new ConflictException(
-        'This user is already a member of the server',
-      );
-    }
-
-    // Auto-unban if the user was previously banned
-    await this.prisma.banServeur.deleteMany({
-      where: { userId: targetUserId, serveurId: serverId },
-    });
-
-    const newMember = await this.prisma.membreServeur.create({
-      data: { serveurId: serverId, userId: targetUserId, role: Role.MEMBRE },
-      include: { user: true, serveur: true },
-    });
-
-    let avatarUrl: string | null = null;
-    if (newMember.user.avatarPath) {
-      try {
-        avatarUrl = await this.supabaseStorage.publicUrl(
-          newMember.user.avatarPath,
-        );
-      } catch {
-        avatarUrl = null;
-      }
-    }
-
-    const { avatarPath: _avatarPath, ...userRest } = newMember.user;
-    this.messageGateway.emitServerMemberJoined(serverId, {
-      id: newMember.id,
-      serveurId: newMember.serveurId,
-      userId: newMember.userId,
-      role: newMember.role,
-      rejointLe: newMember.rejointLe.toISOString(),
-      user: {
-        id: userRest.id,
-        name: userRest.name ?? '',
-        email: userRest.email,
-        avatarUrl,
-      },
-    });
-
-    this.messageGateway.emitUserAddedToServer(targetUserId, {
-      serverId,
-      serverName: newMember.serveur.nom,
-      role: newMember.role,
-    });
-
-    return newMember;
-  }
-
-  /**
-   * Transfère la propriété d'un serveur à un autre membre.
-   * L'ancien propriétaire devient ADMINISTRATEUR, le nouveau devient PROPRIETAIRE.
-   * @param serverId - Identifiant du serveur
-   * @param newOwnerId - Identifiant du nouveau propriétaire
-   * @param currentOwnerId - Identifiant de l'actuel propriétaire
-   * @returns Les identifiants du nouveau et de l'ancien propriétaire
-   * @throws ForbiddenException si l'utilisateur n'est pas propriétaire
-   * @throws NotFoundException si le membre cible n'est pas dans le serveur
-   * @throws BadRequestException si le transfert est vers soi-même
-   */
-  async transferOwnership(
-    serverId: number,
-    newOwnerId: string,
-    currentOwnerId: string,
-  ) {
-    const actingMember = await this.assertServerMember(
-      currentOwnerId,
-      serverId,
-    );
-    if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException(
-        'Only the server owner can transfer ownership',
-      );
-    }
-
-    if (newOwnerId === currentOwnerId) {
-      throw new BadRequestException('Cannot transfer ownership to yourself');
-    }
-
-    const targetMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId: newOwnerId, serveurId: serverId } },
-    });
-    if (!targetMember) {
-      throw new NotFoundException('Target user is not a member of this server');
-    }
-
-    await this.prisma.$transaction([
-      this.prisma.membreServeur.update({
-        where: { id: targetMember.id },
-        data: { role: Role.PROPRIETAIRE },
-      }),
-      this.prisma.membreServeur.update({
-        where: { id: actingMember.id },
-        data: { role: Role.ADMINISTRATEUR },
-      }),
-    ]);
-
-    this.messageGateway.emitServerOwnershipTransferred(serverId, {
-      newOwnerId,
-      previousOwnerId: currentOwnerId,
-    });
-
-    return { newOwnerId, previousOwnerId: currentOwnerId };
-  }
-
-  /**
-   * Permet à un utilisateur de quitter un serveur.
-   * @param serverId - Identifiant du serveur
-   * @param userId - Identifiant de l'utilisateur
-   * @returns Le membre supprimé
-   * @throws ForbiddenException si l'utilisateur n'est pas membre
-   */
-  async leaveServer(serverId: number, userId: string) {
-    const member = await this.assertServerMember(userId, serverId);
-
-    if (member.role === Role.PROPRIETAIRE) {
-      const memberCount = await this.prisma.membreServeur.count({
-        where: { serveurId: serverId },
-      });
-
-      if (memberCount === 1) {
-        return this.prisma.serveur.delete({ where: { id: serverId } });
-      }
-
-      throw new BadRequestException(
-        'You must transfer ownership to another member before leaving the server',
-      );
-    }
-    return this.prisma.membreServeur.delete({ where: { id: member.id } });
-  }
-
-  /**
-   * Récupère tous les membres d'un serveur avec leur statut de présence et avatar.
-   * @param serverId - Identifiant du serveur
-   * @returns Liste des membres avec leurs infos utilisateur
-   * @throws NotFoundException si le serveur n'existe pas
-   */
-  async getServerMembers(serverId: number) {
-    await this.assertServerExists(serverId);
-
-    const members = await this.prisma.membreServeur.findMany({
-      where: { serveurId: serverId },
-      include: { user: true },
-    });
-
-    return Promise.all(
-      members.map(async (m) => {
-        let avatarUrl: string | null = null;
-        if (m.user.avatarPath) {
-          try {
-            avatarUrl = await this.supabaseStorage.publicUrl(m.user.avatarPath);
-          } catch {
-            avatarUrl = null;
-          }
-        }
-        const { avatarPath: _avatarPath, ...userRest } = m.user;
-        const statut = this.presence.isOnline(m.userId)
-          ? StatutUtilisateur.EN_LIGNE
-          : StatutUtilisateur.HORS_LIGNE;
-        return { ...m, user: { ...userRest, avatarUrl, statut } };
-      }),
-    );
-  }
-
-  /**
-   * Met à jour le rôle d'un membre dans un serveur.
-   * Seul le propriétaire peut modifier les rôles.
-   * @param serverId - Identifiant du serveur
-   * @param targetUserId - Identifiant du membre dont on change le rôle
-   * @param newRole - Nouveau rôle à attribuer
    * @param actingUserId - Identifiant du propriétaire qui effectue l'action
-   * @returns Le membre mis à jour
+   * @param buffer - Contenu binaire du fichier image
+   * @param contentType - Type MIME de l'image
+   * @param ext - Extension du fichier (jpg, png, webp)
+   * @returns Le nouveau path et l'URL publique de l'avatar
    * @throws ForbiddenException si l'utilisateur n'est pas propriétaire
-   * @throws NotFoundException si le membre cible n'est pas dans le serveur
-   * @throws ForbiddenException si on tente de changer le rôle du propriétaire
+   * @throws InternalServerErrorException si la suppression de l'ancien avatar échoue
    */
-  async updateMemberRole(
-    serverId: number,
-    targetUserId: string,
-    newRole: Role,
-    actingUserId: string,
-  ) {
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
+  async replaceServerAvatar(serverId: number,actingUserId: string,buffer: Buffer,contentType: string,ext: string,) {
+    const server = await this.utils.assertServerExists(serverId);
+
+    const actingMember = await this.utils.assertServerMember(actingUserId, serverId);
     if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException(
-        'Only the server owner can change member roles',
-      );
-    }
-
-    const targetMember = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: targetUserId, serveurId: serverId },
-      },
-    });
-    if (!targetMember) {
-      throw new NotFoundException('This user is not a member of this server');
-    }
-    if (targetMember.role === Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Cannot change the owner role');
-    }
-
-    return this.prisma.membreServeur.update({
-      where: { id: targetMember.id },
-      data: { role: newRole },
-      include: { user: true, serveur: true },
-    });
-  }
-
-  /**
-   * Bannit un membre d'un serveur.
-   * Le membre est supprimé du serveur et un enregistrement de ban est créé.
-   * @param serverId - Identifiant du serveur
-   * @param actingUserId - Identifiant de l'admin/propriétaire qui effectue l'action
-   * @param payload - Données du ban (userId cible, raison optionnelle, date d'expiration optionnelle)
-   * @returns Le ban créé
-   * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
-   * @throws BadRequestException si l'utilisateur tente de se bannir lui-même
-   * @throws NotFoundException si le membre cible n'est pas dans le serveur
-   * @throws ForbiddenException si on tente de bannir le propriétaire
-   * @throws ConflictException si l'utilisateur est déjà banni
-   */
-  async banMember(serverId: number, actingUserId: string, payload: BanMember) {
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
-    this.assertAdminRole(actingMember.role);
-
-    if (actingUserId === payload.userId) {
-      throw new BadRequestException('You cannot ban yourself');
-    }
-
-    const targetMember = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: payload.userId, serveurId: serverId },
-      },
-    });
-    if (!targetMember) {
-      throw new NotFoundException('This user is not a member of this server');
-    }
-    if (targetMember.role === Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Cannot ban the server owner');
-    }
-    if (
-      targetMember.role === Role.ADMINISTRATEUR &&
-      actingMember.role !== Role.PROPRIETAIRE
-    ) {
-      throw new ForbiddenException(
-        'Only the server owner can ban an administrator',
-      );
-    }
-
-    const existingBan = await this.prisma.banServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: payload.userId, serveurId: serverId },
-      },
-    });
-    if (existingBan) {
-      throw new ConflictException(
-        'This user is already banned from this server',
-      );
-    }
-
-    const ban = await this.prisma.$transaction(async (tx) => {
-      const newBan = await tx.banServeur.create({
-        data: {
-          serveurId: serverId,
-          userId: payload.userId,
-          bannePar: actingUserId,
-          raison: payload.raison ?? null,
-          expireLe: payload.expireLe ? new Date(payload.expireLe) : null,
-        },
-      });
-      await tx.membreServeur.delete({ where: { id: targetMember.id } });
-      return newBan;
-    });
-
-    this.messageGateway.emitServerMemberBanned(serverId, {
-      bannedUserId: payload.userId,
-      bannedByUserId: actingUserId,
-      raison: ban.raison,
-      expireLe: ban.expireLe ? ban.expireLe.toISOString() : null,
-    });
-
-    return ban;
-  }
-
-  /**
-   * Lève le ban d'un utilisateur sur un serveur.
-   * @param serverId - Identifiant du serveur
-   * @param actingUserId - Identifiant de l'admin/propriétaire qui effectue l'action
-   * @param targetUserId - Identifiant de l'utilisateur à débannir
-   * @returns Le ban supprimé
-   * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
-   * @throws NotFoundException si l'utilisateur n'est pas banni
-   */
-  async unbanMember(
-    serverId: number,
-    actingUserId: string,
-    targetUserId: string,
-  ) {
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
-    this.assertAdminRole(actingMember.role);
-
-    const ban = await this.prisma.banServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: targetUserId, serveurId: serverId },
-      },
-    });
-    if (!ban) {
-      throw new NotFoundException('This user is not banned from this server');
-    }
-
-    const deleted = await this.prisma.banServeur.delete({
-      where: { id: ban.id },
-    });
-
-    this.messageGateway.emitServerMemberUnbanned(serverId, {
-      unbannedUserId: targetUserId,
-      unbannedByUserId: actingUserId,
-    });
-
-    return deleted;
-  }
-
-  /**
-   * Récupère la liste des bans actifs d'un serveur.
-   * @param serverId - Identifiant du serveur
-   * @param actingUserId - Identifiant de l'admin/propriétaire qui effectue la requête
-   * @returns Liste des bans avec les infos de l'utilisateur banni et du bannisseur
-   * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire
-   */
-  async getBans(serverId: number, actingUserId: string) {
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
-    this.assertAdminRole(actingMember.role);
-
-    const bans = await this.prisma.banServeur.findMany({
-      where: { serveurId: serverId },
-      include: { user: true, banneur: true },
-    });
-
-    return Promise.all(
-      bans.map(async (ban) => {
-        let avatarUrl: string | null = null;
-        if (ban.user.avatarPath) {
-          try {
-            avatarUrl = await this.supabaseStorage.publicUrl(
-              ban.user.avatarPath,
-            );
-          } catch {
-            avatarUrl = null;
-          }
-        }
-        const { avatarPath: _avatarPath, ...userRest } = ban.user;
-        return { ...ban, user: { ...userRest, avatarUrl } };
-      }),
-    );
-  }
-
-  async replaceServerAvatar(
-    serverId: number,
-    actingUserId: string,
-    buffer: Buffer,
-    contentType: string,
-    ext: string,
-  ) {
-    const server = await this.assertServerExists(serverId);
-
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
-    if (actingMember.role !== Role.PROPRIETAIRE) {
-      throw new ForbiddenException(
-        'Only the server owner can change the server avatar',
-      );
+      throw new ForbiddenException('Only the server owner can change the server avatar');
     }
 
     const oldAvatarPath = server.avatarPath ?? null;
-    const newPath = `server-${serverId}/${randomUUID()}.${ext}`;
+    const newPath = this.supabaseStorage.buildPath('server', serverId.toString(), ext);
 
     await this.supabaseStorage.upload(newPath, buffer, contentType);
 
@@ -637,44 +143,5 @@ export class ServerService {
 
     const avatarUrl = await this.supabaseStorage.publicUrl(newPath);
     return { path: newPath, avatarUrl };
-  }
-
-  async kickMember(
-    serverId: number,
-    actingUserId: string,
-    targetUserId: string,
-  ) {
-    const actingMember = await this.assertServerMember(actingUserId, serverId);
-    this.assertAdminRole(actingMember.role);
-
-    if (actingUserId === targetUserId) {
-      throw new BadRequestException('You cannot kick yourself');
-    }
-    const targetMember = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId: targetUserId, serveurId: serverId },
-      },
-    });
-    if (!targetMember) {
-      throw new NotFoundException('This user is not a member of this server');
-    }
-    if (targetMember.role === Role.PROPRIETAIRE) {
-      throw new ForbiddenException('Cannot kick the server owner');
-    }
-    if (
-      targetMember.role === Role.ADMINISTRATEUR &&
-      actingMember.role !== Role.PROPRIETAIRE
-    ) {
-      throw new ForbiddenException(
-        'Only the server owner can kick an administrator',
-      );
-    }
-
-    await this.prisma.membreServeur.delete({ where: { id: targetMember.id } });
-
-    this.messageGateway.emitServerMemberKicked(serverId, {
-      kickedUserId: targetUserId,
-      kickedByUserId: actingUserId,
-    });
   }
 }
