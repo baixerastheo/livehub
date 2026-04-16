@@ -354,6 +354,24 @@ export class MessageService {
       createdAtIso: message.creeLe.toISOString(),
     });
 
+    // Notify mentioned users via their personal room
+    const mentionRegex = /@\[([a-z0-9-]+)\]/gi;
+    const mentionedUserIds = new Set<string>();
+    let mentionMatch: RegExpExecArray | null;
+    while ((mentionMatch = mentionRegex.exec(content)) !== null) {
+      if (mentionMatch[1] !== userId) {
+        mentionedUserIds.add(mentionMatch[1]);
+      }
+    }
+    for (const mentionedUserId of mentionedUserIds) {
+      this.messageGateway.emitMessageMention(mentionedUserId, {
+        channelId,
+        serverId: channel.serveur.id,
+        authorName: message.auteur.name ?? '',
+        messagePreview: content.slice(0, 100),
+      });
+    }
+
     return message;
   }
 

@@ -127,6 +127,15 @@
     "friendRequestSent": "Friend request sent.",
     "friendRequestFailed": "Failed to send friend request."
   },
+  "mentions": {
+    "mentioned": "{author} mentioned you in #{channel}"
+  },
+  "notifications": {
+    "mentionTitle": "{author} mentioned you in #{channel}",
+    "privateMessageTitle": "{author} sent you a message",
+    "kickedTitle": "You were kicked from a server",
+    "bannedTitle": "You were banned from a server"
+  },
   "people": {
     "title": "People",
     "subtitle": "Search users and start a conversation.",

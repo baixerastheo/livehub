@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { getSocket } from "@/src/lib/realtime/socketClient";
 import { serversKeys, serverBansKey } from "./server.hooks";
 import { channelsKeys } from "@/src/features/channel/channel.hooks";
@@ -10,6 +11,7 @@ import type { ServerMemberDto } from "./server.types";
 import { useAuth } from "@/src/core/store/auth/useAuth";
 import { useAppStore } from "@/src/core/store/appStore";
 import { useVoiceStore } from "@/src/features/voice/voice.store";
+import { useToastStore } from "@/src/core/store/toast/useToastStore";
 
 type ServerChannelCreatedEvent = {
   serverId: number;
@@ -46,6 +48,13 @@ type ServerOwnershipTransferredEvent = {
   previousOwnerId: string;
 };
 
+type MessageMentionEvent = {
+  channelId: number;
+  serverId: number;
+  authorName: string;
+  messagePreview: string;
+};
+
 function mapRealtimeMemberToDto(m: ServerMemberJoinedEvent["member"]): ServerMemberDto {
   return {
     id: m.id,
@@ -68,6 +77,7 @@ export function useServerRealtime(serverId: number | null) {
   const currentUserId = user?.id ?? null;
   const setSelectedServerId = useAppStore((s) => s.setSelectedServerId);
   const setVoicePresence = useVoiceStore((s) => s.setVoicePresence);
+  const t = useTranslations("mentions");
 
   useEffect(() => {
     if (serverId == null) return;
@@ -75,7 +85,7 @@ export function useServerRealtime(serverId: number | null) {
     const socket = getSocket();
     const subscribe = () => {
       socket.emit("server:subscribe", { serverId });
-      // Re-announce voice presence after a reconnect (Socket.IO rooms are lost on disconnect)
+      // Re-announce voice presence after a reconnect
       const { isConnected, currentChannelId, isMuted } = useVoiceStore.getState();
       if (isConnected && currentChannelId != null) {
         socket.emit("voice:join", { channelId: currentChannelId, isMuted });
@@ -95,7 +105,6 @@ export function useServerRealtime(serverId: number | null) {
       };
       const key = channelsKeys.byServer(serverId);
       queryClient.setQueryData<ChannelDto[]>(key, (old) => {
-        // If channels not yet cached, force a refetch so the new channel appears.
         if (!old) {
           void queryClient.invalidateQueries({ queryKey: key });
           return old;
@@ -175,6 +184,12 @@ export function useServerRealtime(serverId: number | null) {
       queryClient.invalidateQueries({ queryKey: serverBansKey(serverId) });
     };
 
+    const onOwnershipTransferred = (event: ServerOwnershipTransferredEvent) => {
+      if (event.serverId !== serverId) return;
+      queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+    };
+
     const onVoicePresence = (event: {
       channelId: number;
       serverId: number;
@@ -184,15 +199,20 @@ export function useServerRealtime(serverId: number | null) {
       setVoicePresence(event.channelId, event.participants);
     };
 
-    const onOwnershipTransferred = (event: ServerOwnershipTransferredEvent) => {
+    const onMention = (event: MessageMentionEvent) => {
       if (event.serverId !== serverId) return;
-      // Invalidate members and user's own server list to reflect the new roles.
-      queryClient.invalidateQueries({ queryKey: serversKeys.members(serverId) });
-      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      if (document.visibilityState === "hidden") return;
+      const match = /\/channels\/(\d+)/.exec(window.location.pathname);
+      const viewingChannelId = match ? parseInt(match[1], 10) : null;
+      if (viewingChannelId === event.channelId) return;
+      const channels = queryClient.getQueryData<ChannelDto[]>(channelsKeys.byServer(serverId));
+      const channelName = channels?.find((c) => c.id === event.channelId)?.name ?? String(event.channelId);
+      useToastStore.getState().push({
+        type: "info",
+        message: t("mentioned", { author: event.authorName, channel: channelName }),
+      });
     };
 
-    // Re-subscribe after reconnect: Socket.IO rooms are per-connection and
-    // are lost when the socket disconnects.
     socket.on("connect", subscribe);
     socket.on("server-channel:created", onChannelCreated);
     socket.on("server-channel:deleted", onChannelDeleted);
@@ -204,6 +224,7 @@ export function useServerRealtime(serverId: number | null) {
     socket.on("server-member:unbanned", onMemberUnbanned);
     socket.on("server-ownership:transferred", onOwnershipTransferred);
     socket.on("voice-channel:presence", onVoicePresence);
+    socket.on("message:mention", onMention);
 
     return () => {
       socket.off("connect", subscribe);
@@ -217,9 +238,10 @@ export function useServerRealtime(serverId: number | null) {
       socket.off("server-member:unbanned", onMemberUnbanned);
       socket.off("server-ownership:transferred", onOwnershipTransferred);
       socket.off("voice-channel:presence", onVoicePresence);
+      socket.off("message:mention", onMention);
       socket.emit("server:unsubscribe", { serverId });
     };
-  }, [serverId, currentUserId, queryClient, setSelectedServerId, setVoicePresence]);
+  }, [serverId, currentUserId, queryClient, setSelectedServerId, setVoicePresence, t]);
 }
 
 /**

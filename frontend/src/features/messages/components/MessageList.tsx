@@ -14,6 +14,7 @@ type Props = {
   onDeleteMessage?: (messageId: number) => void;
   isDeletingMessageId?: number | null;
   onToggleReaction?: (messageId: number, emoji: string) => void;
+  membersById?: Record<string, string>;
 };
 
 export function MessageList({
@@ -23,6 +24,7 @@ export function MessageList({
   onDeleteMessage,
   isDeletingMessageId = null,
   onToggleReaction,
+  membersById = {},
 }: Props) {
   const t = useTranslations("messages");
   const bottomRef = React.useRef<HTMLDivElement>(null);
@@ -56,6 +58,7 @@ export function MessageList({
               }
               isDeleting={isDeletingMessageId === Number(m.id)}
               onToggleReaction={onToggleReaction}
+              membersById={membersById}
             />
           );
         })

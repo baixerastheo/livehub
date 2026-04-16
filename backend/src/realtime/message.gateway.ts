@@ -23,6 +23,7 @@ import type {
   ServerMemberKickedEvent,
   MessageReactionUpdatedEvent,
   VoiceChannelPresenceEvent,
+  MessageMentionEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
@@ -583,6 +584,10 @@ export class MessageGateway
    */
   emitUserAddedToServer(userId: string, payload: UserAddedToServerEvent) {
     this.server.to('user:' + userId).emit('user:added-to-server', payload);
+  }
+
+  emitMessageMention(userId: string, payload: MessageMentionEvent) {
+    this.server.to('user:' + userId).emit('message:mention', payload);
   }
 
   /**

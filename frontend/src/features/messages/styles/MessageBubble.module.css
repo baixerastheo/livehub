@@ -187,3 +187,18 @@
   border-radius: var(--radius-sm);
   display: block;
 }
+
+.mention {
+  display: inline;
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-weight: var(--font-weight-medium);
+  cursor: default;
+}
+
+.mentionMe {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}

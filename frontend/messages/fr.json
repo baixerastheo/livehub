@@ -127,6 +127,15 @@
     "friendRequestSent": "Demande d'ami envoyée.",
     "friendRequestFailed": "Impossible d'envoyer la demande."
   },
+  "mentions": {
+    "mentioned": "{author} vous a mentionné dans #{channel}"
+  },
+  "notifications": {
+    "mentionTitle": "{author} vous a mentionné dans #{channel}",
+    "privateMessageTitle": "{author} vous a envoyé un message",
+    "kickedTitle": "Vous avez été expulsé d'un serveur",
+    "bannedTitle": "Vous avez été banni d'un serveur"
+  },
   "people": {
     "title": "Personnes",
     "subtitle": "Recherchez des utilisateurs et démarrez une conversation.",
