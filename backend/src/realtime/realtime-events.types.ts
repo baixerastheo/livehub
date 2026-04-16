@@ -150,3 +150,13 @@ export type VoiceChannelPresenceEvent = {
     isMuted: boolean;
   }[];
 };
+
+/**
+ * Payload for event message:mention - sent to a user's personal room when they are mentioned.
+ */
+export type MessageMentionEvent = {
+  channelId: number;
+  serverId: number;
+  authorName: string;
+  messagePreview: string;
+};

@@ -93,8 +93,8 @@ export function MessagesScreen() {
   );
   const [composerValue, setComposerValue] = React.useState("");
 
-  const send = async () => {
-    const trimmed = composerValue.trim();
+  const send = async (transformed: string) => {
+    const trimmed = transformed.trim();
     if (!trimmed || !peerUserId) return;
     try {
       await sendMessageMutation.mutateAsync({ peerUserId, content: trimmed });
