@@ -201,6 +201,10 @@ export function useServerRealtime(serverId: number | null) {
 
     const onMention = (event: MessageMentionEvent) => {
       if (event.serverId !== serverId) return;
+      if (document.visibilityState === "hidden") return;
+      const match = /\/channels\/(\d+)/.exec(window.location.pathname);
+      const viewingChannelId = match ? parseInt(match[1], 10) : null;
+      if (viewingChannelId === event.channelId) return;
       const channels = queryClient.getQueryData<ChannelDto[]>(channelsKeys.byServer(serverId));
       const channelName = channels?.find((c) => c.id === event.channelId)?.name ?? String(event.channelId);
       useToastStore.getState().push({

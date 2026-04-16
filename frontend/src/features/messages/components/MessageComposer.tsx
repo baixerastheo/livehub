@@ -20,7 +20,7 @@ export type MentionMember = {
 type Props = {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (transformed: string) => void;
   placeholder?: string;
   onGifSelect?: (gif: Gif) => void;
   members?: MentionMember[];
@@ -39,6 +39,7 @@ export function MessageComposer({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionAtPos, setMentionAtPos] = useState<number>(-1);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [pendingMentions, setPendingMentions] = useState<Map<string, string>>(new Map());
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("messages");
@@ -54,7 +55,7 @@ export function MessageComposer({
   // Detect @mention being typed at cursor position
   const detectMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
-    const match = /@([\w]*)$/.exec(before);
+    const match = /@([^\s@]*)$/.exec(before);
     if (match) {
       setMentionQuery(match[1]);
       setMentionAtPos(match.index);
@@ -69,19 +70,27 @@ export function MessageComposer({
     const next = e.target.value;
     onChange(next);
     detectMention(next, e.target.selectionStart ?? next.length);
+    setPendingMentions((prev) => {
+      const updated = new Map(prev);
+      for (const name of updated.keys()) {
+        if (!next.includes(`@${name}`)) updated.delete(name);
+      }
+      return updated.size !== prev.size ? updated : prev;
+    });
   };
 
   const insertMention = (member: MentionMember) => {
     const cursor = inputRef.current?.selectionStart ?? value.length;
     const before = value.slice(0, mentionAtPos);
     const after = value.slice(cursor);
-    const newValue = `${before}@[${member.id}] ${after}`;
+    const newValue = `${before}@${member.name} ${after}`;
     onChange(newValue);
+    setPendingMentions((prev) => new Map(prev).set(member.name, member.id));
     setMentionQuery(null);
     setMentionAtPos(-1);
     // Restore focus after React re-render
     requestAnimationFrame(() => {
-      const newCursor = mentionAtPos + member.id.length + 4; // @[] + space
+      const newCursor = mentionAtPos + member.name.length + 2; // @ + name + space
       inputRef.current?.focus();
       inputRef.current?.setSelectionRange(newCursor, newCursor);
     });
@@ -117,6 +126,14 @@ export function MessageComposer({
     }
   };
 
+  const transformMentions = (text: string): string => {
+    let result = text;
+    pendingMentions.forEach((userId, name) => {
+      result = result.replaceAll(`@${name}`, `@[${userId}]`);
+    });
+    return result;
+  };
+
   // Close dropdown on outside click
   useEffect(() => {
     if (mentionQuery === null) return;
@@ -134,7 +151,10 @@ export function MessageComposer({
       className={styles.composer}
       onSubmit={(e) => {
         e.preventDefault();
-        if (mentionQuery === null) onSubmit();
+        if (mentionQuery === null) {
+          onSubmit(transformMentions(value));
+          setPendingMentions(new Map());
+        }
       }}
     >
       {mentionQuery !== null && filteredMembers.length > 0 && (

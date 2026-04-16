@@ -121,8 +121,8 @@ export function ChannelMessagesScreen() {
     }));
   }, [messagesData, user]);
 
-  const send = async () => {
-    const trimmed = composerValue.trim();
+  const send = async (transformed: string) => {
+    const trimmed = transformed.trim();
     if (!trimmed || channelId == null) return;
     try {
       await sendMessageMutation.mutateAsync(trimmed);

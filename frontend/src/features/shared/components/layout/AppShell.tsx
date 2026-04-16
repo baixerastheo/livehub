@@ -14,6 +14,7 @@ import { PrivateConversationsRealtimeSync } from "@/src/features/messages/compon
 import { ServerRealtimeSync } from "@/src/features/server/components/ServerRealtimeSync";
 import { UserServerAddedRealtimeSync } from "@/src/features/server/components/UserServerAddedRealtimeSync";
 import { PresenceRealtimeSync } from "@/src/lib/realtime/PresenceRealtimeSync";
+import { OsNotificationsSync } from "@/src/features/notifications/OsNotificationsSync";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export function AppShell({ children }: AppShellProps) {
       <ServerRealtimeSync />
       <UserServerAddedRealtimeSync />
       <PresenceRealtimeSync />
+      <OsNotificationsSync />
       <Navbar>
         <NavbarSearch />
         <NavbarPeopleButton />
