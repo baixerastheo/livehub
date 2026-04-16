@@ -90,7 +90,40 @@ STORAGE: Supabase Bucket
 - Presence status: `EN_LIGNE` | `HORS_LIGNE`
 - Profile settings page
 
-### `[06] REALTIME ENGINE`
+### `[06] VOICE CHANNELS`
+```
+STATUS: OPERATIONAL
+PROTOCOL: LiveKit (WebRTC)
+```
+- Join **voice channels** inside a server
+- Live participant list with mute indicators
+- Mute / deafen controls
+- Local volume per participant
+- Powered by **LiveKit** (self-hosted or LiveKit Cloud)
+
+### `[07] MENTIONS`
+```
+STATUS: OPERATIONAL
+FORMAT: @[userId] stored, rendered as chip
+```
+- Type `@` in any server channel to trigger autocomplete
+- Filtered member list with avatar + keyboard navigation
+- Mention stored as `@[userId]` in message content
+- Rendered as a styled **purple chip** in message bubbles
+- **Amber chip** when the mention targets the current user
+
+### `[08] NOTIFICATIONS`
+```
+STATUS: OPERATIONAL
+TRIGGER: background tab only
+```
+- **In-app toast** when mentioned in a channel (foreground, different channel)
+- **OS notification** (Browser Notification API) when tab is in background :
+  - Mention in a server channel
+  - New private message
+  - Kicked or banned from a server
+
+### `[09] REALTIME ENGINE`
 ```
 STATUS: OPERATIONAL
 LATENCY: ~instant
@@ -187,6 +220,11 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_key
 SUPABASE_STORAGE_BUCKET=avatars
 
+# LiveKit (voice channels)
+LIVEKIT_URL=wss://your-livekit-server
+LIVEKIT_API_KEY=your_api_key
+LIVEKIT_API_SECRET=your_api_secret
+
 # Server
 PORT=4001
 NODE_ENV=development
@@ -241,10 +279,12 @@ Livehub/
 │       │   ├── auth/             # Auth hooks
 │       │   ├── channel/          # Channel components
 │       │   ├── friends/          # Friend system
-│       │   ├── messages/         # Private messaging
+│       │   ├── messages/         # Private & channel messaging
 │       │   ├── modalAuth/        # Auth modal (login/register)
+│       │   ├── notifications/    # OS notifications hook
 │       │   ├── server/           # Server components
-│       │   └── shared/           # Layout, navbar, sidebar
+│       │   ├── shared/           # Layout, navbar, sidebar
+│       │   └── voice/            # Voice channel (LiveKit)
 │       ├── core/                 # Zustand stores
 │       └── lib/                  # Utilities & clients
 │
@@ -311,14 +351,23 @@ LiveHub runs on **Socket.io** — persistent WebSocket connections for zero-dela
 |---|---|---|
 | `channel:subscribe` | `CLIENT > SERVER` | Subscribe to a channel |
 | `channel:unsubscribe` | `CLIENT > SERVER` | Unsubscribe from a channel |
+| `channel:typing` | `CLIENT > SERVER` | Typing indicator |
+| `channel:stop-typing` | `CLIENT > SERVER` | Stop typing indicator |
 | `server:subscribe` | `CLIENT > SERVER` | Subscribe to a server |
 | `server:unsubscribe` | `CLIENT > SERVER` | Unsubscribe from a server |
+| `voice:join` | `CLIENT > SERVER` | Join a voice channel |
+| `voice:leave` | `CLIENT > SERVER` | Leave a voice channel |
+| `voice:mute` | `CLIENT > SERVER` | Toggle mute state |
 | `private-message:created` | `SERVER > CLIENT` | New private message |
 | `channel-message:created` | `SERVER > CLIENT` | New channel message |
 | `server-channel:created` | `SERVER > CLIENT` | New channel created |
 | `server-member:joined` | `SERVER > CLIENT` | New member joined server |
 | `server-member:online` | `SERVER > CLIENT` | Server member came online |
 | `server-member:offline` | `SERVER > CLIENT` | Server member went offline |
+| `server-member:kicked` | `SERVER > CLIENT` | Member kicked from server |
+| `server-member:banned` | `SERVER > CLIENT` | Member banned from server |
+| `voice-channel:presence` | `SERVER > CLIENT` | Voice participants updated |
+| `message:mention` | `SERVER > CLIENT` | Current user was mentioned |
 | `user:online` | `SERVER > CLIENT` | Friend came online |
 | `user:offline` | `SERVER > CLIENT` | Friend went offline |
 
