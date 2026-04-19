@@ -1,6 +1,8 @@
 packages:
   - frontend
   - backend
+  - electron
 
 onlyBuiltDependencies:
   - bcrypt
+  - electron
