@@ -16,6 +16,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Storage-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-workspaces-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![Electron](https://img.shields.io/badge/Electron-36-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
 
 <br/>
 
@@ -115,15 +116,47 @@ FORMAT: @[userId] stored, rendered as chip
 ### `[08] NOTIFICATIONS`
 ```
 STATUS: OPERATIONAL
-TRIGGER: background tab only
+TRIGGER: real-time + history
 ```
 - **In-app toast** when mentioned in a channel (foreground, different channel)
 - **OS notification** (Browser Notification API) when tab is in background :
   - Mention in a server channel
   - New private message
   - Kicked or banned from a server
+- **Notification history** — bell icon with unread badge, full history (up to 50), auto-cleanup of oldest
+- Clickable notifications — jump directly to the relevant channel or conversation
 
-### `[09] REALTIME ENGINE`
+### `[09] BAN & KICK`
+```
+STATUS: OPERATIONAL
+ROLES: PROPRIETAIRE, ADMINISTRATEUR
+```
+- **Kick** a member from a server (immediate removal, rejoinable)
+- **Ban** a member with optional reason and expiry date
+- **Unban** at any time
+- Ban list visible to admins
+- Role hierarchy enforced : only owner can ban/kick admins
+
+### `[10] AI BOT`
+```
+STATUS: OPERATIONAL
+PROVIDER: OpenRouter
+```
+- Built-in AI assistant accessible via private messages
+- Pinned at the top of the conversation list
+- Full conversation history sent as context on each message
+
+### `[11] DESKTOP APP`
+```
+STATUS: OPERATIONAL
+RUNTIME: Electron 36
+```
+- Native desktop app wrapping the web frontend
+- Custom titlebar matching the app design (no native menu bar)
+- Single command to launch backend + frontend + Electron
+- Production: Next.js standalone server embedded in the app
+
+### `[12] REALTIME ENGINE`
 ```
 STATUS: OPERATIONAL
 LATENCY: ~instant
@@ -163,6 +196,13 @@ LATENCY: ~instant
 | **Supabase Storage** | Avatar file storage |
 | **Swagger** | Auto-generated API docs |
 
+### Desktop
+
+| Tech | Role |
+|---|---|
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/electron/electron-original.svg" width="18"/> **Electron 36** | Desktop app wrapper |
+| **electron-builder** | App packaging (Win/Mac/Linux) |
+
 ### Infrastructure
 
 | Tech | Role |
@@ -172,6 +212,7 @@ LATENCY: ~instant
 | **Docker** | Local Supabase (dev) |
 | **Playwright** | E2E tests |
 | **Jest** | Unit tests |
+| **GitHub Actions** | CI pipeline |
 
 ---
 
@@ -303,6 +344,12 @@ Livehub/
 │   │   └── prisma.service.ts     # Database service
 │   └── prisma/
 │       └── schema.prisma         # Database schema
+│
+├── electron/                     # Electron desktop app
+│   ├── src/
+│   │   ├── main.ts               # Main process
+│   │   └── preload.ts            # Preload script (contextBridge)
+│   └── dist/                     # Compiled output
 │
 ├── supabase/                     # Local Supabase config
 ├── pnpm-workspace.yaml           # Monorepo workspace
@@ -489,12 +536,18 @@ No database writes for presence. Pure in-memory, zero latency.
 
 ```bash
 # Development
-pnpm run dev                 # Launch everything
+pnpm run dev                 # Launch frontend + backend
 pnpm run dev:frontend        # Frontend only
 pnpm run dev:backend         # Backend only
+pnpm run dev:electron        # Frontend + backend + Electron desktop
 
 # Build
 pnpm run build               # Build frontend + backend
+pnpm run build:electron      # Build frontend + compile Electron
+pnpm run dist:electron       # Package desktop app (.exe / .dmg / .AppImage)
+
+# Tests
+pnpm run test                # Run all tests
 
 # Code quality
 pnpm run lint                # Linter
