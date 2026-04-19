@@ -14,6 +14,9 @@ import {
 } from "react-icons/fi";
 import { ModalCreateServer } from "@/src/features/server/components/modalCreateServer";
 import { useUserServersQuery } from "@/src/features/server/server.hooks";
+import { useNotificationsQuery } from "@/src/features/notifications/notification.hooks";
+import { useAuth } from "@/src/core/store/auth/useAuth";
+import badgeStyles from "../../styles/sidebar/SidebarNotifications.module.css";
 
 type RailItem = "activity" | "conversation" | "teams";
 
@@ -50,6 +53,9 @@ export function SidebarRail() {
   }, []);
   const [isCreateServerOpen, setIsCreateServerOpen] = React.useState(false);
   const { data: userServers } = useUserServersQuery();
+  const { isAuthenticated } = useAuth();
+  const { data: notifications = [] } = useNotificationsQuery(isAuthenticated);
+  const unreadCount = notifications.filter((n) => !n.lu).length;
   const selectedServerId = useAppStore((state) => state.selectedServerId);
 
   const activate = (item: RailItem) => {
@@ -76,7 +82,14 @@ export function SidebarRail() {
           aria-label={t("notification")}
         >
           <span className={styles.railIcon} aria-hidden="true">
-            <FiBell className={styles.railIconSvg} />
+            <span className={badgeStyles.bellWrapper}>
+              <FiBell className={styles.railIconSvg} />
+              {unreadCount > 0 && (
+                <span className={badgeStyles.badge}>
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </span>
           </span>
           <span className={styles.railLabel}>{t("notification")}</span>
           <span className={styles.railTooltip}>{t("notification")}</span>
