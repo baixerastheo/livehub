@@ -18,6 +18,9 @@
     "supabase:reset": "supabase db reset",
     "db:push": "pnpm --filter backend exec prisma db push",
     "db:generate": "pnpm --filter backend exec prisma generate",
+    "dev:electron": "concurrently \"pnpm --filter backend start:dev\" \"pnpm --filter frontend dev\" \"pnpm --filter electron dev\"",
+    "build:electron": "pnpm --filter frontend build && pnpm --filter electron build",
+    "dist:electron": "pnpm --filter electron dist",
     "prepare": "husky"
   },
   "devDependencies": {
