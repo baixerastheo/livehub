@@ -175,6 +175,19 @@ model ReactionMessagePrive {
   @@index([messageId])
 }
 
+model Notification {
+  id     Int              @id @default(autoincrement())
+  userId String
+  type   TypeNotification
+  data   Json
+  lu     Boolean          @default(false)
+  creeLe DateTime         @default(now())
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, lu])
+}
+
 model User {
   id                    String                 @id
   name                  String
@@ -199,6 +212,7 @@ model User {
   messagesEnvoyes       MessagePrive[]         @relation("MessagesEnvoyes")
   reactionsMessage      ReactionMessage[]
   reactionsMessagePrive ReactionMessagePrive[]
+  notifications         Notification[]
   accounts              Account[]
   sessions              Session[]
 
@@ -271,4 +285,11 @@ enum StatutDemandeAmitie {
   EN_ATTENTE
   ACCEPTEE
   REFUSEE
+}
+
+enum TypeNotification {
+  MENTION
+  PRIVATE_MESSAGE
+  KICKED
+  BANNED
 }

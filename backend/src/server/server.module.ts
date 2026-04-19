@@ -7,9 +7,10 @@ import { ServerUtilsService } from './server-utils.service';
 import { PrismaService } from '../prisma.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 import { RealtimeModule } from '../realtime/realtime.module.js';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [SupabaseModule, RealtimeModule],
+  imports: [SupabaseModule, RealtimeModule, NotificationModule],
   controllers: [ServerController],
   providers: [
     ServerService,

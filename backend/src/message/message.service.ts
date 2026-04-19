@@ -8,7 +8,8 @@ import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from 'src/realtime/message.gateway';
 import { AiBotService } from './ai-bot.service';
-import { Role } from '../../generated/prisma/enums';
+import { Role, TypeNotification } from '../../generated/prisma/enums';
+import { NotificationService } from '../notification/notification.service';
 
 /**
  * Vérifie si un rôle donné autorise la suppression de messages de canal.
@@ -36,6 +37,7 @@ export class MessageService {
     private readonly supabaseStorage: SupabaseStorageService,
     private readonly messageGateway: MessageGateway,
     private readonly aiBotService: AiBotService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -221,6 +223,16 @@ export class MessageService {
       recipientId,
     });
 
+    void this.notificationService.create(
+      recipientId,
+      TypeNotification.PRIVATE_MESSAGE,
+      {
+        authorId: message.expediteurId,
+        authorName: message.expediteur.name ?? message.expediteur.email,
+        content: content.slice(0, 100),
+      },
+    );
+
     if (recipientId === this.aiBotService.getBotUserId()) {
       void this.EnvoyerBotResponse(senderId);
     }
@@ -364,12 +376,18 @@ export class MessageService {
       }
     }
     for (const mentionedUserId of mentionedUserIds) {
-      this.messageGateway.emitMessageMention(mentionedUserId, {
+      const mentionData = {
         channelId,
         serverId: channel.serveur.id,
         authorName: message.auteur.name ?? '',
         messagePreview: content.slice(0, 100),
-      });
+      };
+      this.messageGateway.emitMessageMention(mentionedUserId, mentionData);
+      void this.notificationService.create(
+        mentionedUserId,
+        TypeNotification.MENTION,
+        mentionData,
+      );
     }
 
     return message;

@@ -10,7 +10,8 @@ import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway.js';
 import { ServerUtilsService } from './server-utils.service';
 import { BanMember } from './dto/ban-member.dto';
-import { Role } from '../../generated/prisma/enums';
+import { Role, TypeNotification } from '../../generated/prisma/enums';
+import { NotificationService } from '../notification/notification.service';
 
 /**
  * Service de gestion des bans et kicks sur un serveur.
@@ -23,6 +24,7 @@ export class ServerBanService {
     private readonly supabaseStorage: SupabaseStorageService,
     private readonly messageGateway: MessageGateway,
     private readonly utils: ServerUtilsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -100,6 +102,16 @@ export class ServerBanService {
       raison: ban.raison,
       expireLe: ban.expireLe ? ban.expireLe.toISOString() : null,
     });
+
+    void this.notificationService.create(
+      payload.userId,
+      TypeNotification.BANNED,
+      {
+        serverId,
+        raison: ban.raison,
+        expireLe: ban.expireLe ? ban.expireLe.toISOString() : null,
+      },
+    );
 
     return ban;
   }
@@ -226,5 +238,11 @@ export class ServerBanService {
       kickedUserId: targetUserId,
       kickedByUserId: actingUserId,
     });
+
+    void this.notificationService.create(
+      targetUserId,
+      TypeNotification.KICKED,
+      { serverId },
+    );
   }
 }

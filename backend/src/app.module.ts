@@ -12,6 +12,7 @@ import { RealtimeModule } from './realtime/realtime.module.js';
 import { GifModule } from './gif/gif.module';
 import { ReactionModule } from './reaction/reaction.module';
 import { VoiceModule } from './voice/voice.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { VoiceModule } from './voice/voice.module';
     GifModule,
     ReactionModule,
     VoiceModule,
+    NotificationModule,
   ],
   controllers: [],
 })

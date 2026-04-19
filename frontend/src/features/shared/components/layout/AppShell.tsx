@@ -15,6 +15,7 @@ import { ServerRealtimeSync } from "@/src/features/server/components/ServerRealt
 import { UserServerAddedRealtimeSync } from "@/src/features/server/components/UserServerAddedRealtimeSync";
 import { PresenceRealtimeSync } from "@/src/lib/realtime/PresenceRealtimeSync";
 import { OsNotificationsSync } from "@/src/features/notifications/OsNotificationsSync";
+import { NotificationsRealtimeSync } from "@/src/features/notifications/NotificationsRealtimeSync";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ export function AppShell({ children }: AppShellProps) {
       <UserServerAddedRealtimeSync />
       <PresenceRealtimeSync />
       <OsNotificationsSync />
+      <NotificationsRealtimeSync />
       <Navbar>
         <NavbarSearch />
         <NavbarPeopleButton />
