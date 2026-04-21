@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaModule } from './prisma.module';
 import { UserModule } from './user/user.module';
 import { ServerModule } from './server/server.module';
 import { CanalModule } from './canal/canal.module';
@@ -20,6 +21,7 @@ import { NotificationModule } from './notification/notification.module';
       isGlobal: true,
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 1000 }]),
+    PrismaModule,
     AuthModule,
     UserModule,
     ServerModule,

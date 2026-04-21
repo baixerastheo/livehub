@@ -66,23 +66,25 @@ export class ServerService {
    * @returns Le serveur créé
    */
   async createServer(data: CreateServer, creatorId: string) {
-    const server = await this.prisma.serveur.create({
-      data: { nom: data.name },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const server = await tx.serveur.create({
+        data: { nom: data.name },
+      });
 
-    await this.prisma.membreServeur.create({
-      data: {
-        serveurId: server.id,
-        userId: creatorId,
-        role: Role.PROPRIETAIRE,
-      },
-    });
+      await tx.membreServeur.create({
+        data: {
+          serveurId: server.id,
+          userId: creatorId,
+          role: Role.PROPRIETAIRE,
+        },
+      });
 
-    await this.prisma.canal.create({
-      data: { serveurId: server.id, nom: 'general' },
-    });
+      await tx.canal.create({
+        data: { serveurId: server.id, nom: 'general' },
+      });
 
-    return server;
+      return server;
+    });
   }
 
   /**

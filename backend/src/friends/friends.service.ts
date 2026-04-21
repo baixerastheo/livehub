@@ -20,36 +20,6 @@ export class FriendsService {
   ) {}
 
   /**
-   * Ordonne une paire d'IDs utilisateurs de manière déterministe.
-   * Utilisé pour garantir l'unicité des relations d'amitié bidirectionnelles.
-   * @param a - Premier ID utilisateur
-   * @param b - Second ID utilisateur
-   * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
-   */
-  private orderPair(
-    a: string,
-    b: string,
-  ): { userAId: string; userBId: string } {
-    return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
-  }
-
-  /**
-   * Récupère une demande d'amitié par son ID.
-   * @param requestId - Identifiant de la demande
-   * @returns La demande correspondante
-   * @throws NotFoundException si la demande n'existe pas
-   */
-  private async findRequest(requestId: string) {
-    const request = await this.prisma.demandeAmitie.findUnique({
-      where: { id: requestId },
-    });
-    if (!request) {
-      throw new NotFoundException('Friend request not found');
-    }
-    return request;
-  }
-
-  /**
    * Vérifie qu'un utilisateur existe.
    * @param userId - Identifiant de l'utilisateur
    * @returns L'utilisateur correspondant
@@ -81,6 +51,36 @@ export class FriendsService {
     if (friendship) {
       throw new BadRequestException('Users are already friends');
     }
+  }
+
+  /**
+   * Ordonne une paire d'IDs utilisateurs de manière déterministe.
+   * Utilisé pour garantir l'unicité des relations d'amitié bidirectionnelles.
+   * @param a - Premier ID utilisateur
+   * @param b - Second ID utilisateur
+   * @returns Objet avec userAId (le plus petit) et userBId (le plus grand)
+   */
+  private orderPair(
+    a: string,
+    b: string,
+  ): { userAId: string; userBId: string } {
+    return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
+  }
+
+  /**
+   * Récupère une demande d'amitié par son ID.
+   * @param requestId - Identifiant de la demande
+   * @returns La demande correspondante
+   * @throws NotFoundException si la demande n'existe pas
+   */
+  private async findRequest(requestId: string) {
+    const request = await this.prisma.demandeAmitie.findUnique({
+      where: { id: requestId },
+    });
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
+    }
+    return request;
   }
 
   /**

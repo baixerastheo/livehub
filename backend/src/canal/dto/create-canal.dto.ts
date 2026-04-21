@@ -21,7 +21,7 @@ export class CreateCanal {
   @MaxLength(100, {
     message: "The 'name' field must not exceed 100 characters!",
   })
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsEnum(TypeCanal)

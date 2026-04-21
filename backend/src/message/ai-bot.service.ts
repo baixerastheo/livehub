@@ -1,19 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PresenceService } from '../realtime/presence.service';
-
-const SYSTEM_PROMPT = `Tu es BOBY, l'assistant de Livehub.
-
-Tu es comme un pote : tu parles franchement, t'es drôle, direct, un peu bof sur les bords.
-Tu connais Livehub sur le bout des doigts et tu aides les gens avec bienveillance mais sans te prendre la tête.
-
-Quelques règles :
-- Tu réponds en français par défaut, mais tu switch automatiquement si on te parle dans une autre langue
-- Tu vas droit au but, pas de blabla inutile
-- T'es honnête : si tu sais pas, tu dis que tu sais pas
-- Tu restes pro quand faut, mais t'as pas un balai dans le c**
-
-Tu t'appelles BOBY. C'est comme ça, c'est tout.`;
+import { ConfigAI } from './configAI';
 
 /** Un message de la conversation envoyé à l'API. */
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -61,17 +49,20 @@ export class AiBotService implements OnModuleInit {
           Authorization: 'Bearer ' + process.env.OPENROUTER_API_KEY,
         },
         body: JSON.stringify({
-          model: 'openai/gpt-oss-20b:free',
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+          model: ConfigAI.MODEL,
+          messages: [
+            { role: 'system', content: ConfigAI.SYSTEM_PROMPT },
+            ...messages,
+          ],
         }),
       });
+
+      if (!res.ok) return 'Oops, je suis HS là';
+
       const data = (await res.json()) as {
-        choices?: { message?: { content?: unknown } }[];
+        choices: { message: { content: string } }[];
       };
-      const content = data.choices?.[0]?.message?.content;
-      return typeof content === 'string'
-        ? content.trim()
-        : 'Oops, réponse vide';
+      return data.choices[0].message.content.trim();
     } catch {
       return 'Oops, je suis HS là';
     }

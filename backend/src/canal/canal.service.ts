@@ -21,20 +21,16 @@ export class CanalService {
   ) {}
 
   /**
-   * Récupère un canal par son ID.
-   * @param id - Identifiant du canal
-   * @returns Le canal correspondant
-   * @throws NotFoundException si le canal n'existe pas
+   * Vérifie que le membre possède un rôle administrateur ou propriétaire.
+   * @param role - Rôle du membre à vérifier
+   * @throws ForbiddenException si le rôle est insuffisant
    */
-  async getChannelById(id: number) {
-    const channel = await this.prisma.canal.findUnique({
-      where: { id },
-    });
-
-    if (!channel) {
-      throw new NotFoundException('Channel ' + id + ' not found');
+  private assertAdminRole(role: Role) {
+    if (role !== Role.PROPRIETAIRE && role !== Role.ADMINISTRATEUR) {
+      throw new ForbiddenException(
+        'Only owners and administrators can perform this action',
+      );
     }
-    return channel;
   }
 
   /**
@@ -47,11 +43,26 @@ export class CanalService {
     const server = await this.prisma.serveur.findUnique({
       where: { id: serverId },
     });
-
     if (!server) {
       throw new NotFoundException('Server ' + serverId + ' not found');
     }
     return server;
+  }
+
+  /**
+   * Récupère un canal par son ID.
+   * @param id - Identifiant du canal
+   * @returns Le canal correspondant
+   * @throws NotFoundException si le canal n'existe pas
+   */
+  async getChannelById(id: number) {
+    const channel = await this.prisma.canal.findUnique({
+      where: { id },
+    });
+    if (!channel) {
+      throw new NotFoundException('Channel ' + id + ' not found');
+    }
+    return channel;
   }
 
   /**
@@ -70,24 +81,10 @@ export class CanalService {
         },
       },
     });
-
     if (!member) {
       throw new ForbiddenException('You are not a member of this server');
     }
     return member;
-  }
-
-  /**
-   * Vérifie que le membre possède un rôle administrateur ou propriétaire.
-   * @param role - Rôle du membre à vérifier
-   * @throws ForbiddenException si le rôle est insuffisant
-   */
-  private assertAdminRole(role: Role) {
-    if (role !== Role.PROPRIETAIRE && role !== Role.ADMINISTRATEUR) {
-      throw new ForbiddenException(
-        'Only owners and administrators can perform this action',
-      );
-    }
   }
 
   /**
@@ -137,7 +134,6 @@ export class CanalService {
       createdAtIso: canal.creeLe.toISOString(),
       updatedAtIso: canal.modifieLe.toISOString(),
     });
-
     return canal;
   }
 
@@ -158,7 +154,6 @@ export class CanalService {
     const deletedChannel = await this.prisma.canal.delete({
       where: { id },
     });
-
     this.messageGateway.emitServerChannelDeleted(channel.serveurId, id);
     return deletedChannel;
   }
@@ -192,7 +187,6 @@ export class CanalService {
       createdAtIso: updatedCanal.creeLe.toISOString(),
       updatedAtIso: updatedCanal.modifieLe.toISOString(),
     });
-
     return updatedCanal;
   }
 }
