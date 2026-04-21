@@ -1,37 +1,19 @@
 import {
   Injectable,
-  NotFoundException,
-  ForbiddenException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
-import { MessageGateway } from 'src/realtime/message.gateway';
+import { MessageGateway } from '../realtime/message.gateway';
 import { AiBotService } from './ai-bot.service';
-import { Role, TypeNotification } from '../../generated/prisma/enums';
 import { NotificationService } from '../notification/notification.service';
+import { TypeNotification } from '../../generated/prisma/enums';
+import { aggregateReactions } from './message.utils';
 
-/**
- * Vérifie si un rôle donné autorise la suppression de messages de canal.
- * @param role - Rôle du membre sous forme de chaîne
- * @returns true si le rôle peut supprimer des messages
- */
-function canDeleteChannelMessage(role: string): boolean {
-  if (role === Role.ADMINISTRATEUR) {
-    return true;
-  }
-  if (role === Role.PROPRIETAIRE) {
-    return true;
-  }
-  return false;
-}
-
-/**
- * Service de gestion des messages.
- * Gère les messages privés et les messages de canal.
- */
+/** Service de gestion des messages privés : conversations, envoi, et intégration du bot BOBY. */
 @Injectable()
-export class MessageService {
+export class PrivateMessageService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly supabaseStorage: SupabaseStorageService,
@@ -43,8 +25,9 @@ export class MessageService {
   /**
    * Récupère la liste des conversations privées de l'utilisateur courant.
    * Déduplique les pairs et trie par date du dernier message décroissante.
+   * Le bot BOBY est toujours affiché en premier s'il n'a pas encore de conversation.
    * @param currentUserId - Identifiant de l'utilisateur courant
-   * @returns Liste des pairs avec la date du dernier message et leur avatar
+   * @returns Liste des pairs avec avatarUrl, date et contenu du dernier message
    */
   async listPrivateConversations(currentUserId: string) {
     const messages = await this.prisma.messagePrive.findMany({
@@ -99,17 +82,14 @@ export class MessageService {
           } => x.user != null,
         )
         .map(async ({ user, lastMessageAt, lastMessageContent }) => {
-          let avatarUrl: string | null = null;
-          if (user.avatarPath) {
-            try {
-              avatarUrl = await this.supabaseStorage.publicUrl(user.avatarPath);
-            } catch {
-              avatarUrl = null;
-            }
-          }
           const { avatarPath: _avatarPath, ...peer } = user;
           return {
-            peer: { ...peer, avatarUrl },
+            peer: {
+              ...peer,
+              avatarUrl: await this.supabaseStorage.resolveAvatarUrl(
+                user.avatarPath,
+              ),
+            },
             lastMessageAt,
             lastMessageContent,
           };
@@ -121,9 +101,8 @@ export class MessageService {
         (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),
     );
 
-    // afficher le bot en premier s'il n'est pas déjà dans la liste des conversations
     const botId = this.aiBotService.getBotUserId();
-    if (!sorted.some((item) => item.peer.id === botId)) {
+    if (botId && !sorted.some((item) => item.peer.id === botId)) {
       const botUser = await this.prisma.user.findUnique({
         where: { id: botId },
         select: { id: true, name: true, email: true, avatarPath: true },
@@ -143,9 +122,9 @@ export class MessageService {
 
   /**
    * Récupère l'historique des messages privés entre l'utilisateur courant et un pair.
-   * @param peerUserId - Identifiant de l'utilisateur pair
+   * @param peerUserId - Identifiant du pair
    * @param currentUserId - Identifiant de l'utilisateur courant
-   * @returns Infos du pair et liste des messages triés par date croissante
+   * @returns Infos du pair et liste des messages triés par date croissante avec réactions agrégées
    * @throws NotFoundException si le pair n'existe pas
    */
   async getPrivateConversation(peerUserId: string, currentUserId: string) {
@@ -153,11 +132,9 @@ export class MessageService {
       where: { id: peerUserId },
       select: { id: true, name: true, email: true },
     });
-    if (!peer) {
-      throw new NotFoundException('User not found');
-    }
+    if (!peer) throw new NotFoundException('User not found');
 
-    const messages = await this.prisma.messagePrive.findMany({
+    const rawMessages = await this.prisma.messagePrive.findMany({
       where: {
         OR: [
           { expediteurId: currentUserId, destinataireId: peerUserId },
@@ -171,11 +148,17 @@ export class MessageService {
       },
     });
 
+    const messages = rawMessages.map((m) => ({
+      ...m,
+      reactions: aggregateReactions(m.reactions),
+    }));
+
     return { peer, messages };
   }
 
   /**
-   * Envoie un message privé à un utilisateur et notifie les deux parties via WebSocket.
+   * Envoie un message privé et notifie les deux parties via WebSocket.
+   * Si le destinataire est le bot, déclenche une réponse IA en tâche de fond.
    * @param senderId - Identifiant de l'expéditeur
    * @param recipientId - Identifiant du destinataire
    * @param content - Contenu du message
@@ -197,9 +180,7 @@ export class MessageService {
     const recipient = await this.prisma.user.findUnique({
       where: { id: recipientId },
     });
-    if (!recipient) {
-      throw new NotFoundException('User not found');
-    }
+    if (!recipient) throw new NotFoundException('User not found');
 
     const message = await this.prisma.messagePrive.create({
       data: {
@@ -234,18 +215,18 @@ export class MessageService {
     );
 
     if (recipientId === this.aiBotService.getBotUserId()) {
-      void this.EnvoyerBotResponse(senderId);
+      void this.sendBotResponse(senderId);
     }
+
     return message;
   }
 
   /**
-   * Génère et envoie une réponse du bot IA à un utilisateur.
-   * Récupère l'historique complet de la conversation, l'envoie au service IA,
-   * persiste la réponse en base et la diffuse en temps réel via WebSocket.
-   * @param userId - L'id de l'utilisateur qui a écrit au bot
+   * Génère et envoie la réponse du bot BOBY en tâche de fond.
+   * Récupère l'historique complet, appelle l'IA, persiste la réponse et la diffuse via WebSocket.
+   * @param userId - Identifiant de l'utilisateur qui a écrit au bot
    */
-  private async EnvoyerBotResponse(userId: string): Promise<void> {
+  private async sendBotResponse(userId: string): Promise<void> {
     const botId = this.aiBotService.getBotUserId();
 
     const history = await this.prisma.messagePrive.findMany({
@@ -264,7 +245,9 @@ export class MessageService {
         m.expediteurId === botId ? ('assistant' as const) : ('user' as const),
       content: m.contenu,
     }));
+
     const aiResponse = await this.aiBotService.generateResponse(messages);
+
     const botMessage = await this.prisma.messagePrive.create({
       data: {
         expediteurId: botId,
@@ -286,147 +269,5 @@ export class MessageService {
       senderId: botId,
       recipientId: userId,
     });
-  }
-
-  /**
-   * Récupère l'historique des messages d'un canal, triés par date croissante.
-   * @param id - Identifiant du canal
-   * @returns Liste des messages avec les infos auteur
-   * @throws NotFoundException si le canal n'existe pas
-   */
-  async getHistoryMessageByChannel(id: number) {
-    const channel = await this.prisma.canal.findUnique({ where: { id } });
-    if (!channel) {
-      throw new NotFoundException('No channel found for ID' + id);
-    }
-
-    const messages = await this.prisma.message.findMany({
-      where: { canalId: id },
-      orderBy: { creeLe: 'asc' },
-      include: {
-        auteur: true,
-        reactions: { select: { emoji: true, userId: true } },
-      },
-    });
-
-    return Promise.all(
-      messages.map(async (m) => {
-        let avatarUrl: string | null = null;
-        if (m.auteur.avatarPath) {
-          try {
-            avatarUrl = await this.supabaseStorage.publicUrl(
-              m.auteur.avatarPath,
-            );
-          } catch {
-            avatarUrl = null;
-          }
-        }
-        const { avatarPath: _avatarPath, ...auteurRest } = m.auteur;
-        return { ...m, auteur: { ...auteurRest, avatarUrl } };
-      }),
-    );
-  }
-
-  /**
-   * Envoie un message dans un canal et notifie les abonnés via WebSocket.
-   * L'utilisateur doit être membre du serveur auquel appartient le canal.
-   * @param content - Contenu du message
-   * @param channelId - Identifiant du canal cible
-   * @param userId - Identifiant de l'auteur
-   * @returns Le message créé
-   * @throws NotFoundException si le canal n'existe pas
-   * @throws ForbiddenException si l'utilisateur n'est pas membre du serveur
-   */
-  async createMessage(content: string, channelId: number, userId: string) {
-    const channel = await this.prisma.canal.findUnique({
-      where: { id: channelId },
-      include: { serveur: true },
-    });
-    if (!channel) {
-      throw new NotFoundException('No channel found for ID' + channelId);
-    }
-
-    const serverMember = await this.prisma.membreServeur.findUnique({
-      where: { userId_serveurId: { userId, serveurId: channel.serveur.id } },
-    });
-    if (!serverMember) {
-      throw new ForbiddenException('You are not a member of this server');
-    }
-
-    const message = await this.prisma.message.create({
-      data: { contenu: content, canalId: channelId, auteurId: userId },
-      include: { auteur: { select: { name: true } } },
-    });
-
-    this.messageGateway.emitChannelMessageCreated(channelId, {
-      id: String(message.id),
-      content: message.contenu,
-      authorId: message.auteurId,
-      authorName: message.auteur.name ?? '',
-      createdAtIso: message.creeLe.toISOString(),
-    });
-
-    // Notify mentioned users via their personal room
-    const mentionRegex = /@\[([a-z0-9-]+)\]/gi;
-    const mentionedUserIds = new Set<string>();
-    let mentionMatch: RegExpExecArray | null;
-    while ((mentionMatch = mentionRegex.exec(content)) !== null) {
-      if (mentionMatch[1] !== userId) {
-        mentionedUserIds.add(mentionMatch[1]);
-      }
-    }
-    for (const mentionedUserId of mentionedUserIds) {
-      const mentionData = {
-        channelId,
-        serverId: channel.serveur.id,
-        authorName: message.auteur.name ?? '',
-        messagePreview: content.slice(0, 100),
-      };
-      this.messageGateway.emitMessageMention(mentionedUserId, mentionData);
-      void this.notificationService.create(
-        mentionedUserId,
-        TypeNotification.MENTION,
-        mentionData,
-      );
-    }
-
-    return message;
-  }
-
-  /**
-   * Supprime un message de canal.
-   * Seuls le propriétaire et les administrateurs du serveur peuvent supprimer des messages.
-   * @param id - Identifiant du message à supprimer
-   * @param userId - Identifiant de l'utilisateur qui effectue l'action
-   * @returns Le message supprimé
-   * @throws NotFoundException si le message n'existe pas ou n'est pas un message de canal
-   * @throws ForbiddenException si l'utilisateur n'est pas membre ou n'a pas les droits
-   */
-  async deleteMessage(id: number, userId: string) {
-    const message = await this.prisma.message.findUnique({
-      where: { id },
-      include: { auteur: true, canal: true },
-    });
-    if (!message) {
-      throw new NotFoundException('No message found for ID' + id);
-    }
-    if (!message.canal) {
-      throw new NotFoundException('Message is not a channel message');
-    }
-
-    const member = await this.prisma.membreServeur.findUnique({
-      where: {
-        userId_serveurId: { userId, serveurId: message.canal.serveurId },
-      },
-    });
-    if (!member) {
-      throw new ForbiddenException('You are not a member of this server');
-    }
-    if (!canDeleteChannelMessage(String(member.role))) {
-      throw new ForbiddenException(
-        'Only the server owner and administrators can delete messages',
-      );
-    }
-    return this.prisma.message.delete({ where: { id } });
   }
 }
