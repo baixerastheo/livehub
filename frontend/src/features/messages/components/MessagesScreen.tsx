@@ -88,9 +88,10 @@ export function MessagesScreen() {
     }));
   }, [conversationData?.messages, peerUser]);
 
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(
-    () => typeof window !== "undefined" && window.innerWidth > 980,
-  );
+  const [rightPanelOpen, setRightPanelOpen] = React.useState(false);
+  React.useEffect(() => {
+    setRightPanelOpen(window.innerWidth > 980);
+  }, []);
   const [composerValue, setComposerValue] = React.useState("");
 
   const send = async (transformed: string) => {

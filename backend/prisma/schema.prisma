@@ -36,15 +36,15 @@ model DemandeAmitie {
 }
 
 model Serveur {
-  id          Int             @id @default(autoincrement())
   nom         String
-  avatarPath  String?
   creeLe      DateTime        @default(now())
   modifieLe   DateTime        @updatedAt
-  membres     MembreServeur[]
+  id          Int             @id @default(autoincrement())
+  avatarPath  String?
+  bans        BanServeur[]
   canaux      Canal[]
   invitations Invitation[]
-  bans        BanServeur[]
+  membres     MembreServeur[]
 
   @@index([nom])
 }
@@ -81,18 +81,13 @@ model MembreServeur {
   @@index([serveurId, role])
 }
 
-enum TypeCanal {
-  TEXTE
-  VOCAL
-}
-
 model Canal {
-  id        Int       @id @default(autoincrement())
   nom       String
-  type      TypeCanal @default(TEXTE)
   creeLe    DateTime  @default(now())
   modifieLe DateTime  @updatedAt
+  id        Int       @id @default(autoincrement())
   serveurId Int
+  type      TypeCanal @default(TEXTE)
   serveur   Serveur   @relation(fields: [serveurId], references: [id], onDelete: Cascade)
   messages  Message[]
 
@@ -210,9 +205,9 @@ model User {
   messages              Message[]
   messagesRecus         MessagePrive[]         @relation("MessagesRecus")
   messagesEnvoyes       MessagePrive[]         @relation("MessagesEnvoyes")
+  notifications         Notification[]
   reactionsMessage      ReactionMessage[]
   reactionsMessagePrive ReactionMessagePrive[]
-  notifications         Notification[]
   accounts              Account[]
   sessions              Session[]
 
@@ -266,6 +261,11 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum TypeCanal {
+  TEXTE
+  VOCAL
 }
 
 enum StatutUtilisateur {
