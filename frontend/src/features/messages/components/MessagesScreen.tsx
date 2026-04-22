@@ -19,10 +19,12 @@ import { useUserQuery } from "@/src/features/users/users.hooks";
 import {
   usePrivateConversationQuery,
   useSendPrivateMessageMutation,
+  useEditPrivateMessageMutation,
 } from "@/src/features/messages/privateMessage.hooks";
 import {
   usePrivateMessagesRealtime,
   usePrivateReactionRealtime,
+  usePrivateMessageEditRealtime,
 } from "@/src/features/messages/privateMessageRealtime.hooks";
 import { useTogglePrivateReactionMutation } from "@/src/features/messages/reaction.hooks";
 import { useAuth } from "@/src/core/store/auth/useAuth";
@@ -68,10 +70,12 @@ export function MessagesScreen() {
   const { data: peerUser } = useUserQuery(peerUserId ?? undefined);
   const { data: conversationData } = usePrivateConversationQuery(peerUserId);
   const sendMessageMutation = useSendPrivateMessageMutation();
+  const editMessageMutation = useEditPrivateMessageMutation(peerUserId);
   const toggleReactionMutation = useTogglePrivateReactionMutation(peerUserId);
 
   usePrivateMessagesRealtime(peerUserId);
   usePrivateReactionRealtime(peerUserId);
+  usePrivateMessageEditRealtime(peerUserId);
 
   const displayName =
     peerUser?.name ?? peerUser?.email ?? decodedPeerName ?? "User";
@@ -84,6 +88,7 @@ export function MessagesScreen() {
       authorAvatarUrl: m.isMe ? null : peerUser?.avatarUrl,
       content: m.content,
       createdAtIso: m.createdAtIso,
+      editedAtIso: m.editedAtIso ?? null,
       isMe: m.isMe,
       reactions: m.reactions,
     }));
@@ -153,6 +158,9 @@ export function MessagesScreen() {
             currentUserId={user?.id ?? null}
             onToggleReaction={(messageId, emoji) =>
               toggleReactionMutation.mutate({ messageId, emoji })
+            }
+            onEditMessage={(messageId, content) =>
+              editMessageMutation.mutate({ messageId: Number(messageId), content })
             }
           />
           <MessageComposer

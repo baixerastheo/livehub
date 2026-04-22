@@ -1,204 +1,277 @@
 .bubbleRow {
-  display: flex;
-  gap: var(--space-2);
-  align-items: flex-start;
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
 }
 
 .bubbleRowMe {
-  justify-content: flex-end;
+    justify-content: flex-end;
 }
 
 .avatarCol {
-  flex-shrink: 0;
-  padding-top: 2px;
+    flex-shrink: 0;
+    padding-top: 2px;
 }
 
 .avatarPlaceholder {
-  width: 24px;
-  height: 24px;
+    width: 24px;
+    height: 24px;
 }
 
 .bubbleWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
 }
 
 .bubbleMeta {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
 }
 
 .bubbleMetaMe {
-  justify-content: flex-end;
+    justify-content: flex-end;
 }
 
 .author {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
 }
 
 .time {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
 }
 
-/* ─── Three-dots button ───────────────────────────────────────────────────── */
-
 .dotsButton {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 4px;
-  border: none;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  color: var(--text-muted);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.1s, background 0.1s;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+    border: none;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.1s,
+        background 0.1s;
 }
 
 .bubbleRow:hover .dotsButton,
 .dotsButton:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .dotsButton:hover {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
 }
 
-/* ─── Dropdown (rendered in portal) ──────────────────────────────────────── */
-
 .dropdown {
-  min-width: 180px;
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .dropdownItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  text-align: left;
-  transition: background 0.1s;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    text-align: left;
+    transition: background 0.1s;
 }
 
 .dropdownItem:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .dropdownItem:disabled {
-  opacity: 0.6;
-  cursor: default;
+    opacity: 0.6;
+    cursor: default;
 }
 
 .dropdownItemDanger {
-  color: #dc2626;
+    color: #dc2626;
 }
 
 .dropdownItemDanger:hover:not(:disabled) {
-  background: rgba(220, 38, 38, 0.08);
+    background: rgba(220, 38, 38, 0.08);
 }
 
-/* ─── Quick emoji row (on hover of "Add reaction") ───────────────────────── */
-
 .quickEmojiRow {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
 }
 
 .quickEmojiBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 18px;
-  transition: background 0.1s, transform 0.1s;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 18px;
+    transition:
+        background 0.1s,
+        transform 0.1s;
+    flex-shrink: 0;
 }
 
 .quickEmojiBtn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  transform: scale(1.2);
+    background: rgba(0, 0, 0, 0.08);
+    transform: scale(1.2);
 }
 
-/* ─── Bubble body ─────────────────────────────────────────────────────────── */
-
 .deletingLabel {
-  font-size: var(--font-size-xs);
+    font-size: var(--font-size-xs);
 }
 
 .bubble {
-  position: relative;
-  max-width: 72ch;
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-subtle);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+    position: relative;
+    max-width: 72ch;
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
 }
 
 .bubbleMe {
-  background: rgba(15, 23, 42, 0.03);
-  border-color: var(--border-strong);
+    background: rgba(15, 23, 42, 0.03);
+    border-color: var(--border-strong);
 }
 
 .text {
-  font-size: var(--font-size-sm);
-  line-height: 1.35;
-  white-space: pre-wrap;
+    font-size: var(--font-size-sm);
+    line-height: 1.35;
+    white-space: pre-wrap;
 }
 
 .gifImage {
-  max-width: 240px;
-  max-height: 200px;
-  border-radius: var(--radius-sm);
-  display: block;
+    max-width: 240px;
+    max-height: 200px;
+    border-radius: var(--radius-sm);
+    display: block;
 }
 
 .mention {
-  display: inline;
-  background: rgba(99, 102, 241, 0.12);
-  color: #6366f1;
-  border-radius: 4px;
-  padding: 0 4px;
-  font-weight: var(--font-weight-medium);
-  cursor: default;
+    display: inline;
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+    border-radius: 4px;
+    padding: 0 4px;
+    font-weight: var(--font-weight-medium);
+    cursor: default;
 }
 
 .mentionMe {
-  background: rgba(245, 158, 11, 0.15);
-  color: #d97706;
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.editedBadge {
+    display: inline;
+    margin-left: 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.editTextarea {
+    width: 100%;
+    min-width: 360px;
+    min-height: 72px;
+    resize: vertical;
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-primary);
+    outline: none;
+    box-sizing: border-box;
+}
+
+.editTextarea:focus {
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.editActions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.editHint {
+    font-size: 10px;
+    color: var(--text-muted);
+    flex: 1;
+}
+
+.editCancelBtn,
+.editSaveBtn {
+    font-size: var(--font-size-xs);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.editCancelBtn {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.editCancelBtn:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.editSaveBtn {
+    background: rgba(15, 23, 42, 0.85);
+    color: #fff;
+    border-color: transparent;
+}
+
+.editSaveBtn:hover {
+    background: rgba(15, 23, 42, 1);
 }

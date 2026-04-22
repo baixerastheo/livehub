@@ -152,6 +152,27 @@ export type VoiceChannelPresenceEvent = {
 };
 
 /**
+ * Payload for event channel-message:updated - sent when a channel message is edited.
+ */
+export type ChannelMessageUpdatedEvent = {
+  channelId: number;
+  id: string;
+  content: string;
+  editedAtIso: string;
+};
+
+/**
+ * Payload for event private-message:updated - sent when a private message is edited.
+ */
+export type PrivateMessageUpdatedEvent = {
+  id: string;
+  content: string;
+  editedAtIso: string;
+  senderId: string;
+  recipientId: string;
+};
+
+/**
  * Payload for event message:mention - sent to a user's personal room when they are mentioned.
  */
 export type MessageMentionEvent = {

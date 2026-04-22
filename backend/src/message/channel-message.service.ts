@@ -156,6 +156,37 @@ export class ChannelMessageService {
   }
 
   /**
+   * Modifie le contenu d'un message de canal.
+   * Seul l'auteur du message peut le modifier.
+   * @param id - Identifiant du message
+   * @param userId - Identifiant de l'utilisateur effectuant la modification
+   * @param content - Nouveau contenu du message
+   */
+  async editChannelMessage(id: number, userId: string, content: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id },
+    });
+    if (!message) throw new NotFoundException('No message found for ID ' + id);
+    if (message.auteurId !== userId)
+      throw new ForbiddenException('You can only edit your own messages');
+
+    const editedAt = new Date();
+    const updated = await this.prisma.message.update({
+      where: { id },
+      data: { contenu: content, editeLe: editedAt },
+    });
+
+    this.messageGateway.emitChannelMessageUpdated(message.canalId, {
+      channelId: message.canalId,
+      id: String(id),
+      content: updated.contenu,
+      editedAtIso: editedAt.toISOString(),
+    });
+
+    return updated;
+  }
+
+  /**
    * Extrait les mentions (@[userId]) du contenu, notifie chaque utilisateur mentionné
    * via WebSocket et notification persistante, et retourne l'ensemble des IDs mentionnés.
    * @param content - Contenu brut du message

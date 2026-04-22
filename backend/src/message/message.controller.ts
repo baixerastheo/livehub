@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Delete,
+  Patch,
   Body,
   Param,
   ParseIntPipe,
@@ -14,6 +15,7 @@ import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { PrivateMessageService } from './private-message.service';
 import { ChannelMessageService } from './channel-message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
 @Controller()
 @UseGuards(AuthGuard)
@@ -140,6 +142,42 @@ export class MessageController {
    * @throws NotFoundException si le message n'existe pas ou n'est pas un message de canal
    * @throws ForbiddenException si l'utilisateur n'est pas admin/propriétaire du serveur
    */
+  @Patch('messages/channel/:id')
+  async editChannelMessage(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMessageDto,
+    @Req() req: RequestWithAuth,
+  ) {
+    const updated = await this.channelMessageService.editChannelMessage(
+      id,
+      req.user.id,
+      dto.content,
+    );
+    return {
+      id: String(updated.id),
+      content: updated.contenu,
+      editedAtIso: updated.editeLe?.toISOString() ?? null,
+    };
+  }
+
+  @Patch('messages/private/:id')
+  async editPrivateMessage(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMessageDto,
+    @Req() req: RequestWithAuth,
+  ) {
+    const updated = await this.privateMessageService.editPrivateMessage(
+      id,
+      req.user.id,
+      dto.content,
+    );
+    return {
+      id: String(updated.id),
+      content: updated.contenu,
+      editedAtIso: updated.editeLe?.toISOString() ?? null,
+    };
+  }
+
   @Delete('messages/:id')
   async deleteMessage(
     @Param('id', ParseIntPipe) id: number,

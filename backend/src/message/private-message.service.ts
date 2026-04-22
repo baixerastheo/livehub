@@ -1,6 +1,7 @@
 import {
   Injectable,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
@@ -219,6 +220,42 @@ export class PrivateMessageService {
     }
 
     return message;
+  }
+
+  /**
+   * Modifie le contenu d'un message privé.
+   * Seul l'expéditeur peut modifier son message.
+   * @param id - Identifiant du message
+   * @param userId - Identifiant de l'utilisateur effectuant la modification
+   * @param content - Nouveau contenu
+   */
+  async editPrivateMessage(id: number, userId: string, content: string) {
+    const message = await this.prisma.messagePrive.findUnique({
+      where: { id },
+    });
+    if (!message) throw new NotFoundException('No message found for ID ' + id);
+    if (message.expediteurId !== userId)
+      throw new ForbiddenException('You can only edit your own messages');
+
+    const editedAt = new Date();
+    const updated = await this.prisma.messagePrive.update({
+      where: { id },
+      data: { contenu: content, editeLe: editedAt },
+    });
+
+    this.messageGateway.emitPrivateMessageUpdated(
+      message.expediteurId,
+      message.destinataireId,
+      {
+        id: String(id),
+        content: updated.contenu,
+        editedAtIso: editedAt.toISOString(),
+        senderId: message.expediteurId,
+        recipientId: message.destinataireId,
+      },
+    );
+
+    return updated;
   }
 
   /**

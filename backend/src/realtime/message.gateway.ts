@@ -12,6 +12,8 @@ import { getSessionFromHeaders } from '../lib/session-from-headers.js';
 import type {
   PrivateMessageCreatedEvent,
   ChannelMessageCreatedEvent,
+  ChannelMessageUpdatedEvent,
+  PrivateMessageUpdatedEvent,
   ServerChannelCreatedEvent,
   ServerChannelUpdatedEvent,
   ServerChannelDeletedEvent,
@@ -584,6 +586,26 @@ export class MessageGateway
    */
   emitUserAddedToServer(userId: string, payload: UserAddedToServerEvent) {
     this.server.to('user:' + userId).emit('user:added-to-server', payload);
+  }
+
+  emitChannelMessageUpdated(
+    channelId: number,
+    payload: ChannelMessageUpdatedEvent,
+  ) {
+    this.server
+      .to('channel:' + channelId)
+      .emit('channel-message:updated', payload);
+  }
+
+  emitPrivateMessageUpdated(
+    senderId: string,
+    recipientId: string,
+    payload: PrivateMessageUpdatedEvent,
+  ) {
+    this.server.to('user:' + senderId).emit('private-message:updated', payload);
+    this.server
+      .to('user:' + recipientId)
+      .emit('private-message:updated', payload);
   }
 
   emitMessageMention(userId: string, payload: MessageMentionEvent) {

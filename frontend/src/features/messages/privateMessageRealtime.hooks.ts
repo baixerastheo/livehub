@@ -117,6 +117,46 @@ export function usePrivateMessagesRealtime(peerUserId: string | null) {
   }, [peerUserId, currentUserId, queryClient]);
 }
 
+type PrivateMessageUpdatedEvent = {
+  id: string;
+  content: string;
+  editedAtIso: string;
+  senderId: string;
+  recipientId: string;
+};
+
+export function usePrivateMessageEditRealtime(peerUserId: string | null) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!peerUserId) return;
+
+    const socket = getSocket();
+
+    const handler = (event: PrivateMessageUpdatedEvent) => {
+      queryClient.setQueryData<GetPrivateConversationResponseDto>(
+        privateConversationKey(peerUserId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            messages: old.messages.map((m) =>
+              m.id === event.id
+                ? { ...m, content: event.content, editedAtIso: event.editedAtIso }
+                : m,
+            ),
+          };
+        },
+      );
+    };
+
+    socket.on("private-message:updated", handler);
+    return () => {
+      socket.off("private-message:updated", handler);
+    };
+  }, [peerUserId, queryClient]);
+}
+
 export function usePrivateConversationListRealtime() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
