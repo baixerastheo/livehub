@@ -3,206 +3,52 @@
   min-width: 76px;
   height: 100%;
   min-height: 0;
-  border-right: 1px solid var(--border-subtle);
+  border-right: none;
   background: var(--surface);
-  padding: 10px 8px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  padding: 12px 0 8px;
 }
 
 .railBackdrop {
   display: none;
 }
 
-.railItem {
+/* ── Nav section (Bell, Messages) ── */
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.navItem {
   position: relative;
+  width: 100%;
   border: none;
   background: transparent;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  padding: 10px 4px;
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.railItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary);
-}
-
-.railItem:hover .railIcon,
-.railItemActive .railIcon {
-  background: rgba(15, 23, 42, 0.12);
-  border-radius: 8px;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
-}
-
-.railItemActive {
-  background: transparent;
-  color: var(--text-primary);
-}
-
-.railItemActive::before {
-  content: "";
-  position: absolute;
-  left: -8px;
-  top: 10px;
-  bottom: 10px;
-  width: 3px;
-  border-radius: var(--radius-full);
-  background: var(--text-primary);
-}
-
-.railIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  line-height: 0;
-}
-
-.railIconSvg {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-.railLabel {
-  font-size: var(--font-size-xs);
-  line-height: 1.1;
-  font-weight: 600;
-  text-align: center;
-}
-
-/* Sur desktop : titres cachés, remplacés par tooltip au survol */
-@media (min-width: 769px) {
-  .railLabel {
-    display: none !important;
-  }
-}
-
-.railTooltip {
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 10px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  background: #1f2937;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-  z-index: 100;
-}
-
-.railItem:hover .railTooltip,
-.serverAvatarButton:hover .railTooltip {
-  opacity: 1;
-}
-
-.railLabelRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.serverSection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 8px;
-  transition: background-color 0.15s ease;
-}
-
-.serverSectionOpen {
-  background: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 4px 0;
-}
-
-/* Pas de contour gris interne sur le bouton Server quand le bloc est ouvert */
-.serverSectionOpen .serverSectionTrigger.railItemActive {
-  background: transparent;
-}
-
-.serverSectionOpen .serverSectionTrigger.railItemActive::before {
-  display: none;
-}
-
-/* Désactive l'effet hover sur le trigger Server (garde les autres items inchangés) */
-.serverSectionTrigger.railItem:hover {
-  background: transparent;
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
+  transition: color 0.15s ease;
 }
 
-.serverMenu {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition:
-    max-height 0.18s ease-out,
-    opacity 0.18s ease-out,
-    transform 0.18s ease-out;
+.navItem:hover {
+  color: var(--text-primary);
 }
 
-.serverMenuOpen {
-  max-height: 280px; /* assez pour plusieurs serveurs + bouton */
-  opacity: 1;
-  transform: translateY(0);
-  overflow: visible; /* permet au tooltip (nom du serveur) de dépasser */
+.navItemActive {
+  color: var(--text-primary);
 }
 
-.serverList {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
-}
-
-.serverAvatarButton {
-  position: relative;
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  border-radius: 14px;
-  transition: transform 0.12s ease;
-}
-
-.serverAvatarButton:hover {
-  transform: scale(1.08);
-}
-
-.serverAvatarButton:hover .serverAvatar {
-  border-radius: 10px;
-}
-
-.serverAvatarActive .serverAvatar {
-  border-radius: 10px;
-}
-
-.serverAvatarActive::before {
+.navItemActive::before {
   content: "";
   position: absolute;
   left: -10px;
@@ -210,26 +56,120 @@
   transform: translateY(-50%);
   width: 3px;
   height: 20px;
-  border-radius: var(--radius-full);
+  border-radius: 0 3px 3px 0;
   background: var(--text-primary);
 }
 
-.serverAvatar {
+.navIcon {
   width: 40px;
   height: 40px;
   border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  transition: background-color 0.15s ease, border-radius 0.15s ease;
+}
+
+.navItem:hover .navIcon {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+}
+
+.navItemActive .navIcon {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
+}
+
+.navIconSvg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* ── Separator ── */
+
+.separator {
+  width: 32px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 10px auto;
+  flex-shrink: 0;
+}
+
+/* ── Server list ── */
+
+.serverList {
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.serverListScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  scrollbar-width: none;
+}
+
+.serverListScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.serverItem {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+
+.serverItem:hover {
+  transform: scale(1.06);
+}
+
+.serverItemActive::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  border-radius: 0 3px 3px 0;
+  background: var(--text-primary);
+}
+
+.serverAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  transition: border-radius 0.15s ease, box-shadow 0.15s ease;
-  user-select: none;
-  flex-shrink: 0;
   overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: border-radius 0.15s ease;
+  user-select: none;
+}
+
+.serverItem:hover .serverAvatar,
+.serverItemActive .serverAvatar {
+  border-radius: 10px;
 }
 
 .serverAvatarImg {
@@ -237,24 +177,96 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  border: none;
-  outline: none;
 }
 
-.serverArrow {
-  opacity: 0.7;
-  transition: transform 0.15s ease;
+/* ── Bottom — add server ── */
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 10px 0;
+  flex-shrink: 0;
 }
 
-.serverArrowIcon {
-  width: 12px;
-  height: 12px;
+.addServerButton {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border: 2px dashed var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    border-radius 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.addServerButton:hover {
+  border-color: rgba(15, 23, 42, 0.3);
+  color: var(--text-primary);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.addServerIcon {
+  width: 18px;
+  height: 18px;
   display: block;
 }
 
-.serverArrowOpen {
-  transform: rotate(180deg);
+/* ── Tooltip serveurs (position: fixed — échappe au overflow du scroll container) ── */
+
+.serverTooltipFixed {
+  position: fixed;
+  left: 88px; /* rail 76px + gap 12px */
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 200;
 }
+
+/* ── Tooltips nav items ── */
+
+.tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+}
+
+.navItem:hover .tooltip,
+.serverItem:hover .tooltip,
+.addServerButton:hover .tooltip {
+  opacity: 1;
+}
+
+/* ── Mobile ── */
 
 @media (max-width: 768px) {
   .rail {
@@ -262,9 +274,6 @@
     top: var(--app-navbar-height);
     left: 0;
     height: calc(100vh - var(--app-navbar-height));
-    width: 76px;
-    min-width: 76px;
-    padding: 10px 6px;
     z-index: 60;
     transform: translateX(-100%);
     opacity: 0;
@@ -292,18 +301,4 @@
     z-index: 55;
     display: block;
   }
-
-  .railItem {
-    padding: 12px 6px;
-  }
-
-  .railIcon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .railLabel {
-    display: none;
-  }
 }
-

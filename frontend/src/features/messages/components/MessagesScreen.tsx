@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useAppStore } from "@/src/core/store/appStore";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -88,9 +89,8 @@ export function MessagesScreen() {
     }));
   }, [conversationData?.messages, peerUser]);
 
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(
-    () => typeof window !== "undefined" && window.innerWidth > 980,
-  );
+  const rightPanelOpen = useAppStore((s) => s.isDetailPanelOpen);
+  const toggleDetailPanel = useAppStore((s) => s.toggleDetailPanel);
   const [composerValue, setComposerValue] = React.useState("");
 
   const send = async (transformed: string) => {
@@ -142,7 +142,7 @@ export function MessagesScreen() {
     <main className={styles.root}>
       <ConversationHeader
         header={conversationHeader}
-        onToggleDetails={() => setRightPanelOpen((v) => !v)}
+        onToggleDetails={toggleDetailPanel}
       />
 
       <div className={styles.content}>

@@ -6,6 +6,7 @@ export type SidebarSection = "activity" | "conversation" | "teams";
 type AppState = {
   isSidebarOpen: boolean;
   isSidebarRailOpen: boolean;
+  isDetailPanelOpen: boolean;
   sidebarSection: SidebarSection;
   selectedServerId: number | null;
   accountModal: {
@@ -21,6 +22,9 @@ type AppState = {
   toggleSidebarRail: () => void;
   openSidebarRail: () => void;
   closeSidebarRail: () => void;
+  openDetailPanel: () => void;
+  closeDetailPanel: () => void;
+  toggleDetailPanel: () => void;
   setSidebarSection: (section: SidebarSection) => void;
   setSelectedServerId: (serverId: number | null) => void;
   toggleMobileSidebars: () => void;
@@ -37,6 +41,7 @@ type AppState = {
 export const useAppStore = create<AppState>((set) => ({
   isSidebarOpen: false,
   isSidebarRailOpen: false,
+  isDetailPanelOpen: typeof window !== "undefined" && window.innerWidth > 980,
   sidebarSection: "conversation",
   selectedServerId: null,
   accountModal: {
@@ -49,15 +54,22 @@ export const useAppStore = create<AppState>((set) => ({
   toggleSidebar: () =>
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
+      isDetailPanelOpen: state.isSidebarOpen ? state.isDetailPanelOpen : false,
     })),
   openSidebar: () =>
-    set({
-      isSidebarOpen: true,
-    }),
+    set({ isSidebarOpen: true, isDetailPanelOpen: false }),
   closeSidebar: () =>
-    set({
-      isSidebarOpen: false,
-    }),
+    set({ isSidebarOpen: false }),
+  openDetailPanel: () =>
+    set({ isDetailPanelOpen: true, isSidebarOpen: false, isSidebarRailOpen: false }),
+  closeDetailPanel: () =>
+    set({ isDetailPanelOpen: false }),
+  toggleDetailPanel: () =>
+    set((state) => ({
+      isDetailPanelOpen: !state.isDetailPanelOpen,
+      isSidebarOpen: state.isDetailPanelOpen ? state.isSidebarOpen : false,
+      isSidebarRailOpen: state.isDetailPanelOpen ? state.isSidebarRailOpen : false,
+    })),
   toggleSidebarRail: () =>
     set((state) => ({
       isSidebarRailOpen: !state.isSidebarRailOpen,
@@ -81,10 +93,10 @@ export const useAppStore = create<AppState>((set) => ({
   toggleMobileSidebars: () =>
     set((state) => {
       const shouldOpen = !state.isSidebarRailOpen || !state.isSidebarOpen;
-
       return {
         isSidebarRailOpen: shouldOpen,
         isSidebarOpen: shouldOpen,
+        isDetailPanelOpen: shouldOpen ? false : state.isDetailPanelOpen,
       };
     }),
   closeMobileSidebars: () =>
@@ -136,6 +148,7 @@ export const useAppStore = create<AppState>((set) => ({
       selectedServerId: null,
       isSidebarOpen: false,
       isSidebarRailOpen: false,
+      isDetailPanelOpen: false,
       sidebarSection: "conversation",
       profileMenu: { isOpen: false },
       accountModal: { isOpen: false, section: "profile" },

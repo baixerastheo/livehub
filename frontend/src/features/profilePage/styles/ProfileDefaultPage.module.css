@@ -1,7 +1,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.55);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,55 +10,79 @@
 }
 
 .modal {
-  width: min(980px, calc(100vw - 32px));
-  height: min(720px, calc(100vh - 32px));
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 16px 70px rgba(15, 23, 42, 0.28),
-    0 0 0 1px rgba(15, 23, 42, 0.06);
+  width: min(900px, calc(100vw - 32px));
+  height: min(660px, calc(100vh - 32px));
+  display: flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-subtle);
+}
+
+/* ── Right content area ── */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px;
-  background: #ffffff;
-}
-
-.title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
+  background: var(--surface);
 }
 
 .closeButton {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 1.5rem;
-  line-height: 1;
-  padding: 6px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  z-index: 1;
 }
 
 .closeButton:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--border-subtle);
+  color: var(--text-primary);
 }
 
 .body {
   flex: 1;
-  overflow: auto;
-  padding: 22px;
-  background: #ffffff;
+  overflow-y: auto;
+  padding: var(--space-6) 36px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
-@media (max-width: 820px) {
+.body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.body::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 640px) {
   .modal {
-    height: min(760px, calc(100vh - 32px));
+    flex-direction: column;
+    height: min(800px, calc(100vh - 32px));
+  }
+
+  .body {
+    padding: var(--space-4);
   }
 }
-

@@ -61,9 +61,8 @@ export function ChannelMessagesScreen() {
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
   const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
   const toggleReactionMutation = useToggleChannelReactionMutation(channelId);
-  const [rightPanelOpen, setRightPanelOpen] = React.useState(
-    () => typeof window !== "undefined" && window.innerWidth > 980,
-  );
+  const rightPanelOpen = useAppStore((s) => s.isDetailPanelOpen);
+  const toggleDetailPanel = useAppStore((s) => s.toggleDetailPanel);
   const [composerValue, setComposerValue] = React.useState("");
 
   useChannelMessagesRealtime(channelId);
@@ -174,7 +173,7 @@ export function ChannelMessagesScreen() {
     <main className={styles.root}>
       <ConversationHeader
         header={conversationHeader}
-        onToggleDetails={() => setRightPanelOpen((v) => !v)}
+        onToggleDetails={toggleDetailPanel}
       />
 
       <div className={styles.content}>
