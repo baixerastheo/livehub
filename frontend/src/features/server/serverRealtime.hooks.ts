@@ -244,24 +244,3 @@ export function useServerRealtime(serverId: number | null) {
   }, [serverId, currentUserId, queryClient, setSelectedServerId, setVoicePresence, t]);
 }
 
-/**
- * Listens globally for the "you were added to a server" event on the user's
- * personal room and invalidates the server list so the sidebar updates without
- * a page reload.
- */
-export function useUserServerAddedRealtime() {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const socket = getSocket();
-
-    const onAddedToServer = () => {
-      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
-    };
-
-    socket.on("user:added-to-server", onAddedToServer);
-    return () => {
-      socket.off("user:added-to-server", onAddedToServer);
-    };
-  }, [queryClient]);
-}

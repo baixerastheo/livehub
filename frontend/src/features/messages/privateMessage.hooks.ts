@@ -28,6 +28,31 @@ export function usePrivateConversationQuery(peerUserId: string | null) {
   });
 }
 
+export function useEditPrivateMessageMutation(peerUserId: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId, content }: { messageId: number; content: string }) =>
+      privateMessageService.editPrivateMessage(messageId, content),
+    onSuccess: (data, { messageId }) => {
+      if (!peerUserId) return;
+      queryClient.setQueryData<GetPrivateConversationResponseDto>(
+        privateConversationKey(peerUserId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            messages: old.messages.map((m) =>
+              m.id === String(messageId)
+                ? { ...m, content: data.content, editedAtIso: data.editedAtIso }
+                : m,
+            ),
+          };
+        },
+      );
+    },
+  });
+}
+
 export function useSendPrivateMessageMutation() {
   const queryClient = useQueryClient();
   return useMutation({

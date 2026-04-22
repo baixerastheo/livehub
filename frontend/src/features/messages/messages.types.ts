@@ -17,6 +17,7 @@ export type PrivateMessageDto = {
   authorId: string;
   authorName: string;
   createdAtIso: string;
+  editedAtIso?: string | null;
   isMe: boolean;
   read: boolean;
   reactions?: ReactionDto[];

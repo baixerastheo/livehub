@@ -3,7 +3,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { FiMoreHorizontal, FiTrash2, FiSmile } from "react-icons/fi";
+import { FiMoreHorizontal, FiTrash2, FiSmile, FiEdit2 } from "react-icons/fi";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import styles from "../styles/MessageBubble.module.css";
@@ -56,6 +56,7 @@ type Props = {
   onDelete?: () => void;
   isDeleting?: boolean;
   onToggleReaction?: (messageId: number, emoji: string) => void;
+  onEdit?: (messageId: string, content: string) => void;
   membersById?: Record<string, string>;
 };
 
@@ -91,6 +92,7 @@ export function MessageBubble({
   onDelete,
   isDeleting = false,
   onToggleReaction,
+  onEdit,
   membersById = {},
 }: Props) {
   const t = useTranslations("messages");
@@ -100,11 +102,53 @@ export function MessageBubble({
   const [menuState, setMenuState] = React.useState<MenuState>("closed");
   const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
   const [quickHover, setQuickHover] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editValue, setEditValue] = React.useState("");
+  const editRef = React.useRef<HTMLTextAreaElement>(null);
 
   const dotsRef = React.useRef<HTMLButtonElement>(null);
   const portalRef = React.useRef<HTMLDivElement>(null);
 
-  const hasActions = onToggleReaction || (canDelete && onDelete);
+  const canEdit = isMe && !!onEdit;
+  const hasActions = onToggleReaction || (canDelete && onDelete) || canEdit;
+
+  const startEdit = () => {
+    setEditValue(message.content);
+    setIsEditing(true);
+    setMenuState("closed");
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditValue("");
+  };
+
+  const submitEdit = () => {
+    const trimmed = editValue.trim();
+    if (!trimmed || trimmed === message.content) {
+      cancelEdit();
+      return;
+    }
+    onEdit?.(message.id, trimmed);
+    setIsEditing(false);
+  };
+
+  React.useEffect(() => {
+    if (isEditing && editRef.current) {
+      editRef.current.focus();
+      editRef.current.selectionStart = editRef.current.value.length;
+    }
+  }, [isEditing]);
+
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitEdit();
+    }
+    if (e.key === "Escape") {
+      cancelEdit();
+    }
+  };
 
   const openMenu = () => {
     if (menuState !== "closed") {
@@ -149,8 +193,9 @@ export function MessageBubble({
     };
   }, [menuState]);
 
+  const dropdownItemCount = (onToggleReaction ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete && onDelete ? 1 : 0);
   const dropdownStyle = anchorRect
-    ? getFixedStyle(anchorRect, 180, 120)
+    ? getFixedStyle(anchorRect, 180, dropdownItemCount * 40 + 12)
     : undefined;
 
   const pickerStyle = anchorRect
@@ -200,17 +245,42 @@ export function MessageBubble({
               <FiMoreHorizontal size={15} aria-hidden />
             </button>
           )}
-          <div className={styles.text}>
-            {message.content.startsWith("[gif]") ? (
-              <img
-                src={message.content.slice(5)}
-                alt="GIF"
-                className={styles.gifImage}
+          {isEditing ? (
+            <div className={styles.editForm}>
+              <textarea
+                ref={editRef}
+                className={styles.editTextarea}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleEditKeyDown}
+                rows={Math.max(1, editValue.split("\n").length)}
               />
-            ) : (
-              renderContent(message.content, membersById, currentUserId, styles.mention, styles.mentionMe)
-            )}
-          </div>
+              <div className={styles.editActions}>
+                <span className={styles.editHint}>{t("editHint")}</span>
+                <button type="button" className={styles.editCancelBtn} onClick={cancelEdit}>
+                  {t("cancel")}
+                </button>
+                <button type="button" className={styles.editSaveBtn} onClick={submitEdit}>
+                  {t("save")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.text}>
+              {message.content.startsWith("[gif]") ? (
+                <img
+                  src={message.content.slice(5)}
+                  alt="GIF"
+                  className={styles.gifImage}
+                />
+              ) : (
+                renderContent(message.content, membersById, currentUserId, styles.mention, styles.mentionMe)
+              )}
+              {message.editedAtIso && (
+                <span className={styles.editedBadge}>{t("edited")}</span>
+              )}
+            </div>
+          )}
 
           {reactions.length > 0 && (
             <ReactionBar
@@ -277,6 +347,16 @@ export function MessageBubble({
                   </>
                 )}
               </div>
+            )}
+            {canEdit && (
+              <button
+                type="button"
+                className={styles.dropdownItem}
+                onClick={startEdit}
+              >
+                <FiEdit2 size={14} aria-hidden />
+                {t("editMessage")}
+              </button>
             )}
             {canDelete && onDelete && (
               <button

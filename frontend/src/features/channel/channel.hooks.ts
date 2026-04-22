@@ -8,7 +8,9 @@ import {
   sendChannelMessage,
   deleteChannel,
   deleteChannelMessage,
+  editChannelMessage,
 } from "./channel.service";
+import type { ChannelMessageBackendDto } from "./channel.service";
 import type { ChannelDto } from "./channel.types";
 
 export const channelsKeys = {
@@ -65,6 +67,25 @@ export function useDeleteChannelMessageMutation(channelId: number | null) {
           queryKey: channelsKeys.messages(channelId),
         });
       }
+    },
+  });
+}
+
+export function useEditChannelMessageMutation(channelId: number | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId, content }: { messageId: number; content: string }) =>
+      editChannelMessage(messageId, content),
+    onSuccess: (data, { messageId }) => {
+      if (channelId == null) return;
+      queryClient.setQueryData<ChannelMessageBackendDto[]>(
+        channelsKeys.messages(channelId),
+        (old) => old?.map((m) =>
+          m.id === messageId
+            ? { ...m, contenu: data.content, editeLe: data.editedAtIso }
+            : m,
+        ) ?? old,
+      );
     },
   });
 }

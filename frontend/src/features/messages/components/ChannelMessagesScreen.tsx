@@ -17,10 +17,12 @@ import {
   useChannelMessagesQuery,
   useSendChannelMessageMutation,
   useDeleteChannelMessageMutation,
+  useEditChannelMessageMutation,
 } from "@/src/features/channel/channel.hooks";
 import {
   useChannelMessagesRealtime,
   useChannelReactionRealtime,
+  useChannelMessageEditRealtime,
   useChannelTyping,
   useChannelTypingEmitter,
 } from "@/src/features/channel/channelRealtime.hooks";
@@ -60,6 +62,7 @@ export function ChannelMessagesScreen() {
   const { data: serverMembers } = useServerMembersQuery(channel?.serverId ?? null);
   const sendMessageMutation = useSendChannelMessageMutation(channelId ?? 0);
   const deleteMessageMutation = useDeleteChannelMessageMutation(channelId);
+  const editMessageMutation = useEditChannelMessageMutation(channelId);
   const toggleReactionMutation = useToggleChannelReactionMutation(channelId);
   const rightPanelOpen = useAppStore((s) => s.isDetailPanelOpen);
   const toggleDetailPanel = useAppStore((s) => s.toggleDetailPanel);
@@ -67,6 +70,7 @@ export function ChannelMessagesScreen() {
 
   useChannelMessagesRealtime(channelId);
   useChannelReactionRealtime(channelId);
+  useChannelMessageEditRealtime(channelId);
 
   const typingUsers = useChannelTyping(channelId, user?.id ?? null);
   useChannelTypingEmitter(
@@ -115,6 +119,7 @@ export function ChannelMessagesScreen() {
       authorAvatarUrl: m.auteur?.avatarUrl,
       content: m.contenu,
       createdAtIso: m.creeLe,
+      editedAtIso: m.editeLe ?? null,
       isMe: m.auteurId === user.id,
       reactions: m.reactions,
     }));
@@ -200,6 +205,9 @@ export function ChannelMessagesScreen() {
                 }
                 onToggleReaction={(messageId, emoji) =>
                   toggleReactionMutation.mutate({ messageId, emoji })
+                }
+                onEditMessage={(messageId, content) =>
+                  editMessageMutation.mutate({ messageId: Number(messageId), content })
                 }
                 membersById={membersById}
               />

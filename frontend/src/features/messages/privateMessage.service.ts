@@ -34,8 +34,19 @@ export async function sendPrivateMessage(
   );
 }
 
+export async function editPrivateMessage(
+  messageId: number,
+  content: string,
+): Promise<{ id: string; content: string; editedAtIso: string | null }> {
+  return fetchJson(`/messages/private/${messageId}`, {
+    method: "PATCH",
+    body: { content },
+  });
+}
+
 export const privateMessageService = {
   listPrivateConversations,
   getPrivateConversation,
   sendPrivateMessage,
+  editPrivateMessage,
 };

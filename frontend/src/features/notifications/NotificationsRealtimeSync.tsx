@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/src/core/store/auth/useAuth";
+import { useAppStore } from "@/src/core/store/appStore";
 import { getSocket } from "@/src/lib/realtime/socketClient";
 import { notificationsKey } from "./notification.hooks";
+import { serversKeys } from "@/src/features/server/server.hooks";
 import type { NotificationDto, MentionData, PrivateMessageData, KickedData, BannedData } from "./notification.types";
 
 type MessageMentionEvent = MentionData;
@@ -19,8 +22,10 @@ function makeTempNotif(partial: Omit<NotificationDto, "id" | "userId" | "lu" | "
 
 export function NotificationsRealtimeSync() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { user } = useAuth();
   const currentUserId = user?.id ?? null;
+  const setSelectedServerId = useAppStore((s) => s.setSelectedServerId);
 
   useEffect(() => {
     if (!currentUserId) return;
@@ -54,6 +59,9 @@ export function NotificationsRealtimeSync() {
         type: "KICKED",
         data: { serverId: event.serverId } satisfies KickedData,
       }));
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      setSelectedServerId(null);
+      router.push("/messages");
     };
 
     const onBanned = (event: ServerMemberBannedEvent) => {
@@ -62,20 +70,29 @@ export function NotificationsRealtimeSync() {
         type: "BANNED",
         data: { serverId: event.serverId, raison: event.raison, expireLe: event.expireLe } satisfies BannedData,
       }));
+      queryClient.invalidateQueries({ queryKey: serversKeys.user() });
+      setSelectedServerId(null);
+      router.push("/messages");
+    };
+
+    const onAddedToServer = () => {
+      void queryClient.invalidateQueries({ queryKey: serversKeys.user(), refetchType: "all" });
     };
 
     socket.on("message:mention", onMention);
     socket.on("private-message:created", onPrivateMessage);
     socket.on("server-member:kicked", onKicked);
     socket.on("server-member:banned", onBanned);
+    socket.on("user:added-to-server", onAddedToServer);
 
     return () => {
       socket.off("message:mention", onMention);
       socket.off("private-message:created", onPrivateMessage);
       socket.off("server-member:kicked", onKicked);
       socket.off("server-member:banned", onBanned);
+      socket.off("user:added-to-server", onAddedToServer);
     };
-  }, [currentUserId, queryClient]);
+  }, [currentUserId, queryClient, router, setSelectedServerId]);
 
   return null;
 }

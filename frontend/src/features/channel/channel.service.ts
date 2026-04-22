@@ -39,6 +39,7 @@ export type ChannelMessageBackendDto = {
   id: number;
   contenu: string;
   creeLe: string;
+  editeLe?: string | null;
   auteurId: string;
   auteur: { id: string; name: string | null; email: string; avatarUrl?: string | null };
   reactions?: { emoji: string; count: number; userIds: string[] }[];
@@ -66,5 +67,12 @@ export async function sendChannelMessage(
 export async function deleteChannelMessage(messageId: number): Promise<void> {
   await fetchJson<void>(`/messages/${messageId}`, {
     method: "DELETE",
+  });
+}
+
+export async function editChannelMessage(messageId: number, content: string): Promise<{ id: string; content: string; editedAtIso: string | null }> {
+  return fetchJson(`/messages/channel/${messageId}`, {
+    method: "PATCH",
+    body: { content },
   });
 }

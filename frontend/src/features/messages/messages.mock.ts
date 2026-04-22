@@ -6,6 +6,7 @@ export type ChatMessage = {
   authorAvatarUrl?: string | null;
   content: string;
   createdAtIso: string;
+  editedAtIso?: string | null;
   isMe?: boolean;
   reactions?: ReactionDto[];
 };

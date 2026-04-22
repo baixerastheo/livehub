@@ -97,6 +97,30 @@ export function useChannelReactionRealtime(channelId: number | null) {
   }, [channelId, queryClient]);
 }
 
+export function useChannelMessageEditRealtime(channelId: number | null) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (channelId == null) return;
+    const socket = getSocket();
+
+    const handler = (event: { channelId: number; id: string; content: string; editedAtIso: string }) => {
+      if (event.channelId !== channelId) return;
+      queryClient.setQueryData<ChannelMessageBackendDto[]>(
+        channelsKeys.messages(channelId),
+        (old) => old?.map((m) =>
+          m.id === Number(event.id)
+            ? { ...m, contenu: event.content, editeLe: event.editedAtIso }
+            : m,
+        ) ?? old,
+      );
+    };
+
+    socket.on("channel-message:updated", handler);
+    return () => { socket.off("channel-message:updated", handler); };
+  }, [channelId, queryClient]);
+}
+
 const TYPING_EXPIRY_MS = 5000;
 
 export type TypingUser = { userId: string; userName: string };
