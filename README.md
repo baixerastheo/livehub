@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/brand/Livehub_logo.png" alt="LiveHub Logo" width="360"/>
+<img src="frontend/public/brand/livehub_icon.svg" alt="LiveHub Logo" width="360"/>
 
 <br/>
 
@@ -601,6 +601,6 @@ git push origin feature/my-feature
  ╚═══════════════════════════════════════╝
 ```
 
-<img src="frontend/public/brand/Livehub_logo.png" alt="LiveHub" width="120"/>
+<img src="frontend/public/brand/livehub_icon.svg" alt="LiveHub" width="120"/>
 
 </div>
