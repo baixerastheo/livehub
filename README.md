@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/brand/livehub_icon.svg" alt="LiveHub Logo" width="360"/>
+<img src="frontend/public/brand/livehub_icon.svg" alt="LiveHub Logo" width="120"/>
 
 <br/>
 
