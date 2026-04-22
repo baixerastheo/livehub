@@ -7,6 +7,8 @@ import { PrismaService } from '../prisma.service';
 import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 import { MessageGateway } from '../realtime/message.gateway';
 import { NotificationService } from '../notification/notification.service';
+import { AiBotService } from './ai-bot.service';
+import { ServerUtilsService } from '../server/server-utils.service';
 import { Role, TypeNotification } from '../../generated/prisma/enums';
 import { aggregateReactions } from './message.utils';
 
@@ -15,7 +17,7 @@ function canDelete(role: string): boolean {
   return role === Role.ADMINISTRATEUR || role === Role.PROPRIETAIRE;
 }
 
-/** Service de gestion des messages de canal : historique, envoi, suppression et mentions. */
+/** Service de gestion des messages de canal : historique, envoi, suppression, mentions et bot. */
 @Injectable()
 export class ChannelMessageService {
   constructor(
@@ -23,6 +25,8 @@ export class ChannelMessageService {
     private readonly supabaseStorage: SupabaseStorageService,
     private readonly messageGateway: MessageGateway,
     private readonly notificationService: NotificationService,
+    private readonly aiBotService: AiBotService,
+    private readonly serverUtils: ServerUtilsService,
   ) {}
 
   /**
@@ -63,7 +67,7 @@ export class ChannelMessageService {
 
   /**
    * Envoie un message dans un canal et notifie les abonnés via WebSocket.
-   * Gère aussi les mentions (@[userId]).
+   * Traite les mentions (@[userId]) et déclenche le bot si BOBY est mentionné.
    * @param content - Contenu du message
    * @param channelId - Identifiant du canal cible
    * @param userId - Identifiant de l'auteur
@@ -90,21 +94,29 @@ export class ChannelMessageService {
       include: { auteur: { select: { name: true } } },
     });
 
+    const authorName = message.auteur.name ?? '';
+
     this.messageGateway.emitChannelMessageCreated(channelId, {
       id: String(message.id),
       content: message.contenu,
-      authorId: message.auteurId,
-      authorName: message.auteur.name ?? '',
+      authorId: userId,
+      authorName,
       createdAtIso: message.creeLe.toISOString(),
     });
 
-    this.processMentions(
+    const mentionedUserIds = this.processMentions(
       content,
       userId,
       channelId,
       channel.serveur.id,
-      message.auteur.name ?? '',
+      authorName,
     );
+
+    // Si BOBY est mentionné et est membre du serveur, il répond dans le canal
+    const botId = this.aiBotService.getBotUserId();
+    if (botId && mentionedUserIds.has(botId)) {
+      void this.sendBotChannelResponse(channelId, channel.serveur.id, userId);
+    }
 
     return message;
   }
@@ -144,13 +156,14 @@ export class ChannelMessageService {
   }
 
   /**
-   * Extrait les mentions (@[userId]) du contenu et notifie chaque utilisateur mentionné
-   * via WebSocket et notification persistante.
+   * Extrait les mentions (@[userId]) du contenu, notifie chaque utilisateur mentionné
+   * via WebSocket et notification persistante, et retourne l'ensemble des IDs mentionnés.
    * @param content - Contenu brut du message
    * @param authorId - ID de l'auteur (exclu des mentions)
    * @param channelId - Canal où le message a été posté
    * @param serverId - Serveur du canal
    * @param authorName - Nom de l'auteur affiché dans la notification
+   * @returns Ensemble des IDs des utilisateurs mentionnés (hors auteur)
    */
   private processMentions(
     content: string,
@@ -158,7 +171,7 @@ export class ChannelMessageService {
     channelId: number,
     serverId: number,
     authorName: string,
-  ): void {
+  ): Set<string> {
     const mentionedUserIds = new Set(
       [...content.matchAll(/@\[([a-z0-9-]+)\]/gi)]
         .map((m) => m[1])
@@ -172,7 +185,9 @@ export class ChannelMessageService {
       messagePreview: content.slice(0, 100),
     };
 
+    const botId = this.aiBotService.getBotUserId();
     for (const mentionedUserId of mentionedUserIds) {
+      if (mentionedUserId === botId) continue;
       this.messageGateway.emitMessageMention(mentionedUserId, mentionData);
       void this.notificationService.create(
         mentionedUserId,
@@ -180,5 +195,65 @@ export class ChannelMessageService {
         mentionData,
       );
     }
+
+    return mentionedUserIds;
+  }
+
+  /**
+   * Génère et publie la réponse de BOBY dans un canal en tâche de fond.
+   * Récupère les derniers messages du canal comme contexte, appelle l'IA,
+   * persiste la réponse et la diffuse via WebSocket en mentionnant l'auteur déclencheur.
+   * Ne fait rien si BOBY n'est pas membre du serveur.
+   * @param channelId - Canal où BOBY doit répondre
+   * @param serverId - Serveur du canal (pour vérifier l'appartenance)
+   * @param UserId - ID de l'utilisateur qui a mentionné le bot
+   */
+  private async sendBotChannelResponse(
+    channelId: number,
+    serverId: number,
+    UserId: string,
+  ) {
+    const botId = this.aiBotService.getBotUserId();
+
+    if (!(await this.serverUtils.isMember(botId, serverId))) return;
+
+    // Récupère lesderniers messages du canal comme contexte pour l'IA
+    const recentMessages = await this.prisma.message.findMany({
+      where: { canalId: channelId },
+      orderBy: { creeLe: 'desc' },
+      select: { contenu: true, auteurId: true },
+    });
+
+    // Remet dans l'ordre chronologique et mappe en format conversation IA
+    // Les mentions @[userId] sont retirées pour ne pas polluer le contexte IA
+    const chatMessages = recentMessages.reverse().map((m) => ({
+      role: m.auteurId === botId ? ('assistant' as const) : ('user' as const),
+      content: m.contenu.replace(/@\[[a-z0-9-]+\]/gi, '').trim(),
+    }));
+
+    const aiResponse = await this.aiBotService.generateResponse(chatMessages);
+
+    const responseContent = '@[' + UserId + '] ' + aiResponse;
+
+    const botMessage = await this.prisma.message.create({
+      data: { contenu: responseContent, canalId: channelId, auteurId: botId },
+      include: { auteur: { select: { name: true } } },
+    });
+
+    this.messageGateway.emitChannelMessageCreated(channelId, {
+      id: String(botMessage.id),
+      content: botMessage.contenu,
+      authorId: botId,
+      authorName: botMessage.auteur.name ?? 'BOBY',
+      createdAtIso: botMessage.creeLe.toISOString(),
+    });
+
+    // Notifie l'utilisateur déclencheur que BOBY lui a répondu
+    void this.notificationService.create(UserId, TypeNotification.MENTION, {
+      channelId,
+      serverId,
+      authorName: botMessage.auteur.name ?? 'BOBY',
+      messagePreview: aiResponse.slice(0, 100),
+    });
   }
 }
