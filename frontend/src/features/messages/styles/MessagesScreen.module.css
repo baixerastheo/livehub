@@ -57,7 +57,6 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  /* Même fond que la navbar / ConversationHeader pour éviter les micro différences au scroll */
   background: var(--surface);
 }
 
@@ -71,7 +70,7 @@
   min-height: 1.25rem;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .root {
     height: auto;
     min-height: calc(100vh - var(--app-navbar-height));

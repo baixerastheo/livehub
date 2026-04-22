@@ -13,30 +13,28 @@ export function ProfileModalMenu({ active, onChange }: ProfileModalMenuProps) {
   const t = useTranslations("profile");
 
   return (
-    <div className={styles.menuBar} role="tablist" aria-label="Account sections">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={active === "profile"}
-        className={`${styles.menuTab} ${
-          active === "profile" ? styles.menuTabActive : ""
-        }`}
-        onClick={() => onChange("profile")}
-      >
-        {t("security")}
-      </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={active === "settings"}
-        className={`${styles.menuTab} ${
-          active === "settings" ? styles.menuTabActive : ""
-        }`}
-        onClick={() => onChange("settings")}
-      >
-        {t("status")}
-      </button>
-    </div>
+    <nav className={styles.nav} aria-label="Account sections">
+      <div className={styles.navInner}>
+        <span className={styles.sectionLabel}>COMPTE</span>
+
+        <button
+          type="button"
+          className={`${styles.navItem} ${active === "profile" ? styles.navItemActive : ""}`}
+          onClick={() => onChange("profile")}
+          aria-current={active === "profile" ? "page" : undefined}
+        >
+          {t("myAccount")}
+        </button>
+
+        <button
+          type="button"
+          className={`${styles.navItem} ${active === "settings" ? styles.navItemActive : ""}`}
+          onClick={() => onChange("settings")}
+          aria-current={active === "settings" ? "page" : undefined}
+        >
+          {t("settings")}
+        </button>
+      </div>
+    </nav>
   );
 }
-

@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCanal } from './create-canal.dto';
+import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
 
-export class UpdateCanal extends PartialType(CreateCanal) {}
+export class UpdateCanal {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name?: string;
+}

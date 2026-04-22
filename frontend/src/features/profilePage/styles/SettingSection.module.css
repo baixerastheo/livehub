@@ -1,72 +1,81 @@
 .sectionStack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  padding: 16px;
-  background: #ffffff;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
 }
 
 .cardHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .cardTitle {
-  font-weight: 800;
-  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
 }
 
 .cardSubtle {
-  margin-top: 4px;
-  font-size: 0.88rem;
-  color: rgba(0, 0, 0, 0.6);
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 .preferenceRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .preferenceTitle {
-  font-weight: 800;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
 }
+
+/* ── Segmented control ── */
 
 .segmented {
   display: inline-flex;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 6px;
-  border-radius: 999px;
+  gap: var(--space-1);
+  background: var(--background);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
 }
 
 .segment {
   border: none;
   background: transparent;
-  padding: 8px 12px;
-  border-radius: 999px;
+  padding: 6px var(--space-3);
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.75);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .segment:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--border-subtle);
+  color: var(--text-primary);
 }
 
 .segmentActive {
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
-  color: rgba(0, 0, 0, 0.9);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-sm);
 }
-

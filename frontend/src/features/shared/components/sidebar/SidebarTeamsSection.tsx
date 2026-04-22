@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { FiUsers, FiPlus } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
 import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
 import headerStyles from "../../styles/sidebar/SidebarHeader.module.css";
@@ -43,6 +43,15 @@ export function SidebarTeamsSection() {
           )}
         </div>
       </SidebarHeader>
+      <div className={rootStyles.sidebarContent}>
+        <div className={rootStyles.sidebarContentInner}>
+          <React.Suspense fallback={null}>
+            <SidebarChannelsContent
+              onAddChannel={selectedServerId !== null ? () => setIsAddChannelOpen(true) : undefined}
+            />
+          </React.Suspense>
+        </div>
+      </div>
       {selectedServerId !== null && (
         <div className={channelStyles.footer}>
           <button
@@ -54,24 +63,8 @@ export function SidebarTeamsSection() {
             <FiUsers size={14} aria-hidden className={channelStyles.actionIcon} />
             {t("moreMembers")}
           </button>
-          <button
-            type="button"
-            className={channelStyles.actionButton}
-            aria-label={t("addChannel")}
-            onClick={() => setIsAddChannelOpen(true)}
-          >
-            <FiPlus size={14} aria-hidden className={channelStyles.actionIcon} />
-            {t("addChannel")}
-          </button>
         </div>
       )}
-      <div className={rootStyles.sidebarContent}>
-        <div className={rootStyles.sidebarContentInner}>
-          <React.Suspense fallback={null}>
-            <SidebarChannelsContent />
-          </React.Suspense>
-        </div>
-      </div>
       <SidebarUserFooter />
       <ModalAddMembers
         isOpen={isAddMembersOpen}

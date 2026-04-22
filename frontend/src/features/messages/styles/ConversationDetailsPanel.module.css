@@ -1,6 +1,6 @@
 .rightPanel {
   width: 280px;
-  border-left: 1px solid var(--border-subtle);
+  box-shadow: -1px 0 0 var(--border-subtle);
   background: var(--background);
   padding: var(--space-4);
   overflow-y: auto;
@@ -45,23 +45,19 @@
   .rightPanel {
     position: fixed;
     top: calc(var(--app-navbar-height) + var(--conversation-header-height) - 6px);
-    left: 0;
+    left: 76px; /* rail width — always visible between 769–980px */
     right: 0;
     bottom: 0;
-    width: 100%;
+    width: auto;
     max-width: none;
     border-left: none;
     z-index: 50;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .rightPanel {
-    top: calc(var(--app-navbar-height) + var(--conversation-header-height) - 6px);
     left: 0;
-    right: 0;
     width: 100%;
-    max-width: none;
-    border-left: none;
   }
 }

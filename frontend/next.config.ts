@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     // On force explicitement la racine du workspace pour éviter le warning
     root: path.resolve(__dirname, ".."),
   },
+  devIndicators: false,
 };
 
 const withNextIntl = createNextIntlPlugin();

@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { FiTrash2, FiVolume2, FiMicOff, FiVolumeX, FiVolume1 } from "react-icons/fi";
+import { FiTrash2, FiVolume2, FiMicOff, FiVolumeX, FiVolume1, FiPlus } from "react-icons/fi";
 import styles from "../../styles/sidebar/SidebarConversations.module.css";
 import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
 import { useAppStore } from "@/src/core/store/appStore";
@@ -23,7 +23,9 @@ type ContextMenu = { x: number; y: number; userId: string; name: string };
 
 const ROLES_CAN_DELETE_CHANNEL: ServerRole[] = ["PROPRIETAIRE", "ADMINISTRATEUR"];
 
-export function SidebarChannelsContent() {
+type Props = { onAddChannel?: () => void };
+
+export function SidebarChannelsContent({ onAddChannel }: Props) {
   const t = useTranslations("sidebar");
   const pathname = usePathname();
   const router = useRouter();
@@ -143,32 +145,43 @@ export function SidebarChannelsContent() {
   return (
     <>
     <div className={channelStyles.wrapper}>
-      <ul className={styles.list} aria-label="Channels">
+      {/* TEXT CHANNELS */}
+      <div className={channelStyles.categoryHeader}>
+        <span className={channelStyles.categoryLabel}>{t("channels")}</span>
+        {canDeleteChannels && onAddChannel && (
+          <button
+            type="button"
+            className={channelStyles.categoryAddButton}
+            onClick={onAddChannel}
+            aria-label={t("addChannel")}
+            title={t("addChannel")}
+          >
+            <FiPlus size={12} aria-hidden />
+          </button>
+        )}
+      </div>
+      <ul className={`${styles.list} ${channelStyles.channelList}`} aria-label="Text channels">
         {textChannels.map((channel) => {
           const href = `/channels/${channel.id}`;
           const isActive = pathname === href;
           return (
             <li key={channel.id}>
               <div className={styles.rowWrapper}>
-                <div
-                  className={`${styles.row} ${styles.rowChannel} ${isActive ? styles.rowActive : ""}`}
-                  style={{ fontWeight: 500 }}
-                >
+                <div className={`${styles.row} ${styles.rowChannel} ${isActive ? styles.rowActive : ""}`}>
                   <Link href={href} className={channelStyles.channelLink}>
-                    <span className={`${styles.avatar} ${styles.avatarChannel}`} aria-hidden>
-                      #
-                    </span>
+                    <span className={channelStyles.channelPrefix} aria-hidden>#</span>
                     <span className={styles.name}>{channel.name}</span>
                   </Link>
                   {canDeleteChannels && (
                     <button
                       type="button"
                       className={channelStyles.deleteChannelButton}
+                      data-delete-btn
                       onClick={(e) => handleDeleteChannel(e, channel.id, channel.name)}
                       aria-label={t("deleteChannel", { name: channel.name })}
                       title={t("deleteChannelTitle")}
                     >
-                      <FiTrash2 size={14} aria-hidden />
+                      <FiTrash2 size={13} aria-hidden />
                     </button>
                   )}
                 </div>
@@ -176,30 +189,40 @@ export function SidebarChannelsContent() {
             </li>
           );
         })}
+      </ul>
 
-        {voiceChannels.length > 0 && (
-          <li className={channelStyles.sectionDivider} aria-hidden>
-            {t("voiceChannels")}
-          </li>
-        )}
-
+      {/* VOICE CHANNELS */}
+      {(voiceChannels.length > 0 || canDeleteChannels) && (
+        <div className={channelStyles.categoryHeader}>
+          <span className={channelStyles.categoryLabel}>{t("voiceChannels")}</span>
+          {canDeleteChannels && onAddChannel && (
+            <button
+              type="button"
+              className={channelStyles.categoryAddButton}
+              onClick={onAddChannel}
+              aria-label={t("addChannel")}
+              title={t("addChannel")}
+            >
+              <FiPlus size={12} aria-hidden />
+            </button>
+          )}
+        </div>
+      )}
+      <ul className={`${styles.list} ${channelStyles.channelList}`} aria-label="Voice channels">
         {voiceChannels.map((channel) => {
           const isActive = currentVoiceChannelId === channel.id;
           const presenceList = voicePresence[channel.id] ?? [];
           return (
             <li key={channel.id}>
               <div className={styles.rowWrapper}>
-                <div
-                  className={`${styles.row} ${styles.rowChannel} ${isActive ? styles.rowActive : ""}`}
-                  style={{ fontWeight: 500 }}
-                >
+                <div className={`${styles.row} ${styles.rowChannel} ${isActive ? styles.rowActive : ""}`}>
                   <Link
                     href={`/channels/${channel.id}`}
                     className={channelStyles.channelLink}
                     onClick={() => { void join(channel.id); }}
                   >
-                    <span className={`${styles.avatar} ${styles.avatarChannel}`} aria-hidden>
-                      <FiVolume2 size={14} />
+                    <span className={channelStyles.channelPrefix} aria-hidden>
+                      <FiVolume2 size={13} />
                     </span>
                     <span className={styles.name}>{channel.name}</span>
                     {presenceList.length > 0 && (
@@ -214,11 +237,12 @@ export function SidebarChannelsContent() {
                     <button
                       type="button"
                       className={channelStyles.deleteChannelButton}
+                      data-delete-btn
                       onClick={(e) => handleDeleteChannel(e, channel.id, channel.name)}
                       aria-label={t("deleteChannel", { name: channel.name })}
                       title={t("deleteChannelTitle")}
                     >
-                      <FiTrash2 size={14} aria-hidden />
+                      <FiTrash2 size={13} aria-hidden />
                     </button>
                   )}
                 </div>

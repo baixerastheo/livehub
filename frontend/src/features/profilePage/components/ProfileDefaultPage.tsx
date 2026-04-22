@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useAppStore } from "@/src/core/store/appStore";
 import styles from "../styles/ProfileDefaultPage.module.css";
@@ -18,27 +18,12 @@ export function ProfileDefaultPage() {
 
   useEffect(() => {
     if (!accountModal.isOpen) return;
-
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeAccountModal();
-      }
+      if (e.key === "Escape") closeAccountModal();
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [accountModal.isOpen, closeAccountModal]);
-
-  const title = useMemo(() => {
-    switch (accountModal.section) {
-      case "profile":
-        return t("myAccount");
-      case "settings":
-        return t("settings");
-      default:
-        return t("myAccount");
-    }
-  }, [accountModal.section, t]);
 
   if (!accountModal.isOpen) return null;
 
@@ -53,29 +38,29 @@ export function ProfileDefaultPage() {
       }}
     >
       <div className={styles.modal}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>{title}</h2>
+        <ProfileModalMenu
+          active={accountModal.section}
+          onChange={setAccountModalSection}
+        />
+
+        <div className={styles.content}>
           <button
             type="button"
             className={styles.closeButton}
             onClick={closeAccountModal}
             aria-label={t("close")}
           >
-            ×
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path d="M1 1l14 14M15 1L1 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
           </button>
-        </div>
 
-        <ProfileModalMenu
-          active={accountModal.section}
-          onChange={setAccountModalSection}
-        />
-
-        <div className={styles.body}>
-          {accountModal.section === "profile" ? <ProfileSection /> : null}
-          {accountModal.section === "settings" ? <SettingSection /> : null}
+          <div className={styles.body}>
+            {accountModal.section === "profile" ? <ProfileSection /> : null}
+            {accountModal.section === "settings" ? <SettingSection /> : null}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
