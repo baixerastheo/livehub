@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 
 /**
  * Service de gestion des GIFs.
@@ -12,7 +12,7 @@ export class GifService {
   /**
    * Récupère les GIFs tendance.
    * @returns Liste des GIFs tendance
-   * @throws Error si la récupération échoue
+   * @throws BadGatewayException si la récupération échoue
    */
   async getTrending(): Promise<unknown> {
     try {
@@ -21,15 +21,15 @@ export class GifService {
       const res = await fetch(url);
       return (await res.json()) as unknown;
     } catch {
-      throw new Error('Failed to fetch trending GIFs');
+      throw new BadGatewayException('Failed to fetch trending GIFs');
     }
   }
 
   /**
    * Recherche des GIFs en fonction d'une requête.
    * @param requete - La requête de recherche
-   * @return Liste des GIFs correspondant à la requête
-   * @throws Error si la recherche échoue
+   * @returns Liste des GIFs correspondant à la requête
+   * @throws BadGatewayException si la recherche échoue
    */
   async search(requete: string): Promise<unknown> {
     try {
@@ -43,23 +43,23 @@ export class GifService {
       const res = await fetch(url);
       return (await res.json()) as unknown;
     } catch {
-      throw new Error('Failed to search gifs');
+      throw new BadGatewayException('Failed to search GIFs');
     }
   }
 
   /**
    * Récupère un GIF par son ID.
    * @param id - L'identifiant du GIF
-   * @return Le GIF correspondant à l'ID
-   * @throws Error si la récupération échoue
+   * @returns Le GIF correspondant à l'ID
+   * @throws BadGatewayException si la récupération échoue
    */
   async getById(id: string): Promise<unknown> {
     try {
       const url = this.baseUrl + '/' + this.apiKey + '/gifs/' + id;
       const res = await fetch(url);
-      return await res.json();
+      return (await res.json()) as unknown;
     } catch {
-      throw new Error('Failed to fetch gif by ID');
+      throw new BadGatewayException('Failed to fetch GIF by ID');
     }
   }
 }

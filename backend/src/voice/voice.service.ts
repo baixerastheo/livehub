@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AccessToken } from 'livekit-server-sdk';
 import { PrismaService } from '../prisma.service';
@@ -40,7 +41,7 @@ export class VoiceService {
     const url = process.env.LIVEKIT_URL;
 
     if (!apiKey || !apiSecret || !url) {
-      throw new Error('LiveKit environment variables are not set');
+      throw new InternalServerErrorException('LiveKit is not configured');
     }
 
     const token = new AccessToken(apiKey, apiSecret, {

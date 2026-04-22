@@ -1,2 +1,9 @@
-import { CreateCanal } from './create-canal.dto';
-export class UpdateCanal extends CreateCanal {}
+import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+
+export class UpdateCanal {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name?: string;
+}
