@@ -45,6 +45,16 @@ export class ServerUtilsService {
   }
 
   /**
+   * Retourne vrai si l'utilisateur est membre du serveur, faux sinon.
+   */
+  async isMember(userId: string, serverId: number): Promise<boolean> {
+    const member = await this.prisma.membreServeur.findUnique({
+      where: { userId_serveurId: { userId, serveurId: serverId } },
+    });
+    return member !== null;
+  }
+
+  /**
    * Vérifie que le membre est propriétaire ou administrateur.
    * @param role - Rôle du membre
    * @throws ForbiddenException si le rôle est insuffisant

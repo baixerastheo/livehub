@@ -17,5 +17,6 @@ import { NotificationModule } from '../notification/notification.module';
     ServerBanService,
     ServerUtilsService,
   ],
+  exports: [ServerUtilsService],
 })
 export class ServerModule {}
