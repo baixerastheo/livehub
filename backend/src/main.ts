@@ -1,23 +1,37 @@
+import './bootstrap-env';
 
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ValidationPipe, Logger } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder()
-    .setTitle('LiveHub API')
-    .setDescription('The LiveHub API description')
-    .setVersion('1.0')
-    .addTag('LiveHub')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  app.useWebSocketAdapter(new IoAdapter(app));
+  app.use(cookieParser());
 
-  const port = process.env.PORT ?? 4000;
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  app.enableCors({
+    origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000',
+    credentials: true,
+  });
+
+  const port = process.env.PORT ?? 4001;
   await app.listen(port);
-  console.log(`API running at http://localhost:${port}`);
-  console.log(`Swagger docs available at http://localhost:${port}/api`);
+  logger.log(`API running at http://localhost:${port}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  new Logger('Bootstrap').error('Error while starting Nest application', err);
+  process.exit(1);
+});

@@ -1,0 +1,30 @@
+import type { ReactionDto } from "@/src/features/messages/messages.types";
+
+export type ChatMessage = {
+  id: string;
+  author: string;
+  authorAvatarUrl?: string | null;
+  content: string;
+  createdAtIso: string;
+  editedAtIso?: string | null;
+  isMe?: boolean;
+  reactions?: ReactionDto[];
+};
+
+export type ConversationHeader = {
+  title: string;
+  subtitle: string;
+  avatarText: string;
+  avatarColor: string;
+  avatarUrl?: string | null;
+  showAvatar?: boolean;
+};
+
+export const MOCK_CONVERSATION: ConversationHeader = {
+  title: "Default Channel",
+  subtitle: "Private message",
+  avatarText: "DC",
+  avatarColor: "#7c3aed",
+};
+
+

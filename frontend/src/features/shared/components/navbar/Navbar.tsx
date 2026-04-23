@@ -1,21 +1,28 @@
+"use client";
+
+import React from "react";
+import { useTranslations } from "next-intl";
 import styles from "../../styles/navbar/Navbar.module.css";
 import { NavbarLogo } from "@/src/features/shared/components/navbar/NavbarLogo";
-import { NavbarSearch } from "@/src/features/shared/components/navbar/NavbarSearch";
 import { BiArrowFromLeft } from "react-icons/bi";
+import { useAppStore } from "@/src/core/store/appStore";
 
 type NavbarProps = {
-  onToggleSidebar?: () => void;
+  children?: React.ReactNode;
 };
 
-export function Navbar({ onToggleSidebar }: NavbarProps) {
+export function Navbar({ children }: NavbarProps) {
+  const t = useTranslations("nav");
+  const toggleMobileSidebars = useAppStore((state) => state.toggleMobileSidebars);
+
   return (
     <header className={styles.navbar}>
       <div className={styles.left}>
         <button
           type="button"
           className={styles.menuButton}
-          aria-label="Afficher/masquer la liste des conversations"
-          onClick={onToggleSidebar}
+          aria-label={t("toggleConversationList")}
+          onClick={toggleMobileSidebars}
         >
           <span aria-hidden="true">
             <BiArrowFromLeft size={22} />
@@ -23,11 +30,8 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         </button>
         <NavbarLogo />
       </div>
-      <div className={styles.right}>
-        <NavbarSearch />
-      </div>
+      <div className={styles.right}>{children}</div>
     </header>
   );
 }
-
 

@@ -1,4 +1,20 @@
 packages:
-  - "frontend"
-  - "backend"
+  - frontend
+  - backend
+  - electron
 
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@openrouter/sdk'
+  - '@parcel/watcher'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - bcrypt
+  - better-sqlite3
+  - electron
+  - electron-winstaller
+  - prisma
+  - sharp
+  - supabase
+  - unrs-resolver

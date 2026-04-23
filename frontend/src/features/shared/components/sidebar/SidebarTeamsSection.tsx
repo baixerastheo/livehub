@@ -1,0 +1,81 @@
+"use client";
+
+import React from "react";
+import { useTranslations } from "next-intl";
+import { FiUsers } from "react-icons/fi";
+import rootStyles from "../../styles/sidebar/SidebarRoot.module.css";
+import channelStyles from "../../styles/sidebar/SidebarChannels.module.css";
+import headerStyles from "../../styles/sidebar/SidebarHeader.module.css";
+import { useAppStore } from "@/src/core/store/appStore";
+import { useUserServersQuery } from "@/src/features/server/server.hooks";
+import { ModalAddMembers } from "@/src/features/server/components/modalAddMembers";
+import { ModalAddChannel } from "@/src/features/server/components/modalAddChannel";
+import { ServerHeaderMenu } from "@/src/features/server/components/ServerHeaderMenu";
+import { SidebarHeader } from "./SidebarHeader";
+import { SidebarChannelsContent } from "./SidebarChannelsContent";
+import { SidebarUserFooter } from "@/src/features/shared/components/sidebar/SidebarUserFooter";
+
+export function SidebarTeamsSection() {
+  const t = useTranslations("sidebar");
+  const selectedServerId = useAppStore((state) => state.selectedServerId);
+  const [isAddMembersOpen, setIsAddMembersOpen] = React.useState(false);
+  const [isAddChannelOpen, setIsAddChannelOpen] = React.useState(false);
+  const { data: userServers } = useUserServersQuery();
+
+  const selectedMembership =
+    selectedServerId !== null
+      ? userServers?.find((u) => u.server.id === selectedServerId)
+      : undefined;
+  const headerTitle =
+    selectedMembership?.server.name ?? "Servers";
+
+  return (
+    <>
+      <SidebarHeader>
+        <div className={headerStyles.headerRow}>
+          <span className={headerStyles.headerTitle}>{headerTitle}</span>
+          {selectedServerId !== null && selectedMembership && (
+            <ServerHeaderMenu
+              serverId={selectedServerId}
+              serverName={selectedMembership.server.name}
+              currentUserRole={selectedMembership.role}
+            />
+          )}
+        </div>
+      </SidebarHeader>
+      <div className={rootStyles.sidebarContent}>
+        <div className={rootStyles.sidebarContentInner}>
+          <React.Suspense fallback={null}>
+            <SidebarChannelsContent
+              onAddChannel={selectedServerId !== null ? () => setIsAddChannelOpen(true) : undefined}
+            />
+          </React.Suspense>
+        </div>
+      </div>
+      {selectedServerId !== null && (
+        <div className={channelStyles.footer}>
+          <button
+            type="button"
+            className={channelStyles.actionButton}
+            aria-label={t("moreMembers")}
+            onClick={() => setIsAddMembersOpen(true)}
+          >
+            <FiUsers size={14} aria-hidden className={channelStyles.actionIcon} />
+            {t("moreMembers")}
+          </button>
+        </div>
+      )}
+      <SidebarUserFooter />
+      <ModalAddMembers
+        isOpen={isAddMembersOpen}
+        onClose={() => setIsAddMembersOpen(false)}
+        serverId={selectedServerId}
+      />
+      <ModalAddChannel
+        isOpen={isAddChannelOpen}
+        onClose={() => setIsAddChannelOpen(false)}
+        serverId={selectedServerId}
+      />
+    </>
+  );
+}

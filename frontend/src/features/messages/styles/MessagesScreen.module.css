@@ -1,0 +1,79 @@
+.root {
+  height: calc(100vh - var(--app-navbar-height));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.emptyStateTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptyStateSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.emptyStateLink {
+  margin-top: 0.5rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.emptyStateLink:hover {
+  opacity: 0.9;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.thread {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: var(--surface);
+}
+
+.typingIndicator {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 4px 18px 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  min-height: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .root {
+    height: auto;
+    min-height: calc(100vh - var(--app-navbar-height));
+    overflow: visible;
+  }
+}

@@ -1,0 +1,304 @@
+.rail {
+  width: 76px;
+  min-width: 76px;
+  height: 100%;
+  min-height: 0;
+  border-right: none;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 8px;
+}
+
+.railBackdrop {
+  display: none;
+}
+
+/* ── Nav section (Bell, Messages) ── */
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.navItem {
+  position: relative;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.navItem:hover {
+  color: var(--text-primary);
+}
+
+.navItemActive {
+  color: var(--text-primary);
+}
+
+.navItemActive::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--text-primary);
+}
+
+.navIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background-color 0.15s ease, border-radius 0.15s ease;
+}
+
+.navItem:hover .navIcon {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+}
+
+.navItemActive .navIcon {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
+}
+
+.navIconSvg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* ── Separator ── */
+
+.separator {
+  width: 32px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 10px auto;
+  flex-shrink: 0;
+}
+
+/* ── Server list ── */
+
+.serverList {
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.serverListScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  scrollbar-width: none;
+}
+
+.serverListScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.serverItem {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+
+.serverItem:hover {
+  transform: scale(1.06);
+}
+
+.serverItemActive::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  border-radius: 0 3px 3px 0;
+  background: var(--text-primary);
+}
+
+.serverAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: border-radius 0.15s ease;
+  user-select: none;
+}
+
+.serverItem:hover .serverAvatar,
+.serverItemActive .serverAvatar {
+  border-radius: 10px;
+}
+
+.serverAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Bottom — add server ── */
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 10px 0;
+  flex-shrink: 0;
+}
+
+.addServerButton {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border: 2px dashed var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    border-radius 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.addServerButton:hover {
+  border-color: rgba(15, 23, 42, 0.3);
+  color: var(--text-primary);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.addServerIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ── Tooltip serveurs (position: fixed — échappe au overflow du scroll container) ── */
+
+.serverTooltipFixed {
+  position: fixed;
+  left: 88px; /* rail 76px + gap 12px */
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* ── Tooltips nav items ── */
+
+.tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+}
+
+.navItem:hover .tooltip,
+.serverItem:hover .tooltip,
+.addServerButton:hover .tooltip {
+  opacity: 1;
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 768px) {
+  .rail {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 0;
+    height: calc(100vh - var(--app-navbar-height));
+    z-index: 60;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  }
+
+  .railOpen {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .railBackdrop {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
+    z-index: 55;
+    display: block;
+  }
+}

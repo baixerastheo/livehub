@@ -1,0 +1,22 @@
+# Dépendances locales (réinstallées dans le container)
+node_modules
+**/node_modules
+
+# Artifacts de build
+backend/dist
+backend/generated
+frontend/.next
+frontend/out
+
+# Fichiers secrets
+**/.env
+**/.env.*
+
+# Fichiers inutiles au runtime
+**/*.log
+**/.git
+**/.gitignore
+**/coverage
+**/test
+**/*.spec.ts
+**/*.md

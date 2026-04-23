@@ -1,0 +1,164 @@
+.composer {
+  padding: 12px 18px 16px;
+  border-top: none;
+  background: var(--surface);
+  display: flex;
+  position: relative;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.composerDragOver {
+  background: rgba(99, 102, 241, 0.06);
+  outline: 2px dashed rgba(99, 102, 241, 0.4);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
+}
+
+.composerBar {
+  width: 100%;
+  min-height: 54px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: rgba(15, 23, 42, 0.03);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.composerLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.composerIconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.composerIconButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.composerIconButton:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.composerGifButton {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.composerGifButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.composerGifButton:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.composerGifButton:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0 6px;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.composerBar:focus-within {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.emojiPickerPopover {
+  position: absolute;
+  right: 60px;
+  bottom: 64px;
+  z-index: 20;
+}
+
+.gifPickerPopover {
+  position: absolute;
+  right: 18px;
+  bottom: 64px;
+}
+
+/* ── Mention autocomplete dropdown ── */
+.mentionDropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 18px;
+  right: 18px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 30;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.mentionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  transition: background 0.1s;
+}
+
+.mentionItem:hover,
+.mentionItemActive {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.mentionName {
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 768px) {
+  .composer {
+    padding: 10px 12px 14px;
+  }
+}

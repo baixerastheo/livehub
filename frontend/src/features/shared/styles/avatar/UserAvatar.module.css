@@ -1,0 +1,60 @@
+.root {
+  position: relative;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+}
+
+.smMd {
+  width: 31px;
+  height: 31px;
+}
+
+.md {
+  width: 38px;
+  height: 38px;
+}
+
+.lg {
+  width: 80px;
+  height: 80px;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.initial {
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: inherit;
+}
+
+.sm .initial {
+  font-size: 0.75rem;
+}
+
+.smMd .initial {
+  font-size: 0.85rem;
+}
+
+.md .initial {
+  font-size: 0.95rem;
+}
+
+.lg .initial {
+  font-size: 1.75rem;
+}

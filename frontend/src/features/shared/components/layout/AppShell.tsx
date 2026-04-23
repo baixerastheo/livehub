@@ -1,49 +1,58 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Navbar } from "@/src/features/shared/components/navbar/Navbar";
+import { NavbarSearch } from "@/src/features/shared/components/navbar/NavbarSearch";
+import { NavbarPeopleButton } from "@/src/features/shared/components/navbar/NavbarPeopleButton";
+import { NavbarAuthSection } from "@/src/features/shared/components/navbar/NavbarAuthSection";
 import { Sidebar } from "@/src/features/shared/components/sidebar/Sidebar";
-import { LoginModal } from "@/src/features/shared/components/modal/LoginModal";
+import { SidebarRail } from "@/src/features/shared/components/sidebar/SidebarRail";
+import { ProfileDefaultPage } from "@/src/features/profilePage/components/ProfileDefaultPage";
+import { ToastHost } from "@/src/features/shared/components/toast/ToastHost";
+import { AuthModal } from "@/src/features/modalAuth/components/AuthModal";
+import { PrivateConversationsRealtimeSync } from "@/src/features/messages/components/PrivateConversationsRealtimeSync";
+import { ServerRealtimeSync } from "@/src/features/server/components/ServerRealtimeSync";
+import { PresenceRealtimeSync } from "@/src/lib/realtime/PresenceRealtimeSync";
+import { OsNotificationsSync } from "@/src/features/notifications/OsNotificationsSync";
+import { NotificationsRealtimeSync } from "@/src/features/notifications/NotificationsRealtimeSync";
 
 type AppShellProps = {
   children: React.ReactNode;
 };
 
 export function AppShell({ children }: AppShellProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen((prev: boolean) => !prev);
-  };
-
-  const handleCloseSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleStartConversation = () => {
-    setIsLoginModalOpen(true);
-  };
-
-  const handleCloseLoginModal = () => {
-    setIsLoginModalOpen(false);
-  };
-
   return (
     <>
-      <Navbar onToggleSidebar={handleToggleSidebar} />
+      <PrivateConversationsRealtimeSync />
+      <ServerRealtimeSync />
+      <PresenceRealtimeSync />
+      <OsNotificationsSync />
+      <NotificationsRealtimeSync />
+      <Navbar>
+        <NavbarSearch />
+        <NavbarPeopleButton />
+        <NavbarAuthSection />
+      </Navbar>
       <div
         style={{
           display: "flex",
-          height: "100vh",
-          overflow: "hidden",
+          height: "calc(100vh - var(--app-navbar-height))",
+          overflow: "visible",
+          position: "relative",
         }}
       >
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={handleCloseSidebar}
-          onStartConversation={handleStartConversation}
-        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 20,
+            flexShrink: 0,
+            alignSelf: "stretch",
+            display: "flex",
+          }}
+        >
+          <SidebarRail />
+        </div>
+        <Sidebar />
         <div
           style={{
             flex: 1,
@@ -53,8 +62,9 @@ export function AppShell({ children }: AppShellProps) {
           {children}
         </div>
       </div>
-      <LoginModal open={isLoginModalOpen} onClose={handleCloseLoginModal} />
+      <AuthModal />
+      <ProfileDefaultPage />
+      <ToastHost />
     </>
   );
 }
-

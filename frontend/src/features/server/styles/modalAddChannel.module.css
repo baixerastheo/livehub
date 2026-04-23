@@ -1,0 +1,153 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 10px 40px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.closeButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.typeSelector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.typeOption {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.65);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.typeOption:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.35);
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.typeOptionActive {
+  border-color: #111827;
+  background: rgba(17, 24, 39, 0.06);
+  color: #111827;
+}
+
+.typeOption:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.typeIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: 0.25rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #111827;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.15);
+}
+
+.input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.button {
+  border-radius: 999px;
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.buttonSecondary {
+  background: transparent;
+}
+
+.buttonPrimary {
+  background: #111827;
+  color: #ffffff;
+}
+
+.buttonPrimary:disabled {
+  opacity: 0.75;
+  cursor: default;
+}

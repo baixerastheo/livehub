@@ -1,0 +1,171 @@
+
+.emptySection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-4) var(--space-2);
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.rowWrapper {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.rowWrapper:hover .row {
+  background-color: rgba(15, 23, 42, 0.04);
+}
+
+.rowWrapper:hover .rowActive {
+  background-color: rgba(15, 23, 42, 0.09);
+}
+
+.rowWrapper:hover [data-delete-btn] {
+  opacity: 1;
+}
+
+.particlesLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--radius-sm);
+}
+
+.row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  font-size: var(--font-size-sm);
+  transition: background-color 0.15s ease;
+}
+
+.rowActive {
+  background-color: rgba(15, 23, 42, 0.07);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.avatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.avatarWrapper > .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.dotOnline,
+.dotOffline {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+}
+
+.dotOnline {
+  background-color: var(--success);
+}
+
+.dotOffline {
+  background-color: var(--danger);
+}
+
+.avatarChannel {
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.rowChannel {
+  gap: 0.375rem;
+  align-items: center;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.avatarInner {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+}
+
+.textBlock {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.lastTime {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.lastMsg {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

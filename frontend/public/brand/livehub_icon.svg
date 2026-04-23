@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 62" width="64" height="62">
+
+  <!-- == OREILLES == -->
+  <polygon points="14,44 8,10 30,30" fill="#1a1a1a"/>
+  <polygon points="15.5,41 11,16 27,29" fill="#555555"/>
+  <polygon points="50,44 56,10 34,30" fill="#1a1a1a"/>
+  <polygon points="48.5,41 53,16 37,29" fill="#555555"/>
+
+  <!-- == TÊTE == -->
+  <ellipse cx="32" cy="30" rx="24" ry="22" fill="#1a1a1a"/>
+
+  <!-- == MASQUE FACIAL == -->
+  <ellipse cx="32" cy="36" rx="16" ry="13" fill="#888888"/>
+  <path d="M 16 28 Q 32 20 48 28 L 46 34 Q 32 28 18 34 Z" fill="#1a1a1a"/>
+
+  <!-- == YEUX == -->
+  <ellipse cx="24" cy="28" rx="6" ry="6.5" fill="white"/>
+  <ellipse cx="40" cy="28" rx="6" ry="6.5" fill="white"/>
+  <ellipse cx="24.5" cy="29" rx="3.2" ry="3.5" fill="#1a1a1a"/>
+  <ellipse cx="39.5" cy="29" rx="3.2" ry="3.5" fill="#1a1a1a"/>
+  <circle cx="26" cy="27" r="1.2" fill="white"/>
+  <circle cx="41" cy="27" r="1.2" fill="white"/>
+
+  <!-- == NEZ == -->
+  <path d="M 27 38 Q 32 35 37 38 Q 35 43 32 44 Q 29 43 27 38 Z" fill="#1a1a1a"/>
+  <ellipse cx="30" cy="38.5" rx="1.4" ry="1" fill="#555555"/>
+
+  <!-- == NŒUD PAPILLON == -->
+  <!-- Aile gauche -->
+  <polygon points="22,51 32,54 32,48" fill="#1a1a1a"/>
+  <!-- Aile droite -->
+  <polygon points="42,51 32,54 32,48" fill="#1a1a1a"/>
+  <!-- Nœud central -->
+  <ellipse cx="32" cy="51" rx="3.5" ry="3" fill="#555555"/>
+
+</svg>

@@ -1,0 +1,128 @@
+.sidebar {
+  width: 280px;
+  min-width: 220px;
+  max-width: 340px;
+  height: 100%;
+  min-height: 0;
+  border-right: none;
+  background-color: #f0f2f5;
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  overflow: visible;
+}
+
+.sidebarContent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.sidebarContentInner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarContentInner > * {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+}
+
+.resizeHandle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  background: transparent;
+  transition: background 0.15s;
+  border-radius: 999px;
+}
+
+.resizeHandle:hover::after {
+  background: var(--border-strong);
+}
+
+.sidebarBackdrop {
+  display: none;
+}
+
+.closeButton {
+  display: none;
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 76px;
+    height: calc(100vh - var(--app-navbar-height));
+    width: calc(100% - 76px);
+    max-width: calc(100% - 76px);
+    z-index: 60;
+    box-shadow: none;
+    overflow-y: hidden;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebarBackdrop {
+    position: fixed;
+    top: var(--app-navbar-height);
+    left: 76px;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
+    z-index: 55;
+    display: block;
+  }
+
+  .closeButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+  }
+}

@@ -1,0 +1,14 @@
+.emptyState {
+  padding: 1rem 0.25rem;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6);
+}

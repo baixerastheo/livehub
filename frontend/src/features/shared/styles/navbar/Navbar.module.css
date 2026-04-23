@@ -2,37 +2,186 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background-color: #ffffff;
-  color: #000000;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  height: var(--app-navbar-height);
+  box-shadow: 0 1px 0 var(--border-subtle);
+  background-color: var(--surface);
+  color: var(--text-primary);
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  min-width: 220px;
-  max-width: 360px;
-  width: 100%;
+  gap: var(--space-3);
+  flex: 1 1 auto;
+  min-width: 0;
   justify-content: flex-end;
+}
+
+.authArea {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.userInfo {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  max-width: min(180px, 25vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authButton {
+  flex: 0 0 auto;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text-primary);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+}
+
+.authButton:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.profileWrapper {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.profileButton {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.profileButton:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.profileAvatar {
+  width: 31px;
+  height: 31px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.profileAvatar > span {
+  width: 32px !important;
+  height: 32px !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.profileAvatarImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 60;
+}
+
+.profileHeader {
+  padding: 0.9rem 1rem 0.75rem;
+}
+
+.profileUsername {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  margin: 0;
+}
+
+.profileSubtle {
+  margin-top: 0.15rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.dropdownActions {
+  padding: var(--space-1);
+}
+
+.dropdownButton {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.dropdownButton:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.dropdownButtonDanger {
+  color: var(--danger);
+}
+
+.dropdownButtonDanger:hover {
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .menuButton {
   display: none;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
-  width: 36px;
-  height: 36px;
+  border: none;
+  background: var(--surface);
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   line-height: 0;
 }
@@ -46,7 +195,7 @@
 .menuBar {
   width: 18px;
   height: 2px;
-  background-color: #000000;
+  background-color: var(--text-primary);
   border-radius: 999px;
 }
 
@@ -59,8 +208,5 @@
 
   .right {
     min-width: 0;
-    max-width: none;
   }
 }
-
-

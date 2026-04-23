@@ -1,0 +1,129 @@
+.footer {
+  margin-top: auto;
+  margin-left: calc(-1 * var(--space-3));
+  margin-right: calc(-1 * var(--space-3));
+  margin-bottom: calc(-1 * var(--space-4));
+  padding: var(--space-3) var(--space-3);
+  box-shadow: 0 -1px 0 var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtext {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.onlineDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Grouped square buttons (mute + deafen) */
+.voiceButtonGroup {
+  display: flex;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.voiceButtonGroup .actionButton {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.voiceButtonGroup .actionButton:last-child {
+  border-right: none;
+}
+
+.actionButton {
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 0;
+  color: var(--text-primary);
+  transition: background 0.12s, color 0.12s;
+}
+
+.actionButton:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.actionButtonMuted {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.07);
+}
+
+.actionButtonMuted:hover {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.actionButtonLeave {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.actionButtonLeave:hover {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.actionButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.actionButton:disabled:hover {
+  background: var(--surface);
+}
+

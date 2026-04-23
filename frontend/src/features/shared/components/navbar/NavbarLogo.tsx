@@ -7,10 +7,10 @@ export function NavbarLogo({}: NavbarLogoProps) {
   return (
     <div className={styles.logoContainer}>
       <Image
-        src="/brand/Livehub_logo.png"
+        src="/brand/livehub_icon.svg"
         alt="LiveHub logo"
-        width={300}
-        height={60}
+        width={40}
+        height={40}
         className={styles.logoImage}
         priority
       />
