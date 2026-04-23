@@ -21,6 +21,8 @@ import {
   useSendPrivateMessageMutation,
   useEditPrivateMessageMutation,
 } from "@/src/features/messages/privateMessage.hooks";
+import { uploadMessageImage } from "@/src/features/messages/message.service";
+import { useToastStore } from "@/src/core/store/toast/useToastStore";
 import {
   usePrivateMessagesRealtime,
   usePrivateReactionRealtime,
@@ -118,6 +120,19 @@ export function MessagesScreen() {
     }
   };
 
+  const sendImage = async (file: File) => {
+    if (!peerUserId) return;
+    if (file.size > 25 * 1024 * 1024) {
+      useToastStore.getState().push({ type: "error", message: "Image trop lourde (max 25 Mo)" });
+      return;
+    }
+    try {
+      const { url } = await uploadMessageImage(file);
+      await sendMessageMutation.mutateAsync({ peerUserId, content: `[img]${url}` });
+    } catch {
+    }
+  };
+
   if (!peerUserId) {
     return (
       <main className={styles.root}>
@@ -168,6 +183,7 @@ export function MessagesScreen() {
             onChange={setComposerValue}
             onSubmit={send}
             onGifSelect={sendGif}
+            onImageSelect={sendImage}
           />
         </section>
 

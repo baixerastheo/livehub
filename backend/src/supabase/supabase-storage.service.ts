@@ -120,6 +120,16 @@ export class SupabaseStorageService {
   }
 
   /**
+   * Retourne l'URL publique permanente d'un fichier (bucket doit être public).
+   * @param path - Chemin dans le bucket
+   */
+  getPublicImageUrl(path: string): string {
+    const client = this.getClient();
+    const { data } = client.storage.from(this.getBucket()).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  /**
    * Retourne l'URL publique d'un avatar depuis son path Supabase.
    * Retourne null si le path est absent ou si la génération échoue.
    * @param avatarPath - Chemin dans le bucket (ou null)

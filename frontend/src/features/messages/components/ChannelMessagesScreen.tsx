@@ -31,6 +31,8 @@ import { useUserServersQuery, useServerMembersQuery } from "@/src/features/serve
 import type { ServerRole } from "@/src/features/server/server.types";
 import type { MentionMember } from "./MessageComposer";
 import { VoiceChannelScreen } from "@/src/features/voice/VoiceChannelScreen";
+import { uploadMessageImage } from "@/src/features/messages/message.service";
+import { useToastStore } from "@/src/core/store/toast/useToastStore";
 
 const CHANNEL_AVATAR_COLOR = "#6b7280";
 
@@ -147,6 +149,19 @@ export function ChannelMessagesScreen() {
     }
   };
 
+  const sendImage = async (file: File) => {
+    if (channelId == null) return;
+    if (file.size > 25 * 1024 * 1024) {
+      useToastStore.getState().push({ type: "error", message: "Image trop lourde (max 25 Mo)" });
+      return;
+    }
+    try {
+      const { url } = await uploadMessageImage(file);
+      await sendMessageMutation.mutateAsync(`[img]${url}`);
+    } catch {
+    }
+  };
+
   if (channelId == null || Number.isNaN(channelId)) {
     return (
       <main className={styles.root}>
@@ -225,6 +240,7 @@ export function ChannelMessagesScreen() {
                 onChange={setComposerValue}
                 onSubmit={send}
                 onGifSelect={sendGif}
+                onImageSelect={sendImage}
                 members={mentionMembers}
               />
             </>

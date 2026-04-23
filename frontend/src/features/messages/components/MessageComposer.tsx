@@ -10,6 +10,7 @@ import Picker from "@emoji-mart/react";
 import type { Gif } from "@/src/features/shared/lib/api/gifs.types";
 import { GifPicker } from "./GifPicker";
 import { UserAvatar } from "@/src/features/shared/components/avatar/UserAvatar";
+import { useToastStore } from "@/src/core/store/toast/useToastStore";
 
 export type MentionMember = {
   id: string;
@@ -17,12 +18,15 @@ export type MentionMember = {
   avatarUrl?: string | null;
 };
 
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 type Props = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (transformed: string) => void;
   placeholder?: string;
   onGifSelect?: (gif: Gif) => void;
+  onImageSelect?: (file: File) => void;
   members?: MentionMember[];
 };
 
@@ -32,6 +36,7 @@ export function MessageComposer({
   onSubmit,
   placeholder,
   onGifSelect,
+  onImageSelect,
   members = [],
 }: Props) {
   const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
@@ -40,8 +45,10 @@ export function MessageComposer({
   const [mentionAtPos, setMentionAtPos] = useState<number>(-1);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pendingMentions, setPendingMentions] = useState<Map<string, string>>(new Map());
+  const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("messages");
   const resolvedPlaceholder = placeholder ?? t("sendMessagePlaceholder");
 
@@ -134,6 +141,33 @@ export function MessageComposer({
     return result;
   };
 
+  const handleImageFile = (file: File) => {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      useToastStore.getState().push({ type: "error", message: "Format non supporté (JPEG, PNG, WebP, GIF uniquement)" });
+      return;
+    }
+    onImageSelect?.(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageItem = items.find((i) => i.kind === "file" && ACCEPTED_IMAGE_TYPES.includes(i.type));
+    if (imageItem) {
+      const file = imageItem.getAsFile();
+      if (file) {
+        e.preventDefault();
+        handleImageFile(file);
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageFile(file);
+  };
+
   // Close dropdown on outside click
   useEffect(() => {
     if (mentionQuery === null) return;
@@ -148,7 +182,7 @@ export function MessageComposer({
 
   return (
     <form
-      className={styles.composer}
+      className={`${styles.composer} ${isDragOver ? styles.composerDragOver : ""}`}
       onSubmit={(e) => {
         e.preventDefault();
         if (mentionQuery === null) {
@@ -156,7 +190,21 @@ export function MessageComposer({
           setPendingMentions(new Map());
         }
       }}
+      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={handleDrop}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleImageFile(file);
+          e.target.value = "";
+        }}
+      />
       {mentionQuery !== null && filteredMembers.length > 0 && (
         <div ref={dropdownRef} className={styles.mentionDropdown}>
           {filteredMembers.slice(0, 8).map((member, i) => (
@@ -186,6 +234,7 @@ export function MessageComposer({
             type="button"
             className={styles.composerIconButton}
             aria-label={t("addAttachment")}
+            onClick={() => fileInputRef.current?.click()}
           >
             <FiPlus />
           </button>
@@ -197,6 +246,7 @@ export function MessageComposer({
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           placeholder={resolvedPlaceholder}
           aria-label={resolvedPlaceholder}
           autoComplete="off"
