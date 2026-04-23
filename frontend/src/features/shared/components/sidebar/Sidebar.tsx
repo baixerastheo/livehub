@@ -69,6 +69,7 @@ function SidebarRoot({ children, isOpen, onClose }: SidebarRootProps) {
       <aside
         className={`${rootStyles.sidebar} ${isOpen ? rootStyles.sidebarOpen : ""}`}
         style={{ width, minWidth: width, maxWidth: width }}
+        suppressHydrationWarning
       >
         {children}
         <div
