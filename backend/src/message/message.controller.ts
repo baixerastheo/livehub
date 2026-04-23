@@ -9,13 +9,20 @@ import {
   ParseIntPipe,
   Req,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { RequestWithAuth } from '../lib/request-with-auth.js';
 import { PrivateMessageService } from './private-message.service';
 import { ChannelMessageService } from './channel-message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { SupabaseStorageService } from '../supabase/supabase-storage.service';
 
 @Controller()
 @UseGuards(AuthGuard)
@@ -23,7 +30,29 @@ export class MessageController {
   constructor(
     private readonly privateMessageService: PrivateMessageService,
     private readonly channelMessageService: ChannelMessageService,
+    private readonly storageService: SupabaseStorageService,
   ) {}
+
+  @Post('messages/image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMessageImage(
+    @Req() req: RequestWithAuth,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 25 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: 'image/' }),
+        ],
+      }),
+    )
+    file: { buffer: Buffer; mimetype: string; originalname: string },
+  ) {
+    const ext = file.originalname.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const path = this.storageService.buildPath('messages', req.user.id, ext);
+    await this.storageService.upload(path, file.buffer, file.mimetype);
+    const url = this.storageService.getPublicImageUrl(path);
+    return { url };
+  }
 
   /** Récupère la liste des conversations privées de l'utilisateur, avec le dernier message et sa date
    * @param req requête authentifiée contenant l'utilisateur courant

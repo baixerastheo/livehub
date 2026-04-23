@@ -273,6 +273,12 @@ export function MessageBubble({
                   alt="GIF"
                   className={styles.gifImage}
                 />
+              ) : message.content.startsWith("[img]") ? (
+                <img
+                  src={message.content.slice(5)}
+                  alt=""
+                  className={styles.gifImage}
+                />
               ) : (
                 renderContent(message.content, membersById, currentUserId, styles.mention, styles.mentionMe)
               )}

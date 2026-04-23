@@ -5,6 +5,14 @@
   display: flex;
   position: relative;
   z-index: 10;
+  transition: background 0.15s;
+}
+
+.composerDragOver {
+  background: rgba(99, 102, 241, 0.06);
+  outline: 2px dashed rgba(99, 102, 241, 0.4);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
 }
 
 .composerBar {
