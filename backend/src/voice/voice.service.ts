@@ -41,7 +41,9 @@ export class VoiceService {
     const url = process.env.LIVEKIT_URL;
 
     if (!apiKey || !apiSecret || !url) {
-      throw new InternalServerErrorException('LiveKit is not configured');
+      throw new InternalServerErrorException(
+        'LiveKit environment variables are not set',
+      );
     }
 
     const token = new AccessToken(apiKey, apiSecret, {
