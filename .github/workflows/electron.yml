@@ -1,0 +1,48 @@
+name: Electron CI
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "electron/**"
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: install linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y rpm
+
+      - name: install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: electron dist
+        run: pnpm --filter electron dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: livehub-${{ matrix.os }}
+          path: |
+            electron/release/*.exe
+            electron/release/*.dmg
+            electron/release/*.AppImage
