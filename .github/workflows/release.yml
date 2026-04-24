@@ -48,85 +48,43 @@ jobs:
         env:
           CI: true
 
-  build-backend:
-    name: Build backend
-    needs: [test-backend]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm --filter backend build
-        env:
-          CI: true
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: backend-build-${{ github.ref_name }}
-          path: backend/dist/
-
-  build-frontend:
-    name: Build frontend
-    needs: [test-frontend]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm --filter frontend build
-        env:
-          CI: true
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build-${{ github.ref_name }}
-          path: frontend/.next/
-
   release:
-    name: Create GitHub Release
-    needs: [build-backend, build-frontend]
+    name: Build & Release
+    needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: backend-build-${{ github.ref_name }}
-          path: artifacts/backend/
+      - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - uses: pnpm/action-setup@v4
         with:
-          name: frontend-build-${{ github.ref_name }}
-          path: artifacts/frontend/
+          version: 10
 
-      - name: Zip artifacts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build backend
+        run: pnpm --filter backend build
+        env:
+          CI: true
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+        env:
+          CI: true
+
+      - name: Zip builds
         run: |
-          cd artifacts
-          zip -r backend-${{ github.ref_name }}.zip backend/
-          zip -r frontend-${{ github.ref_name }}.zip frontend/
+          zip -r backend-${{ github.ref_name }}.zip backend/dist/
+          zip -r frontend-${{ github.ref_name }}.zip frontend/.next/
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/backend-${{ github.ref_name }}.zip
-            artifacts/frontend-${{ github.ref_name }}.zip
+            backend-${{ github.ref_name }}.zip
+            frontend-${{ github.ref_name }}.zip
