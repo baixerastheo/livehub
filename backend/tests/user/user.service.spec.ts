@@ -8,6 +8,7 @@ import { UserService } from '../../src/user/user.service';
 import { PrismaService } from '../../src/prisma.service';
 import { SupabaseStorageService } from '../../src/supabase/supabase-storage.service';
 import { PresenceService } from '../../src/realtime/presence.service';
+import { StatutUtilisateur } from '../../generated/prisma/enums';
 
 describe('UserService', () => {
   let service: UserService;
@@ -154,7 +155,7 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    const createData = { name: 'Bob', email: 'bob@example.com', statut: 'EN_LIGNE', password: 'Password1!' };
+    const createData = { name: 'Bob', email: 'bob@example.com', statut: StatutUtilisateur.EN_LIGNE, password: 'Password1!' };
 
     it('should create user and account successfully', async () => {
       prismaMock.user.findUnique.mockResolvedValue(null);
