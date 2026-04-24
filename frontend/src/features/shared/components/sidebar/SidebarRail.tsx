@@ -35,6 +35,12 @@ export function SidebarRail() {
   const { data: notifications = [] } = useNotificationsQuery(isAuthenticated);
   const unreadCount = notifications.filter((n) => !n.lu).length;
 
+  React.useEffect(() => {
+    if (unreadCount > 0) {
+      window.electron?.setBadge(unreadCount);
+    }
+  }, [unreadCount]);
+
   const serverColor = React.useCallback((name: string, id: number): string => {
     const PALETTE = [
       ["#6366f1", "#818cf8"],
@@ -71,7 +77,10 @@ export function SidebarRail() {
           <button
             type="button"
             className={`${styles.navItem} ${active === "activity" ? styles.navItemActive : ""}`}
-            onClick={() => activate("activity")}
+            onClick={() => {
+              activate("activity");
+              window.electron?.setBadge(0);
+            }}
             aria-label={t("notification")}
           >
             <span className={styles.navIcon}>

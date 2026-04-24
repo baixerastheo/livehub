@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, Menu } from "electron";
+import { app, BrowserWindow, shell, Menu, ipcMain, nativeImage } from "electron";
 import path from "path";
 import { spawn, ChildProcess } from "child_process";
 import http from "http";
@@ -13,11 +13,14 @@ let nextServer: ChildProcess | null = null;
 function createWindow(url: string) {
   Menu.setApplicationMenu(null);
 
+  const iconPath = path.join(__dirname, "..", "assets", "icon.png");
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 940,
     minHeight: 600,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -106,6 +109,23 @@ async function startProdServer(): Promise<string> {
   await waitForServer(url);
   return url;
 }
+
+app.setAppUserModelId("com.livehub.app");
+
+ipcMain.on("set-badge", (_event, count: number) => {
+  if (process.platform === "darwin") {
+    app.setBadgeCount(count);
+  } else if (process.platform === "win32" && mainWindow) {
+    if (count === 0) {
+      mainWindow.setOverlayIcon(null, "");
+    } else {
+      const badgeIcon = nativeImage
+        .createFromPath(path.join(__dirname, "..", "assets", "badge.png"))
+        .resize({ width: 16, height: 16 });
+      mainWindow.setOverlayIcon(badgeIcon, `${count} notification(s)`);
+    }
+  }
+});
 
 app.whenReady().then(async () => {
   try {
