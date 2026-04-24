@@ -43,7 +43,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       {errors.root?.message && (
-        <p role="alert" className={styles.error}>
+        <p role="alert" className={styles.error} data-testid="login-error">
           {errors.root.message}
         </p>
       )}
@@ -57,6 +57,7 @@ export function LoginForm() {
           {...register("login")}
           aria-invalid={errors.login ? "true" : "false"}
           className={styles.input}
+          data-testid="login-email"
         />
         {errors.login && (
           <span role="alert" className={styles.error}>
@@ -75,6 +76,7 @@ export function LoginForm() {
           {...register("password")}
           aria-invalid={errors.password ? "true" : "false"}
           className={styles.input}
+          data-testid="login-password"
         />
         {errors.password && (
           <span role="alert" className={styles.error}>
@@ -87,6 +89,7 @@ export function LoginForm() {
         type="submit"
         disabled={isPending}
         className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
+        data-testid="login-submit"
       >
         {isPending ? t("sending") : t("signIn")}
       </button>
@@ -96,6 +99,7 @@ export function LoginForm() {
           type="button"
           className={styles.switchLink}
           onClick={() => openAuthModal()}
+          data-testid="switch-to-register"
         >
           {t("noAccount")}
         </button>

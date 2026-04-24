@@ -168,7 +168,7 @@ export function SidebarChannelsContent({ onAddChannel }: Props) {
             <li key={channel.id}>
               <div className={styles.rowWrapper}>
                 <div className={`${styles.row} ${styles.rowChannel} ${isActive ? styles.rowActive : ""}`}>
-                  <Link href={href} className={channelStyles.channelLink}>
+                  <Link href={href} className={channelStyles.channelLink} data-testid="channel-item">
                     <span className={channelStyles.channelPrefix} aria-hidden>#</span>
                     <span className={styles.name}>{channel.name}</span>
                   </Link>
