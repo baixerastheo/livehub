@@ -81,7 +81,7 @@ describe('VoiceService', () => {
     delete process.env.LIVEKIT_API_KEY;
 
     await expect(service.generateToken(1, 'user-123')).rejects.toThrow(
-      'LiveKit environment variables are not set',
+      'LiveKit is not configured',
     );
   });
 
