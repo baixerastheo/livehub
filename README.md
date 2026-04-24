@@ -17,13 +17,14 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Storage-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-workspaces-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Electron](https://img.shields.io/badge/Electron-36-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![GitHub](https://img.shields.io/badge/GitHub-Baixerastheo%2FLivehub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Baixerastheo/Livehub)
 
 <br/>
 
 ```
- ╔══════════════════════════════════════════════════════════╗
- ║  [FEATURES]  [STACK]  [INSTALL]  [ARCH]  [API]  [WS]   ║
- ╚══════════════════════════════════════════════════════════╝
+ ╔══════════════════════════════════════════════════════════════════╗
+ ║  [FEATURES]  [STACK]  [INSTALL]  [ARCH]  [API]  [WS]  [TESTS]  ║
+ ╚══════════════════════════════════════════════════════════════════╝
 ```
 
 [Features](#-features) · [Tech Stack](#%EF%B8%8F-tech-stack) · [Install](#-boot-sequence) · [Architecture](#-system-map) · [API](#-api-endpoints) · [Realtime](#-realtime-engine)
@@ -137,7 +138,26 @@ ROLES: PROPRIETAIRE, ADMINISTRATEUR
 - Ban list visible to admins
 - Role hierarchy enforced : only owner can ban/kick admins
 
-### `[10] AI BOT`
+### `[10] REACTIONS & MESSAGE EDITING`
+```
+STATUS: OPERATIONAL
+SCOPE: Private messages + Channel messages
+```
+- React to any message with any emoji (full picker + 5 quick emojis)
+- Grouped reaction counters with live updates
+- Edit your own messages inline (Escape to cancel, Enter to save)
+- Edited messages flagged with an `(edited)` badge
+
+### `[11] IMAGE & GIF SHARING`
+```
+STATUS: OPERATIONAL
+MAX_SIZE: 25 MB
+```
+- Paste or upload images directly in any conversation or channel
+- GIF search powered by Giphy — browse, preview, send
+- Images and GIFs rendered inline in message bubbles
+
+### `[12] AI BOT`
 ```
 STATUS: OPERATIONAL
 PROVIDER: OpenRouter
@@ -146,17 +166,27 @@ PROVIDER: OpenRouter
 - Pinned at the top of the conversation list
 - Full conversation history sent as context on each message
 
-### `[11] DESKTOP APP`
+### `[13] DESKTOP APP`
 ```
 STATUS: OPERATIONAL
 RUNTIME: Electron 36
 ```
 - Native desktop app wrapping the web frontend
 - Custom titlebar matching the app design (no native menu bar)
+- Red dot overlay on taskbar icon when unread notifications exist
 - Single command to launch backend + frontend + Electron
 - Production: Next.js standalone server embedded in the app
 
-### `[12] REALTIME ENGINE`
+### `[14] INTERNATIONALISATION`
+```
+STATUS: OPERATIONAL
+LIBRARY: next-intl
+LOCALES: fr, en
+```
+- Full UI translated in French and English
+- Locale switching at runtime
+
+### `[15] REALTIME ENGINE`
 ```
 STATUS: OPERATIONAL
 LATENCY: ~instant
@@ -229,7 +259,7 @@ LATENCY: ~instant
 ### Step 1 — Clone
 
 ```bash
-git clone https://github.com/votre-username/Livehub.git
+git clone https://github.com/Baixerastheo/Livehub.git
 cd Livehub
 ```
 
@@ -548,6 +578,7 @@ pnpm run dist:electron       # Package desktop app (.exe / .dmg / .AppImage)
 
 # Tests
 pnpm run test                # Run all tests
+pnpm run test:cov            # Run all tests with coverage report
 
 # Code quality
 pnpm run lint                # Linter
