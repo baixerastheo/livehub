@@ -154,7 +154,7 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    const createData = { name: 'Bob', email: 'bob@example.com', statut: 'EN_LIGNE' };
+    const createData = { name: 'Bob', email: 'bob@example.com', statut: 'EN_LIGNE', password: 'Password1!' };
 
     it('should create user and account successfully', async () => {
       prismaMock.user.findUnique.mockResolvedValue(null);
