@@ -12,6 +12,7 @@
     "lint": "pnpm -r lint",
     "review:check": "pnpm --filter frontend lint && pnpm --filter backend lint && pnpm --filter frontend run typecheck && pnpm --filter backend run typecheck",
     "test": "pnpm -r test",
+    "test:cov": "pnpm --filter frontend test:cov && pnpm --filter backend test:cov",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
