@@ -3,29 +3,11 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  scrollbar-width: none;
 }
 
 .scrollWrapper::-webkit-scrollbar {
-  width: 5px;
-}
-
-.scrollWrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollWrapper::-webkit-scrollbar-button {
   display: none;
-}
-
-.scrollWrapper::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
-  border-radius: 99px;
-}
-
-.scrollWrapper:hover::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45);
 }
 
 .list {

@@ -39,6 +39,7 @@ export function NotificationsRealtimeSync() {
     };
 
     const onMention = (event: MessageMentionEvent) => {
+      if (window.location.pathname === `/channels/${event.channelId}`) return;
       push(makeTempNotif({
         type: "MENTION",
         data: event satisfies MentionData,
@@ -47,6 +48,8 @@ export function NotificationsRealtimeSync() {
 
     const onPrivateMessage = (event: PrivateMessageCreatedEvent) => {
       if (event.authorId === currentUserId) return;
+      const params = new URLSearchParams(window.location.search);
+      if (window.location.pathname === "/messages" && params.get("with") === event.authorId) return;
       push(makeTempNotif({
         type: "PRIVATE_MESSAGE",
         data: { authorId: event.authorId, authorName: event.authorName, content: event.content } satisfies PrivateMessageData,
