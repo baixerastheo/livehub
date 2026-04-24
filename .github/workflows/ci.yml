@@ -105,7 +105,7 @@ jobs:
 
   build-frontend:
     name: Build frontend
-    needs: [lint-frontend, typecheck-frontend]
+    needs: [lint-frontend, typecheck-frontend, test-frontend]
     runs-on: ubuntu-latest
 
     steps:
@@ -155,7 +155,34 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: test backend
-        run: pnpm --filter backend test
+        run: pnpm --filter backend test:cov
+        env:
+          CI: true
+
+  test-frontend:
+    name: Test frontend
+    needs: [lint-frontend, typecheck-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: test frontend
+        run: pnpm --filter frontend test:cov
         env:
           CI: true
 
