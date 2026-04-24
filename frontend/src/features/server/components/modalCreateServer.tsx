@@ -113,7 +113,7 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
 
         <form onSubmit={handleSubmit}>
           {error && (
-            <p role="alert" className={styles.error}>
+            <p role="alert" className={styles.error} data-testid="create-server-error">
               {error}
             </p>
           )}
@@ -154,6 +154,7 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
               disabled={isSubmitting}
               maxLength={30}
               className={styles.input}
+              data-testid="create-server-name"
             />
           </div>
           <div className={styles.footer}>
@@ -169,6 +170,7 @@ export function ModalCreateServer({ isOpen, onClose }: ModalCreateServerProps) {
               type="submit"
               disabled={isSubmitting}
               className={`${styles.button} ${styles.buttonPrimary}`}
+              data-testid="create-server-submit"
             >
               {isSubmitting ? "Creating…" : "Create server"}
             </button>

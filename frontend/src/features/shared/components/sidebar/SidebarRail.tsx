@@ -176,6 +176,7 @@ export function SidebarRail() {
             className={styles.addServerButton}
             onClick={() => setIsCreateServerOpen(true)}
             aria-label={t("newServer")}
+            data-testid="nav-add-server"
           >
             <FiPlus className={styles.addServerIcon} />
             <span className={styles.tooltip}>{t("newServer")}</span>

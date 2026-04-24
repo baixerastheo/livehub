@@ -206,6 +206,7 @@ export function MessageBubble({
     <div
       className={`${styles.bubbleRow} ${isMe ? styles.bubbleRowMe : ""}`}
       role="listitem"
+      data-testid="message-bubble"
     >
       {!isMe && (
         <div className={styles.avatarCol}>
@@ -322,6 +323,7 @@ export function MessageBubble({
                         key={emoji}
                         type="button"
                         className={styles.quickEmojiBtn}
+                        data-testid="quick-emoji-btn"
                         onClick={() => {
                           onToggleReaction(Number(message.id), emoji);
                           setMenuState("closed");

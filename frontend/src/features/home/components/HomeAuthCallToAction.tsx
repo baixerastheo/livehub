@@ -25,6 +25,7 @@ export function HomeAuthCallToAction() {
           type="button"
           className={styles.primaryButton}
           onClick={openLogin}
+          data-testid="home-signin-btn"
         >
           {t("signIn")}
         </button>
@@ -32,6 +33,7 @@ export function HomeAuthCallToAction() {
           type="button"
           className={styles.secondaryButton}
           onClick={openRegister}
+          data-testid="home-signup-btn"
         >
           {t("signUp")}
         </button>

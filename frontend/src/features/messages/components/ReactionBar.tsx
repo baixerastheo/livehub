@@ -25,6 +25,7 @@ export function ReactionBar({ reactions, currentUserId, onToggle }: Props) {
             className={`${styles.chip} ${active ? styles.chipActive : ""}`}
             onClick={() => onToggle(r.emoji)}
             title={`${r.count} reaction${r.count > 1 ? "s" : ""}`}
+            data-testid="reaction-btn"
           >
             <span>{r.emoji}</span>
             <span className={styles.count}>{r.count}</span>

@@ -60,6 +60,7 @@ export function RegisterForm() {
           {...register("username")}
           aria-invalid={errors.username ? "true" : "false"}
           className={styles.input}
+          data-testid="register-username"
         />
         {errors.username && (
           <span role="alert" className={styles.error}>
@@ -78,6 +79,7 @@ export function RegisterForm() {
           {...register("email")}
           aria-invalid={errors.email ? "true" : "false"}
           className={styles.input}
+          data-testid="register-email"
         />
         {errors.email && (
           <span role="alert" className={styles.error}>
@@ -96,6 +98,7 @@ export function RegisterForm() {
           {...register("password")}
           aria-invalid={errors.password ? "true" : "false"}
           className={styles.input}
+          data-testid="register-password"
         />
         {errors.password && (
           <span role="alert" className={styles.error}>
@@ -114,6 +117,7 @@ export function RegisterForm() {
           {...register("confirmPassword")}
           aria-invalid={errors.confirmPassword ? "true" : "false"}
           className={styles.input}
+          data-testid="register-confirm-password"
         />
         {errors.confirmPassword && (
           <span role="alert" className={styles.error}>
@@ -126,6 +130,7 @@ export function RegisterForm() {
         type="submit"
         disabled={isPending}
         className={`${styles.submit} ${isPending ? styles.submitDisabled : ""}`}
+        data-testid="register-submit"
       >
         {isPending ? t("sending") : t("createAccount")}
       </button>
