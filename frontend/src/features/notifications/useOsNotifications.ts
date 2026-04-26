@@ -54,7 +54,7 @@ function fireNotification(title: string, body?: string) {
   if (Notification.permission !== "granted") return;
   if (document.visibilityState !== "hidden") return;
   try {
-    new Notification(title, { body, icon: "/favicon.ico" });
+    new Notification(title, { body, icon: "/brand/livehub_icon.svg" });
   } catch {
     // Notification API unavailable or permission revoked mid-session
   }
