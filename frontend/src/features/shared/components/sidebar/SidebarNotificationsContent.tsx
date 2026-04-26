@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { FiAtSign, FiMail, FiLogOut, FiSlash, FiUserPlus, FiUserCheck, FiUserX } from "react-icons/fi";
+import type { IconType } from "react-icons";
 import styles from "../../styles/sidebar/SidebarNotifications.module.css";
 import { SidebarEmptyState } from "./SidebarParts";
 import { useSidebarContext } from "./SidebarContext";
@@ -10,6 +12,9 @@ import type {
   MentionData,
   PrivateMessageData,
   BannedData,
+  FriendRequestReceivedData,
+  FriendRequestAcceptedData,
+  FriendRequestDeclinedData,
 } from "@/src/features/notifications/notification.types";
 
 function formatTime(iso: string): string {
@@ -28,7 +33,7 @@ function NotificationItem({ notif }: { notif: NotificationDto }) {
   const t = useTranslations("notifications");
   const { onClose } = useSidebarContext();
 
-  let icon = "🔔";
+  let Icon: IconType = FiAtSign;
   let iconClass = styles.iconMention;
   let title = "";
   let preview: string | undefined;
@@ -36,34 +41,51 @@ function NotificationItem({ notif }: { notif: NotificationDto }) {
 
   if (notif.type === "MENTION") {
     const d = notif.data as MentionData;
-    icon = "@";
+    Icon = FiAtSign;
     iconClass = styles.iconMention;
     title = t("mentionTitle", { author: d.authorName, channel: String(d.channelId) });
     preview = d.messagePreview;
     href = `/channels/${d.channelId}`;
   } else if (notif.type === "PRIVATE_MESSAGE") {
     const d = notif.data as PrivateMessageData;
-    icon = "✉";
+    Icon = FiMail;
     iconClass = styles.iconDm;
     title = t("privateMessageTitle", { author: d.authorName });
     preview = d.content;
     href = `/messages?with=${d.authorId}&name=${encodeURIComponent(d.authorName)}`;
   } else if (notif.type === "KICKED") {
-    icon = "🚪";
+    Icon = FiLogOut;
     iconClass = styles.iconKick;
     title = t("kickedTitle");
   } else if (notif.type === "BANNED") {
     const d = notif.data as BannedData;
-    icon = "🔨";
+    Icon = FiSlash;
     iconClass = styles.iconBan;
     title = t("bannedTitle");
     preview = d.raison ?? undefined;
+  } else if (notif.type === "FRIEND_REQUEST_RECEIVED") {
+    const d = notif.data as FriendRequestReceivedData;
+    Icon = FiUserPlus;
+    iconClass = styles.iconMention;
+    title = t("friendRequestReceivedTitle", { name: d.fromUserName });
+    href = `/people`;
+  } else if (notif.type === "FRIEND_REQUEST_ACCEPTED") {
+    const d = notif.data as FriendRequestAcceptedData;
+    Icon = FiUserCheck;
+    iconClass = styles.iconDm;
+    title = t("friendRequestAcceptedTitle", { name: d.byUserName });
+    href = `/people`;
+  } else if (notif.type === "FRIEND_REQUEST_DECLINED") {
+    const d = notif.data as FriendRequestDeclinedData;
+    Icon = FiUserX;
+    iconClass = styles.iconKick;
+    title = t("friendRequestDeclinedTitle", { name: d.byUserName });
   }
 
   const inner = (
     <>
       <span className={`${styles.iconWrapper} ${iconClass}`} aria-hidden>
-        {icon}
+        <Icon size={14} />
       </span>
       <span className={styles.textBlock}>
         <span className={styles.title}>{title}</span>

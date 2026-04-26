@@ -1,4 +1,11 @@
-export type NotificationType = "MENTION" | "PRIVATE_MESSAGE" | "KICKED" | "BANNED";
+export type NotificationType =
+  | "MENTION"
+  | "PRIVATE_MESSAGE"
+  | "KICKED"
+  | "BANNED"
+  | "FRIEND_REQUEST_RECEIVED"
+  | "FRIEND_REQUEST_ACCEPTED"
+  | "FRIEND_REQUEST_DECLINED";
 
 export type MentionData = {
   channelId: number;
@@ -23,11 +30,33 @@ export type BannedData = {
   expireLe: string | null;
 };
 
+export type FriendRequestReceivedData = {
+  fromUserId: string;
+  fromUserName: string;
+};
+
+export type FriendRequestAcceptedData = {
+  byUserId: string;
+  byUserName: string;
+};
+
+export type FriendRequestDeclinedData = {
+  byUserId: string;
+  byUserName: string;
+};
+
 export type NotificationDto = {
   id: number;
   userId: string;
   type: NotificationType;
-  data: MentionData | PrivateMessageData | KickedData | BannedData;
+  data:
+    | MentionData
+    | PrivateMessageData
+    | KickedData
+    | BannedData
+    | FriendRequestReceivedData
+    | FriendRequestAcceptedData
+    | FriendRequestDeclinedData;
   lu: boolean;
   creeLe: string;
 };
