@@ -11,7 +11,9 @@ export type NotificationData =
     }
   | { authorId: string; authorName: string; content: string }
   | { serverId: number }
-  | { serverId: number; raison: string | null; expireLe: string | null };
+  | { serverId: number; raison: string | null; expireLe: string | null }
+  | { fromUserId: string; fromUserName: string }
+  | { byUserId: string; byUserName: string };
 
 @Injectable()
 export class NotificationService {

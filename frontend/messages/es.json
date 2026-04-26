@@ -104,6 +104,15 @@
     "friendRequestSent": "Solicitud de amistad enviada.",
     "friendRequestFailed": "No se pudo enviar la solicitud."
   },
+  "notifications": {
+    "mentionTitle": "{author} te mencionó en #{channel}",
+    "privateMessageTitle": "{author} te envió un mensaje",
+    "kickedTitle": "Fuiste expulsado de un servidor",
+    "bannedTitle": "Fuiste baneado de un servidor",
+    "friendRequestReceivedTitle": "{name} te envió una solicitud de amistad",
+    "friendRequestAcceptedTitle": "{name} aceptó tu solicitud de amistad",
+    "friendRequestDeclinedTitle": "{name} rechazó tu solicitud de amistad"
+  },
   "people": {
     "title": "Personas",
     "subtitle": "Busca usuarios e inicia una conversación.",
