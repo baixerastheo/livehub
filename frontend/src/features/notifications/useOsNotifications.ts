@@ -115,16 +115,28 @@ export function useOsNotifications() {
       fireNotification(t("bannedTitle"));
     };
 
+    const onFriendRequestReceived = () => {
+      fireNotification(t("friendRequestReceivedTitle", { name: "…" }));
+    };
+
+    const onFriendRequestAccepted = () => {
+      fireNotification(t("friendRequestAcceptedTitle", { name: "…" }));
+    };
+
     socket.on("message:mention", onMention);
     socket.on("private-message:created", onPrivateMessage);
     socket.on("server-member:kicked", onKicked);
     socket.on("server-member:banned", onBanned);
+    socket.on("friend-request:received", onFriendRequestReceived);
+    socket.on("friend-request:accepted", onFriendRequestAccepted);
 
     return () => {
       socket.off("message:mention", onMention);
       socket.off("private-message:created", onPrivateMessage);
       socket.off("server-member:kicked", onKicked);
       socket.off("server-member:banned", onBanned);
+      socket.off("friend-request:received", onFriendRequestReceived);
+      socket.off("friend-request:accepted", onFriendRequestAccepted);
     };
   }, [currentUserId, queryClient, t]);
 }

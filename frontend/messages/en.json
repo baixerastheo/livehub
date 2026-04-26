@@ -134,7 +134,10 @@
     "mentionTitle": "{author} mentioned you in #{channel}",
     "privateMessageTitle": "{author} sent you a message",
     "kickedTitle": "You were kicked from a server",
-    "bannedTitle": "You were banned from a server"
+    "bannedTitle": "You were banned from a server",
+    "friendRequestReceivedTitle": "{name} sent you a friend request",
+    "friendRequestAcceptedTitle": "{name} accepted your friend request",
+    "friendRequestDeclinedTitle": "{name} declined your friend request"
   },
   "people": {
     "title": "People",

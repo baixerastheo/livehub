@@ -26,6 +26,9 @@ import type {
   MessageReactionUpdatedEvent,
   VoiceChannelPresenceEvent,
   MessageMentionEvent,
+  FriendRequestReceivedEvent,
+  FriendRequestAcceptedEvent,
+  FriendRequestDeclinedEvent,
 } from './realtime-events.types.js';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from './presence.service.js';
@@ -654,6 +657,27 @@ export class MessageGateway
     this.server
       .to('user:' + payload.kickedUserId)
       .emit('server-member:kicked', eventPayload);
+  }
+
+  emitFriendRequestReceived(
+    toUserId: string,
+    payload: FriendRequestReceivedEvent,
+  ) {
+    this.server.to('user:' + toUserId).emit('friend-request:received', payload);
+  }
+
+  emitFriendRequestAccepted(
+    toUserId: string,
+    payload: FriendRequestAcceptedEvent,
+  ) {
+    this.server.to('user:' + toUserId).emit('friend-request:accepted', payload);
+  }
+
+  emitFriendRequestDeclined(
+    toUserId: string,
+    payload: FriendRequestDeclinedEvent,
+  ) {
+    this.server.to('user:' + toUserId).emit('friend-request:declined', payload);
   }
 
   emitServerMemberUnbanned(

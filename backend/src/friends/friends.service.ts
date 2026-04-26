@@ -7,6 +7,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { PresenceService } from '../realtime/presence.service.js';
+import { MessageGateway } from '../realtime/message.gateway.js';
+import { NotificationService } from '../notification/notification.service.js';
+import { TypeNotification } from '../../generated/prisma/enums.js';
+import { SupabaseStorageService } from '../supabase/supabase-storage.service.js';
 
 /**
  * Service de gestion des amis.
@@ -17,6 +21,9 @@ export class FriendsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly presence: PresenceService,
+    private readonly gateway: MessageGateway,
+    private readonly notificationService: NotificationService,
+    private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
   /**
@@ -94,13 +101,20 @@ export class FriendsService {
       include: { userA: true, userB: true },
     });
 
-    return rows.map((r) => {
-      const friend = r.userAId === userId ? r.userB : r.userA;
-      return {
-        ...friend,
-        statut: this.presence.isOnline(friend.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
-      };
-    });
+    return Promise.all(
+      rows.map(async (r) => {
+        const friend = r.userAId === userId ? r.userB : r.userA;
+        const avatarUrl = await this.supabaseStorage.resolveAvatarUrl(
+          friend.avatarPath,
+        );
+        const { avatarPath: _avatarPath, ...rest } = friend;
+        return {
+          ...rest,
+          avatarUrl,
+          statut: this.presence.isOnline(friend.id) ? 'EN_LIGNE' : 'HORS_LIGNE',
+        };
+      }),
+    );
   }
 
   /**
@@ -109,7 +123,7 @@ export class FriendsService {
    * @returns Liste des demandes avec les infos des utilisateurs concernés
    */
   async listRequests(userId: string) {
-    return this.prisma.demandeAmitie.findMany({
+    const requests = await this.prisma.demandeAmitie.findMany({
       where: {
         statut: 'EN_ATTENTE',
         OR: [{ fromUserId: userId }, { toUserId: userId }],
@@ -117,6 +131,22 @@ export class FriendsService {
       include: { fromUser: true, toUser: true },
       orderBy: { creeLe: 'desc' },
     });
+
+    return Promise.all(
+      requests.map(async (req) => {
+        const [fromAvatarUrl, toAvatarUrl] = await Promise.all([
+          this.supabaseStorage.resolveAvatarUrl(req.fromUser.avatarPath),
+          this.supabaseStorage.resolveAvatarUrl(req.toUser.avatarPath),
+        ]);
+        const { avatarPath: _f, ...fromUser } = req.fromUser;
+        const { avatarPath: _t, ...toUser } = req.toUser;
+        return {
+          ...req,
+          fromUser: { ...fromUser, avatarUrl: fromAvatarUrl },
+          toUser: { ...toUser, avatarUrl: toAvatarUrl },
+        };
+      }),
+    );
   }
 
   /**
@@ -142,16 +172,31 @@ export class FriendsService {
       throw new BadRequestException('Friend request already pending');
     }
 
+    let requestId: string;
     if (!existingRequest) {
-      await this.prisma.demandeAmitie.create({
+      const created = await this.prisma.demandeAmitie.create({
         data: { fromUserId, toUserId, statut: 'EN_ATTENTE' },
       });
+      requestId = created.id;
     } else {
       await this.prisma.demandeAmitie.update({
         where: { id: existingRequest.id },
         data: { statut: 'EN_ATTENTE' },
       });
+      requestId = existingRequest.id;
     }
+
+    this.gateway.emitFriendRequestReceived(toUserId, { requestId, fromUserId });
+
+    const fromUser = await this.prisma.user.findUnique({
+      where: { id: fromUserId },
+      select: { name: true },
+    });
+    void this.notificationService.create(
+      toUserId,
+      TypeNotification.FRIEND_REQUEST_RECEIVED,
+      { fromUserId, fromUserName: fromUser?.name ?? fromUserId },
+    );
   }
 
   /**
@@ -187,6 +232,24 @@ export class FriendsService {
         data: { id: randomUUID(), userAId, userBId },
       }),
     ]);
+
+    this.gateway.emitFriendRequestAccepted(request.fromUserId, {
+      requestId,
+      byUserId: currentUserId,
+    });
+
+    const acceptedBy = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+      select: { name: true },
+    });
+    void this.notificationService.create(
+      request.fromUserId,
+      TypeNotification.FRIEND_REQUEST_ACCEPTED,
+      {
+        byUserId: currentUserId,
+        byUserName: acceptedBy?.name ?? currentUserId,
+      },
+    );
   }
 
   /**
@@ -211,5 +274,23 @@ export class FriendsService {
       where: { id: requestId },
       data: { statut: 'REFUSEE' },
     });
+
+    this.gateway.emitFriendRequestDeclined(request.fromUserId, {
+      requestId,
+      byUserId: currentUserId,
+    });
+
+    const declinedBy = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+      select: { name: true },
+    });
+    void this.notificationService.create(
+      request.fromUserId,
+      TypeNotification.FRIEND_REQUEST_DECLINED,
+      {
+        byUserId: currentUserId,
+        byUserName: declinedBy?.name ?? currentUserId,
+      },
+    );
   }
 }

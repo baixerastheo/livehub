@@ -104,6 +104,15 @@
     "friendRequestSent": "Freundschaftsanfrage gesendet.",
     "friendRequestFailed": "Anfrage konnte nicht gesendet werden."
   },
+  "notifications": {
+    "mentionTitle": "{author} hat Sie in #{channel} erwähnt",
+    "privateMessageTitle": "{author} hat Ihnen eine Nachricht gesendet",
+    "kickedTitle": "Sie wurden von einem Server entfernt",
+    "bannedTitle": "Sie wurden von einem Server gesperrt",
+    "friendRequestReceivedTitle": "{name} hat Ihnen eine Freundschaftsanfrage gesendet",
+    "friendRequestAcceptedTitle": "{name} hat Ihre Freundschaftsanfrage angenommen",
+    "friendRequestDeclinedTitle": "{name} hat Ihre Freundschaftsanfrage abgelehnt"
+  },
   "people": {
     "title": "Personen",
     "subtitle": "Benutzer suchen und ein Gespräch starten.",
