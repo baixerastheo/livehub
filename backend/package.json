@@ -101,8 +101,12 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(better-auth|better-call)/)"
+    ],
     "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
+      "^(\\.{1,2}/.*)\\.js$": "$1",
+      "^better-auth/node$": "<rootDir>/tests/__mocks__/better-auth-node.ts"
     },
     "modulePaths": [
       "<rootDir>"
