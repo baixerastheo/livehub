@@ -121,6 +121,26 @@ export function useChannelMessageEditRealtime(channelId: number | null) {
   }, [channelId, queryClient]);
 }
 
+export function useChannelMessageDeleteRealtime(channelId: number | null) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (channelId == null) return;
+    const socket = getSocket();
+
+    const handler = (event: { channelId: number; messageId: number }) => {
+      if (event.channelId !== channelId) return;
+      queryClient.setQueryData<ChannelMessageBackendDto[]>(
+        channelsKeys.messages(channelId),
+        (old) => old?.filter((m) => m.id !== event.messageId) ?? old,
+      );
+    };
+
+    socket.on("channel-message:deleted", handler);
+    return () => { socket.off("channel-message:deleted", handler); };
+  }, [channelId, queryClient]);
+}
+
 const TYPING_EXPIRY_MS = 5000;
 
 export type TypingUser = { userId: string; userName: string };

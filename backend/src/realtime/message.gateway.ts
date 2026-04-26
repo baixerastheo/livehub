@@ -600,6 +600,12 @@ export class MessageGateway
       .emit('channel-message:updated', payload);
   }
 
+  emitChannelMessageDeleted(channelId: number, messageId: number) {
+    this.server
+      .to('channel:' + channelId)
+      .emit('channel-message:deleted', { channelId, messageId });
+  }
+
   emitPrivateMessageUpdated(
     senderId: string,
     recipientId: string,

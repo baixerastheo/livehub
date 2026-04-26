@@ -40,6 +40,7 @@ describe('ChannelMessageService', () => {
   const gatewayMock = {
     emitChannelMessageCreated: jest.fn(),
     emitChannelMessageUpdated: jest.fn(),
+    emitChannelMessageDeleted: jest.fn(),
     emitMessageMention: jest.fn(),
   };
 
