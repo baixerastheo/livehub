@@ -9,7 +9,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
  */
 @Injectable()
 export class SupabaseStorageService {
-  private client: SupabaseClient;
+  private client!: SupabaseClient;
 
   constructor(private readonly config: ConfigService) {}
 
