@@ -8,7 +8,8 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY backend/package.json ./backend/
 COPY backend/prisma ./backend/prisma
 
-RUN pnpm install --filter backend --frozen-lockfile
+ENV HUSKY=0
+RUN pnpm install --filter backend --frozen-lockfile --ignore-scripts
 
 COPY backend ./backend
 
