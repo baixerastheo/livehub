@@ -7,7 +7,8 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY frontend/package.json ./frontend/
 
-RUN pnpm install --filter frontend --frozen-lockfile
+ENV HUSKY=0
+RUN pnpm install --filter frontend --frozen-lockfile --ignore-scripts
 
 COPY frontend ./frontend
 
