@@ -8,7 +8,7 @@ import { useAppStore } from "@/src/core/store/appStore";
 import { getSocket } from "@/src/lib/realtime/socketClient";
 import { notificationsKey } from "./notification.hooks";
 import { serversKeys } from "@/src/features/server/server.hooks";
-import type { NotificationDto, MentionData, PrivateMessageData, KickedData, BannedData } from "./notification.types";
+import type { NotificationDto, MentionData, PrivateMessageData, KickedData, BannedData, FriendRequestReceivedData, FriendRequestAcceptedData, FriendRequestDeclinedData } from "./notification.types";
 
 type MessageMentionEvent = MentionData;
 type PrivateMessageCreatedEvent = { id: string; content: string; authorId: string; authorName: string; createdAtIso: string; read: boolean; peerUserId: string };
@@ -39,6 +39,7 @@ export function NotificationsRealtimeSync() {
     };
 
     const onMention = (event: MessageMentionEvent) => {
+      if (window.location.pathname === `/channels/${event.channelId}`) return;
       push(makeTempNotif({
         type: "MENTION",
         data: event satisfies MentionData,
@@ -47,6 +48,8 @@ export function NotificationsRealtimeSync() {
 
     const onPrivateMessage = (event: PrivateMessageCreatedEvent) => {
       if (event.authorId === currentUserId) return;
+      const params = new URLSearchParams(window.location.search);
+      if (window.location.pathname === "/messages" && params.get("with") === event.authorId) return;
       push(makeTempNotif({
         type: "PRIVATE_MESSAGE",
         data: { authorId: event.authorId, authorName: event.authorName, content: event.content } satisfies PrivateMessageData,
@@ -79,11 +82,35 @@ export function NotificationsRealtimeSync() {
       void queryClient.invalidateQueries({ queryKey: serversKeys.user(), refetchType: "all" });
     };
 
+    const onFriendRequestReceived = (event: { requestId: string; fromUserId: string }) => {
+      push(makeTempNotif({
+        type: "FRIEND_REQUEST_RECEIVED",
+        data: { fromUserId: event.fromUserId, fromUserName: event.fromUserId } satisfies FriendRequestReceivedData,
+      }));
+    };
+
+    const onFriendRequestAccepted = (event: { requestId: string; byUserId: string }) => {
+      push(makeTempNotif({
+        type: "FRIEND_REQUEST_ACCEPTED",
+        data: { byUserId: event.byUserId, byUserName: event.byUserId } satisfies FriendRequestAcceptedData,
+      }));
+    };
+
+    const onFriendRequestDeclined = (event: { requestId: string; byUserId: string }) => {
+      push(makeTempNotif({
+        type: "FRIEND_REQUEST_DECLINED",
+        data: { byUserId: event.byUserId, byUserName: event.byUserId } satisfies FriendRequestDeclinedData,
+      }));
+    };
+
     socket.on("message:mention", onMention);
     socket.on("private-message:created", onPrivateMessage);
     socket.on("server-member:kicked", onKicked);
     socket.on("server-member:banned", onBanned);
     socket.on("user:added-to-server", onAddedToServer);
+    socket.on("friend-request:received", onFriendRequestReceived);
+    socket.on("friend-request:accepted", onFriendRequestAccepted);
+    socket.on("friend-request:declined", onFriendRequestDeclined);
 
     return () => {
       socket.off("message:mention", onMention);
@@ -91,6 +118,9 @@ export function NotificationsRealtimeSync() {
       socket.off("server-member:kicked", onKicked);
       socket.off("server-member:banned", onBanned);
       socket.off("user:added-to-server", onAddedToServer);
+      socket.off("friend-request:received", onFriendRequestReceived);
+      socket.off("friend-request:accepted", onFriendRequestAccepted);
+      socket.off("friend-request:declined", onFriendRequestDeclined);
     };
   }, [currentUserId, queryClient, router, setSelectedServerId]);
 

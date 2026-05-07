@@ -1,0 +1,18 @@
+services:
+  backend:
+    image: 881908114928.dkr.ecr.eu-west-3.amazonaws.com/app-livehub-backend:latest
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4001:4001"
+    restart: always
+
+  frontend:
+    image: 881908114928.dkr.ecr.eu-west-3.amazonaws.com/app-livehub-frontend:latest
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - backend

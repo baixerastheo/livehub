@@ -181,3 +181,18 @@ export type MessageMentionEvent = {
   authorName: string;
   messagePreview: string;
 };
+
+export type FriendRequestReceivedEvent = {
+  requestId: string;
+  fromUserId: string;
+};
+
+export type FriendRequestAcceptedEvent = {
+  requestId: string;
+  byUserId: string;
+};
+
+export type FriendRequestDeclinedEvent = {
+  requestId: string;
+  byUserId: string;
+};

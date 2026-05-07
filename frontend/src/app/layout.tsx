@@ -11,6 +11,7 @@ import { getLocale } from "next-intl/server";
 export const metadata: Metadata = {
   title: "LiveHub",
   description: "Livehub : The online communication website",
+  icons: { icon: "/brand/livehub_icon.svg" },
 };
 
 export default async function RootLayout({children}: Readonly<{children: React.ReactNode;}>) {

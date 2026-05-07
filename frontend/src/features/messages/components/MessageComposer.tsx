@@ -250,6 +250,7 @@ export function MessageComposer({
           placeholder={resolvedPlaceholder}
           aria-label={resolvedPlaceholder}
           autoComplete="off"
+          data-testid="message-input"
         />
 
         <button type="submit" style={{ display: "none" }} aria-hidden="true">

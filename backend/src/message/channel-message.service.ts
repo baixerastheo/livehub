@@ -152,7 +152,9 @@ export class ChannelMessageService {
       );
     }
 
-    return this.prisma.message.delete({ where: { id } });
+    const deleted = await this.prisma.message.delete({ where: { id } });
+    this.messageGateway.emitChannelMessageDeleted(message.canal.id, id);
+    return deleted;
   }
 
   /**

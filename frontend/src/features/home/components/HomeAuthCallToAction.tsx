@@ -12,9 +12,9 @@ export function HomeAuthCallToAction() {
   return (
     <div className={styles.authContainer}>
       <Image
-        src="/brand/Livehub_logo.png"
+        src="/brand/livehub_icon.svg"
         alt="LiveHub"
-        width={280}
+        width={56}
         height={56}
         className={styles.authLogo}
         priority
@@ -25,6 +25,7 @@ export function HomeAuthCallToAction() {
           type="button"
           className={styles.primaryButton}
           onClick={openLogin}
+          data-testid="home-signin-btn"
         >
           {t("signIn")}
         </button>
@@ -32,6 +33,7 @@ export function HomeAuthCallToAction() {
           type="button"
           className={styles.secondaryButton}
           onClick={openRegister}
+          data-testid="home-signup-btn"
         >
           {t("signUp")}
         </button>

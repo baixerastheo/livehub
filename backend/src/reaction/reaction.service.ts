@@ -124,7 +124,7 @@ export class ReactionService {
       select: { emoji: true, userId: true },
     });
     const aggregated = aggregate(all);
-    this.gateway.emitReactionUpdated('channel', canalId, messageId, aggregated);
+    this.gateway.emitChannelReactionUpdated(canalId, messageId, aggregated);
     return aggregated;
   }
 
@@ -140,7 +140,12 @@ export class ReactionService {
       select: { emoji: true, userId: true },
     });
     const aggregated = aggregate(all);
-    this.gateway.emitReactionUpdated('private', context, messageId, aggregated);
+    this.gateway.emitPrivateReactionUpdated(
+      context.expediteurId,
+      context.destinataireId,
+      messageId,
+      aggregated,
+    );
     return aggregated;
   }
 

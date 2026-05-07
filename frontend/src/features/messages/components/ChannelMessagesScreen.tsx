@@ -23,6 +23,7 @@ import {
   useChannelMessagesRealtime,
   useChannelReactionRealtime,
   useChannelMessageEditRealtime,
+  useChannelMessageDeleteRealtime,
   useChannelTyping,
   useChannelTypingEmitter,
 } from "@/src/features/channel/channelRealtime.hooks";
@@ -73,6 +74,7 @@ export function ChannelMessagesScreen() {
   useChannelMessagesRealtime(channelId);
   useChannelReactionRealtime(channelId);
   useChannelMessageEditRealtime(channelId);
+  useChannelMessageDeleteRealtime(channelId);
 
   const typingUsers = useChannelTyping(channelId, user?.id ?? null);
   useChannelTypingEmitter(
